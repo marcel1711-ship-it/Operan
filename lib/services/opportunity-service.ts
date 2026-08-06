@@ -1,0 +1,83 @@
+import { supabase } from '@/lib/supabase';
+import type { Opportunity, PipelineStage } from '@/lib/types';
+
+/**
+ * Opportunity service — centralized data access for opportunities.
+ */
+
+export async function fetchOpportunitiesByPipeline(
+  tenantId: string,
+  pipelineId: string,
+  opts?: { page?: number; pageSize?: number }
+): Promise<{ data: Opportunity[]; total: number }> {
+  const page = opts?.page ?? 0;
+  const pageSize = opts?.pageSize ?? 200;
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from('opportunities')
+    .select('*, customer:customers(*)', { count: 'exact' })
+    .eq('tenant_id', tenantId)
+    .eq('pipeline_id', pipelineId)
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (error) throw new Error(error.message);
+  return { data: (data as Opportunity[]) || [], total: count || 0 };
+}
+
+export async function fetchOpportunitiesByTenant(
+  tenantId: string,
+  opts?: { page?: number; pageSize?: number }
+): Promise<{ data: Opportunity[]; total: number }> {
+  const page = opts?.page ?? 0;
+  const pageSize = opts?.pageSize ?? 200;
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
+    .from('opportunities')
+    .select('*, customer:customers(*)', { count: 'exact' })
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (error) throw new Error(error.message);
+  return { data: (data as Opportunity[]) || [], total: count || 0 };
+}
+
+export async function moveOpportunityStage(
+  opportunityId: string,
+  newStageId: string,
+  actingUserId?: string | null,
+  actorName?: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const params: Record<string, unknown> = {
+    p_opportunity_id: opportunityId,
+    p_new_stage_id: newStageId,
+  };
+  if (actingUserId) params.p_actor_user_id = actingUserId;
+  if (actorName) params.p_actor_name = actorName;
+
+  const { data, error } = await supabase.rpc('move_opportunity_stage', params);
+  if (error) return { success: false, error: error.message };
+
+  const result = data as { error?: string; success?: boolean };
+  if (result?.error) return { success: false, error: result.error };
+  return { success: true };
+}
+
+export async function deleteOpportunity(
+  tenantId: string,
+  opportunityId: string
+): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase
+    .from('opportunities')
+    .delete()
+    .eq('id', opportunityId)
+    .eq('tenant_id', tenantId);
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}

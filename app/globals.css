@@ -1,0 +1,445 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+
+    /* Modern geometry tokens */
+    --radius-button: 14px;
+    --radius-input: 12px;
+    --radius-dropdown: 14px;
+    --radius-card: 18px;
+    --radius-modal: 24px;
+    --radius-node: 16px;
+    --radius-table: 16px;
+    --radius-panel: 20px;
+
+    /* ── OPERAN design tokens (dark theme) ── */
+    /* Surface hierarchy */
+    --app-bg: #0B0F19;
+    --sidebar-bg: #111827;
+    --header-bg: #151B2B;
+    --panel-bg: #171E2E;
+    --card-bg: #1D2638;
+    --elevated-bg: #232E43;
+    --input-bg: #111827;
+    --modal-bg: #1A2233;
+
+    /* Text */
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
+    --text-disabled: #64748B;
+
+    /* Borders */
+    --border-default: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.16);
+
+    /* Brand */
+    --brand-primary: #6377FF;
+    --brand-hover: #7C8CFF;
+    --brand-pressed: #5063E8;
+
+    /* Status */
+    --status-success: #4ADE80;
+    --status-warning: #FBBF24;
+    --status-error: #FB7185;
+    --status-info: #38BDF8;
+    --status-automation: #9B72FF;
+
+    /* Accent shortcuts (derived from brand) */
+    --accent-blue: var(--brand-primary);
+    --accent-blue-bg: rgba(99, 119, 255, 0.16);
+    --accent-blue-border: rgba(99, 119, 255, 0.32);
+
+    /* Focus ring */
+    --focus-ring: 0 0 0 3px rgba(99, 119, 255, 0.15);
+
+    /* Legacy aliases (for backward compat with existing components) */
+    --brand-blue: var(--brand-primary);
+    --surface-bg: var(--app-bg);
+    --surface-panel: var(--panel-bg);
+    --surface-card: var(--card-bg);
+    --surface-elevated: var(--elevated-bg);
+    --surface-modal: var(--modal-bg);
+    --border-subtle: var(--border-default);
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--app-bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-variation-settings: 'opsz' 32;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+  }
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 0 1px rgba(99, 119, 255, 0.08),
+      0 4px 12px -2px rgba(99, 119, 255, 0.12);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@layer utilities {
+  /* OPERAN landing page utilities — these use hardcoded values and must NOT change */
+
+  .operan-gradient-text {
+    background: linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .operan-accent-gradient {
+    background: linear-gradient(135deg, #5A6BFF 0%, #7283FF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Grid background — ONLY for public marketing landing page */
+  .operan-grid-bg {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .operan-radial-fade {
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(90, 107, 255, 0.12), transparent 70%);
+  }
+
+  .operan-border-subtle {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .operan-card {
+    background-color: #151E2E;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .operan-card-hover {
+    transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+  }
+  .operan-card-hover:hover {
+    border-color: rgba(90, 107, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .operan-glow {
+    box-shadow: 0 0 40px -10px rgba(90, 107, 255, 0.3);
+  }
+
+  .operan-glow-sm {
+    box-shadow: 0 0 20px -5px rgba(90, 107, 255, 0.2);
+  }
+
+  .operan-canvas-radial {
+    background: radial-gradient(circle at center, rgba(90, 107, 255, 0.05), transparent 55%);
+  }
+
+  .operan-node-selected {
+    border-color: #5A6BFF !important;
+    box-shadow: 0 0 0 1px rgba(90, 107, 255, 0.20);
+  }
+
+  .operan-config-input {
+    background-color: var(--input-bg);
+    border-color: var(--border-default);
+  }
+  .operan-config-input:focus,
+  .operan-config-input:focus-visible {
+    border-color: var(--brand-primary) !important;
+    box-shadow: var(--focus-ring) !important;
+    outline: none !important;
+  }
+
+  @keyframes operan-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .animate-operan-float {
+    animation: operan-float 6s ease-in-out infinite;
+  }
+
+  @keyframes operan-float-delayed {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .animate-operan-float-delayed {
+    animation: operan-float-delayed 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  @keyframes operan-pulse-glow {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  .animate-operan-pulse-glow {
+    animation: operan-pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes operan-flow {
+    0% { stroke-dashoffset: 100; }
+    100% { stroke-dashoffset: 0; }
+  }
+  .animate-operan-flow {
+    stroke-dasharray: 6 4;
+    animation: operan-flow 1.5s linear infinite;
+  }
+
+  @keyframes operan-flow-vertical {
+    0% { stroke-dashoffset: 80; }
+    100% { stroke-dashoffset: 0; }
+  }
+  .animate-operan-flow-vertical {
+    stroke-dasharray: 6 4;
+    animation: operan-flow-vertical 1.2s linear infinite;
+  }
+
+  @keyframes operan-wave {
+    0% { transform: translateX(0) translateY(0); }
+    50% { transform: translateX(-2%) translateY(-1%); }
+    100% { transform: translateX(0) translateY(0); }
+  }
+  .animate-operan-wave {
+    animation: operan-wave 8s ease-in-out infinite;
+  }
+
+  @keyframes operan-bar-grow {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+
+  @keyframes operan-fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-operan-fade-up {
+    animation: operan-fade-up 0.6s ease-out forwards;
+  }
+
+  @keyframes operan-scale-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .animate-operan-scale-in {
+    animation: operan-scale-in 0.5s ease-out forwards;
+  }
+
+  @keyframes operan-slide-right {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .animate-operan-slide-right {
+    animation: operan-slide-right 0.5s ease-out forwards;
+  }
+
+  @keyframes operan-count-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .operan-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .operan-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .operan-reveal-delay-1 { transition-delay: 0.1s; }
+  .operan-reveal-delay-2 { transition-delay: 0.2s; }
+  .operan-reveal-delay-3 { transition-delay: 0.3s; }
+  .operan-reveal-delay-4 { transition-delay: 0.4s; }
+  .operan-reveal-delay-5 { transition-delay: 0.5s; }
+
+  @keyframes operan-converge {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    50% { opacity: 0.6; }
+    100% { opacity: 0; transform: translate(var(--cx, 400px), var(--cy, 0px)) scale(0.15); }
+  }
+  .animate-operan-converge {
+    animation: operan-converge 1.4s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+  }
+
+  @keyframes operan-pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+  .animate-operan-pulse-ring {
+    animation: operan-pulse-ring 3s ease-out infinite;
+  }
+
+  @keyframes operan-glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px -5px rgba(90, 107, 255, 0.2); }
+    50% { box-shadow: 0 0 60px -10px rgba(90, 107, 255, 0.5); }
+  }
+  .animate-operan-glow-pulse {
+    animation: operan-glow-pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes operan-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+  .animate-operan-breathe {
+    animation: operan-breathe 5s ease-in-out infinite;
+  }
+
+  @keyframes operan-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-operan-fade-in {
+    animation: operan-fade-in 0.8s ease-out forwards;
+  }
+
+  @keyframes operan-flow-dot {
+    0% { left: 0; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  @keyframes operan-flow-dot-v {
+    0% { top: 0; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* Modern interaction system */
+
+  /* Subtle hover lift for cards and buttons */
+  .hover-lift {
+    transition:
+      transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 180ms ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -3px rgba(0, 0, 0, 0.12), 0 1px 3px -1px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Custom focus ring (replaces browser default) */
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    box-shadow: var(--focus-ring);
+    border-color: var(--brand-primary);
+  }
+
+  /* Active navigation item (sidebar) */
+  .nav-item-active {
+    background: var(--accent-blue-bg) !important;
+    border: 1px solid var(--accent-blue-border) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+  }
+  .nav-item-active svg {
+    color: var(--brand-hover) !important;
+  }
+  .nav-item-active .nav-label {
+    color: #ffffff !important;
+  }
+
+  /* Smooth transition for nav items */
+  .nav-item-transition {
+    transition:
+      background 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border-default);
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-primary);
+    -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+    caret-color: var(--text-primary);
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
