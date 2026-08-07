@@ -45,7 +45,7 @@ export default function StripeActivationPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!user) { router.push('/login'); return; }
-      if (role !== 'super_admin') { router.push('/dashboard'); return; }
+      if (role !== 'super_admin') { router.push('/admin'); return; }
       checkConfig();
     }
   }, [authLoading, user, role, router]);

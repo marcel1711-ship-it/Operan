@@ -107,7 +107,6 @@ export default function PipelinesPage() {
       .insert({
         tenant_id: tenant.id,
         name: newName.trim(),
-        description: newDesc.trim() || null,
         is_default: isFirst,
         is_active: true,
       })
@@ -152,7 +151,7 @@ export default function PipelinesPage() {
     const systemKey = SYSTEM_KEY_MAP[stageType] || 'custom';
     const { error: err } = await supabase
       .from('pipeline_stages')
-      .update({ stage_type: stageType, system_key: systemKey, updated_at: new Date().toISOString() })
+      .update({ stage_type: stageType, updated_at: new Date().toISOString() })
       .eq('id', stageId)
       .eq('tenant_id', tenant.id);
     if (err) setError(err.message);
@@ -167,7 +166,6 @@ export default function PipelinesPage() {
         tenant_id: tenant.id,
         pipeline_id: pipelineId,
         name: 'New Stage',
-        system_key: 'custom',
         stage_type: 'custom',
         stage_order: existing.length,
         color: '#6b7280',
@@ -322,9 +320,6 @@ export default function PipelinesPage() {
                       <Badge className="bg-[rgba(99,119,255,0.10)] text-[var(--brand-primary)] border-primary/30">Default</Badge>
                     )}
                   </div>
-                  {pipeline.description && (
-                    <p className="text-xs text-muted-foreground px-0">{pipeline.description}</p>
-                  )}
                 </div>
                 {!pipeline.is_default && (
                   <Button
