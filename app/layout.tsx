@@ -22,15 +22,21 @@ export const metadata: Metadata = {
     url: APP_URL,
     siteName: 'OPERAN',
     type: 'website',
+    images: [
+      {
+        url: `${APP_URL}/Logo.png`,
+        width: 1024,
+        height: 1024,
+        alt: 'OPERAN',
+      },
+    ],
   },
   twitter: {
-    card: 'summary_large_image',
+    card: 'summary',
     title: 'OPERAN — Business Operations Platform for Marine Experience Businesses',
     description:
       'Manage bookings, customers, payments, communications, workflows and daily operations from one connected platform built for marine experience businesses.',
-  },
-  icons: {
-    icon: '/favicon.ico',
+    images: [`${APP_URL}/Logo.png`],
   },
 };
 
