@@ -104,8 +104,8 @@ The entire booking-to-payment flow is non-functional:
 
 ## Database Infrastructure Gap
 
-### Existing (38 tables — 22 original + 6 Phase 1 + 10 Phase 2)
-activity_log, booking_access_tokens, bookings, captain_checklists, captains, customers, event_outbox, guests, integration_activity_logs, integration_catalog, listing_availability_blocks, listing_blocks, listing_fixed_start_times, listing_operating_hours, listing_pricing_options, listings, notifications, opportunities, payments, pipeline_stages, pipelines, plan_pricing, platform_fee_config, platform_provider_secrets, rate_limit_log, reservations, tenant_api_keys, tenant_calendar_connections, tenant_ical_feeds, tenant_integrations, tenant_users, tenant_webhook_deliveries, tenant_webhook_endpoints, tenants, vessels, waivers, webhook_events, webhook_outbox
+### Existing (48 tables — 22 original + 6 Phase 1 + 10 Phase 2 + 10 Phase 3)
+activity_log, automation_runs, automation_step_runs, automation_workflow_versions, automation_workflows, booking_access_tokens, bookings, captain_checklists, captains, communication_messages, communication_templates, customers, event_outbox, guests, integration_activity_logs, integration_catalog, listing_availability_blocks, listing_blocks, listing_fixed_start_times, listing_operating_hours, listing_pricing_options, listings, notifications, opportunities, payments, pipeline_stages, pipelines, plan_pricing, platform_fee_config, platform_provider_secrets, rate_limit_log, reservations, tenant_api_keys, tenant_calendar_connections, tenant_communication_settings, tenant_email_domains, tenant_email_senders, tenant_ical_feeds, tenant_integrations, tenant_users, tenant_webhook_deliveries, tenant_webhook_endpoints, tenants, vessels, waivers, webhook_events, webhook_outbox, worker_health_log
 
 ### Phase 1 Tables Created (booking & payments infrastructure)
 `payments`, `webhook_events`, `booking_access_tokens`, `platform_fee_config`, `notifications`, `rate_limit_log`
@@ -123,11 +123,17 @@ activity_log, booking_access_tokens, bookings, captain_checklists, captains, cus
 - `tenant_integrations`: Added columns — `connection_mode`, `display_name`, `configuration`, `last_tested_at`, `last_success_at`, `last_error_at`, `last_error_code`, `last_error_message`, `disconnected_at`
 - `reservations`: Added column — `google_calendar_event_id`
 
-### Missing (~18 tables referenced in code)
-tenant_email_domains, tenant_email_senders, tenant_communication_settings, communication_templates, communication_messages, automation_workflows, automation_workflow_versions, automation_runs, automation_step_runs, worker_health_log, platform_integrations, opportunity_notes_native, waiver_templates, invoices, provider_events, reservation_status_labels, platform_secret_audit_log
+### Phase 3 Tables Created (automation & communications)
+`automation_workflows`, `automation_workflow_versions`, `automation_runs`, `automation_step_runs`, `communication_templates`, `communication_messages`, `tenant_communication_settings`, `tenant_email_domains`, `tenant_email_senders`, `worker_health_log`
+
+### Phase 3 RPC Functions Created (1)
+`log_worker_invocation`
+
+### Missing (~7 tables referenced in code, low priority)
+platform_integrations, opportunity_notes_native, waiver_templates, invoices, provider_events, reservation_status_labels, platform_secret_audit_log
 
 ### Missing RPC Functions
-All booking/payment and integration RPCs have been created. Remaining RPCs will be added in Phase 3+.
+All booking/payment, integration, and automation RPCs have been created. Remaining RPCs for Phase 4 low-priority tables.
 
 ---
 
@@ -178,12 +184,12 @@ Added 16 missing indexes on frequently-queried columns:
 9. ✅ Created activity tables: `activity_log`, `event_outbox`, `integration_activity_logs`
 10. ⬚ Add SSRF protection to `deliver-webhooks`
 
-### Phase 3 — Medium (Week 3-4)
-11. Create automation tables: `automation_workflows`, `automation_runs`, `automation_step_runs`, `automation_workflow_versions`
-12. Create outbox tables: `event_outbox`, `webhook_outbox`
-13. Create communication tables: `communication_templates`, `communication_messages`, `tenant_communication_settings`
-14. Create email tables: `tenant_email_domains`, `tenant_email_senders`
-15. Generate Supabase TypeScript types
+### Phase 3 — Medium (Week 3-4) ✅ COMPLETE
+11. ✅ Created automation tables: `automation_workflows`, `automation_runs`, `automation_step_runs`, `automation_workflow_versions`
+12. ✅ Created outbox tables: `event_outbox`, `webhook_outbox` (created in Phase 2)
+13. ✅ Created communication tables: `communication_templates`, `communication_messages`, `tenant_communication_settings`
+14. ✅ Created email tables: `tenant_email_domains`, `tenant_email_senders`
+15. ⬚ Generate Supabase TypeScript types
 
 ### Phase 4 — Low (Week 4+)
 16. Create remaining tables: `waiver_templates`, `invoices`, `opportunity_notes_native`, `reservation_status_labels`
@@ -211,6 +217,7 @@ Added 16 missing indexes on frequently-queried columns:
 | `supabase/migrations/20260806120000_audit_fix_rls_policies.sql` | **NEW** — RLS hardening, helper functions, indexes |
 | `supabase/migrations/20260806130000_phase8_booking_payment_infrastructure.sql` | **NEW** — 6 tables + 13 RPCs for booking-to-payment flow |
 | `supabase/migrations/20260806140000_phase2_integration_infrastructure.sql` | **NEW** — 10 tables + 12 RPCs for integrations, webhooks, API keys, calendar |
+| `supabase/migrations/20260806150000_phase3_automation_communications.sql` | **NEW** — 10 tables + 1 RPC for automation, communications, email |
 | `docs/audits/OPERAN_FULL_AUDIT.md` | **NEW** — This file |
 | `docs/audits/OPERAN_ARCHITECTURE.md` | **NEW** — Architecture map |
 | `docs/audits/OPERAN_SECURITY.md` | **NEW** — Security audit report |
@@ -237,6 +244,11 @@ Added 16 missing indexes on frequently-queried columns:
 - Modified `tenant_integrations`: added 9 operational columns
 - Modified `reservations`: added `google_calendar_event_id`
 - All tables have RLS enabled with `is_tenant_member()` policies (not `current_tenant_id()`)
+
+**Phase 3 (automation & communications):**
+- Created 10 tables: `automation_workflows`, `automation_workflow_versions`, `automation_runs`, `automation_step_runs`, `communication_templates`, `communication_messages`, `tenant_communication_settings`, `tenant_email_domains`, `tenant_email_senders`, `worker_health_log`
+- Created 1 RPC function: `log_worker_invocation`
+- All tables have RLS enabled with `is_tenant_member()` policies
 - Reloaded PostgREST schema cache
 
 ---
