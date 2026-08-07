@@ -524,9 +524,14 @@ export default function ListingsPage() {
                         <Switch checked={l.is_active} onCheckedChange={() => toggleActive(l)} />
                         <span className="text-[10px] text-muted-foreground">{l.is_active ? 'Visible' : 'Hidden'}</span>
                       </div>
-                      <button onClick={() => openEdit(l)} className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-[var(--brand-primary)]">
-                        <Settings className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => openEdit(l)} className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-[var(--brand-primary)]">
+                          <Settings className="h-4 w-4" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteId(l.id); }} className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-[#FB7185]">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

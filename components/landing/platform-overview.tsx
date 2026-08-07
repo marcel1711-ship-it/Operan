@@ -59,12 +59,12 @@ export default function OperanPlatform() {
   return (
     <section ref={ref} id="platform" className="relative overflow-hidden py-24 lg:py-32">
       <div className="absolute inset-0 operan-grid-bg opacity-20" />
-      <div className="absolute left-1/2 top-1/2 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563EB]/[0.03] blur-3xl" />
+      <div className="absolute left-1/2 top-1/2 h-[500px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6377FF]/[0.03] blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
               One platform.{' '}
               <span className="operan-accent-gradient">Every operation.</span>
             </h2>
@@ -87,13 +87,13 @@ export default function OperanPlatform() {
                     style={{ transitionDelay: `${i * 100}ms` }}
                   >
                     {/* Glow */}
-                    <div className="absolute -inset-2 rounded-2xl bg-[#2563EB]/0 blur-xl transition-all duration-700 group-hover:bg-[#2563EB]/10" />
+                    <div className="absolute -inset-2 rounded-2xl bg-[#6377FF]/0 blur-xl transition-all duration-700 group-hover:bg-[#6377FF]/10" />
 
                     {/* Icon circle */}
-                    <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-[#111827] text-[#2563EB] transition-all duration-500 group-hover:border-[#2563EB]/30 group-hover:bg-[#2563EB]/8 group-hover:scale-105">
+                    <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-[#111827] text-[#6377FF] transition-all duration-500 group-hover:border-[#6377FF]/30 group-hover:bg-[#6377FF]/8 group-hover:scale-105">
                       {icons[item.icon]}
                       {/* Pulse ring */}
-                      <div className="absolute inset-0 rounded-2xl border border-[#2563EB]/0 group-hover:border-[#2563EB]/20 group-hover:animate-operan-pulse-ring" />
+                      <div className="absolute inset-0 rounded-2xl border border-[#6377FF]/0 group-hover:border-[#6377FF]/20 group-hover:animate-operan-pulse-ring" />
                     </div>
 
                     {/* Title + desc */}
@@ -107,13 +107,13 @@ export default function OperanPlatform() {
                       <div className="relative h-px w-12 bg-white/[0.06]">
                         {/* Animated dot traveling along the line */}
                         <div
-                          className="absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#2563EB]"
+                          className="absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[#6377FF]"
                           style={{
                             animation: isVisible ? `operan-flow-dot 3s ease-in-out ${i * 0.3}s infinite` : 'none',
                           }}
                         />
                         {/* Static glow on the line */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#2563EB]/0 via-[#2563EB]/30 to-[#2563EB]/0" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#6377FF]/0 via-[#6377FF]/30 to-[#6377FF]/0" />
                       </div>
                     </div>
                   )}
@@ -131,7 +131,7 @@ export default function OperanPlatform() {
                     className={`flex w-64 flex-col items-center operan-reveal ${isVisible ? 'is-visible' : ''}`}
                     style={{ transitionDelay: `${i * 80}ms` }}
                   >
-                    <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-[#111827] text-[#2563EB]">
+                    <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-[#111827] text-[#6377FF]">
                       {icons[item.icon]}
                     </div>
                     <h3 className="text-sm font-semibold text-white">{item.title}</h3>
@@ -142,7 +142,7 @@ export default function OperanPlatform() {
                   {i < flow.length - 1 && (
                     <div className="relative h-8 w-px bg-white/[0.06]">
                       <div
-                        className="absolute left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-[#2563EB]"
+                        className="absolute left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-[#6377FF]"
                         style={{
                           animation: isVisible ? `operan-flow-dot-v 2.5s ease-in-out ${i * 0.2}s infinite` : 'none',
                         }}

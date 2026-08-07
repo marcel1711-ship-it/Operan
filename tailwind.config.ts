@@ -104,11 +104,19 @@ const config: Config = {
           label: '#7F8BA3',
         },
 
+        /* ── Ocean accent (maritime identity) ── */
+        ocean: {
+          DEFAULT: '#14B8A6',
+          foreground: '#FFFFFF',
+          bg: 'rgba(20, 184, 166, 0.14)',
+          border: 'rgba(20, 184, 166, 0.30)',
+        },
+
         /* ── Chart colors ── */
         chart: {
           '1': '#6377FF',
-          '2': '#9B72FF',
-          '3': '#4ADE80',
+          '2': '#14B8A6',
+          '3': '#9B72FF',
           '4': '#FBBF24',
           '5': '#FB7185',
         },

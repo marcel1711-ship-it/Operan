@@ -46,23 +46,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUserRole = useCallback(async (uid: string) => {
-    const { data, error } = await supabase
+    // Check super_admin FIRST — before tenant lookup
+    const { data: userData } = await supabase.auth.getUser();
+    const metaRole = userData?.user?.user_metadata?.role as string | undefined;
+
+    if (metaRole === 'super_admin') {
+      setRole('super_admin');
+      setTenant(null);
+      return 'super_admin' as UserRole;
+    }
+
+    // Not super_admin — check tenant membership
+    let { data: membership, error: memError } = await supabase
       .from('tenant_users')
-      .select('role, tenant_id, tenants(id, name, slug, primary_color, secondary_color, logo_url, template)')
+      .select('role, tenant_id')
       .eq('user_id', uid)
       .maybeSingle();
 
-    if (error || !data) {
-      setRole(null);
-      setTenant(null);
-      return null;
+    if ((memError || !membership)) {
+      const { data: regResult, error: regError } = await supabase.rpc('auto_register_tenant');
+
+      if (!regError && regResult && (regResult as { status?: string }).status !== 'error') {
+        const refetch = await supabase
+          .from('tenant_users')
+          .select('role, tenant_id')
+          .eq('user_id', uid)
+          .maybeSingle();
+        membership = refetch.data;
+        memError = refetch.error;
+      }
+
+      if (memError || !membership) {
+        setRole(null);
+        setTenant(null);
+        return null;
+      }
     }
 
-    const r = data.role as UserRole;
+    const r = membership.role as UserRole;
     setRole(r);
-    if (data.tenants) {
-      const t = data.tenants as unknown as TenantInfo;
-      setTenant(t);
+
+    const { data: tenantData } = await supabase
+      .from('tenants')
+      .select('id, name, slug, primary_color, secondary_color, logo_url, template')
+      .eq('id', membership.tenant_id)
+      .maybeSingle();
+
+    if (tenantData) {
+      setTenant(tenantData as TenantInfo);
     }
     return r;
   }, []);

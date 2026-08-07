@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Loader2, CheckCircle2, AlertCircle, XCircle, Clock,
   RefreshCw, Zap, Shield, Copy, Check, ExternalLink,
@@ -93,6 +93,10 @@ export function ProviderConfigDrawer({
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [currentProvider, setCurrentProvider] = useState<ProviderReadiness | null>(provider);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (provider) setCurrentProvider(provider);
+  }, [provider]);
 
   const handleRecheck = useCallback(async () => {
     if (!currentProvider) return;

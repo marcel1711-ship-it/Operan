@@ -6,6 +6,7 @@ import {
   Anchor, CalendarDays, Users, Zap, Plug, CreditCard, Mail,
   FileSignature, Bell, CheckCircle2, Star, Ship,
 } from 'lucide-react';
+import { OperanLogoIcon } from './operan-logo';
 
 export default function OperanHero() {
   const [mounted, setMounted] = useState(false);
@@ -23,8 +24,8 @@ export default function OperanHero() {
         <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full animate-operan-wave" preserveAspectRatio="none">
           <defs>
             <linearGradient id="oceanGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2563EB" stopOpacity="0" />
-              <stop offset="100%" stopColor="#2563EB" stopOpacity="0.06" />
+              <stop offset="0%" stopColor="#14B8A6" stopOpacity="0" />
+              <stop offset="100%" stopColor="#14B8A6" stopOpacity="0.08" />
             </linearGradient>
           </defs>
           <path d="M0,160 C320,220 480,100 720,140 C960,180 1120,80 1440,120 L1440,320 L0,320 Z" fill="url(#oceanGrad)" />
@@ -39,11 +40,11 @@ export default function OperanHero() {
           {/* Left: Copy */}
           <div className={`flex flex-col ${mounted ? 'animate-operan-fade-up' : 'opacity-0'}`}>
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5">
-              <span className="flex h-2 w-2 rounded-full bg-[#2563EB] animate-operan-pulse-glow" />
+              <span className="flex h-2 w-2 rounded-full bg-[#14B8A6] animate-operan-pulse-glow" />
               <span className="text-xs font-medium text-[#94A3B8]">The Business Operating System for Marine Experiences</span>
             </div>
 
-            <h1 className="text-balance text-5xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
+            <h1 className="text-balance text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
               My business{' '}
               <span className="operan-accent-gradient">runs itself.</span>
             </h1>
@@ -55,7 +56,7 @@ export default function OperanHero() {
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/login"
-                className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-6 py-3.5 text-sm font-medium text-white transition-all hover:bg-[#1D4ED8] operan-glow-sm"
+                className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-6 py-3.5 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
               >
                 Request Early Access
                 <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -136,7 +137,7 @@ function HeroProductDemo() {
 
   return (
     <div className="relative">
-      <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#2563EB]/10 to-transparent blur-2xl" />
+      <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#6377FF]/10 to-transparent blur-2xl" />
 
       <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111827] shadow-2xl animate-operan-glow-pulse">
         {/* Browser chrome */}
@@ -160,12 +161,7 @@ function HeroProductDemo() {
             className="flex flex-col items-center gap-3 border-r border-white/[0.06] py-4"
             style={{ width: '44px', background: 'linear-gradient(180deg, #1B2430 0%, #111827 100%)' }}
           >
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}
-            >
-              <Anchor className="h-4 w-4 text-white" strokeWidth={2} />
-            </div>
+            <OperanLogoIcon size={28} />
             <div className="my-1 h-px w-6 bg-white/[0.06]" />
             {SIDEBAR_ITEMS.map((item, i) => {
   const isActive = item.screen === screen;
@@ -173,7 +169,7 @@ function HeroProductDemo() {
               <div
                 key={i}
                 className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-500 ${
-                  isActive ? 'bg-[#2563EB]/15 text-[#3B82F6]' : 'text-[#94A3B8]/30'
+                  isActive ? 'bg-[#6377FF]/15 text-[#7C8CFF]' : 'text-[#94A3B8]/30'
                 }`}
               >
                 <item.icon className="h-4 w-4" />
@@ -218,12 +214,12 @@ function HeroProductDemo() {
                       <div
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
                           isRunning
-                            ? 'bg-[#2563EB]/15 text-[#3B82F6]'
+                            ? 'bg-[#6377FF]/15 text-[#7C8CFF]'
                             : 'bg-[#22C55E]/15 text-[#22C55E]'
                         }`}
                       >
                         {isRunning ? (
-                          <div className="h-2.5 w-2.5 rounded-full border-2 border-[#3B82F6] border-t-transparent animate-spin" />
+                          <div className="h-2.5 w-2.5 rounded-full border-2 border-[#7C8CFF] border-t-transparent animate-spin" />
                         ) : (
                           <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
@@ -239,7 +235,7 @@ function HeroProductDemo() {
               {/* Progress bar */}
               <div className="mt-3 h-0.5 w-full overflow-hidden rounded-full bg-white/[0.04]">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] transition-all duration-700"
+                  className="h-full rounded-full bg-gradient-to-r from-[#6377FF] to-[#7C8CFF] transition-all duration-700"
                   style={{ width: `${(visibleEvents / 11) * 100}%` }}
                 />
               </div>
@@ -251,8 +247,8 @@ function HeroProductDemo() {
       {/* Floating accent card */}
       <div className="absolute -right-4 -bottom-4 hidden rounded-xl border border-white/[0.08] bg-[#111827] p-3 shadow-xl animate-operan-float lg:block">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563EB]/15">
-            <svg className="h-4 w-4 text-[#2563EB]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#6377FF]/15">
+            <svg className="h-4 w-4 text-[#6377FF]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M2 8l4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
@@ -295,7 +291,7 @@ function ReservationsScreen({ phase }: { phase: number }) {
 
   const rows = [
     { name: 'Mike Davis', vessel: 'Wave Rider', amount: '$800', status: 'completed' as const, statusColor: 'bg-[#22C55E]/10 text-[#22C55E]' },
-    { name: 'John Smith', vessel: 'Sea Breeze', amount: '$1,200', status: 'confirmed' as const, statusColor: 'bg-[#2563EB]/10 text-[#3B82F6]' },
+    { name: 'John Smith', vessel: 'Sea Breeze', amount: '$1,200', status: 'confirmed' as const, statusColor: 'bg-[#6377FF]/10 text-[#7C8CFF]' },
   ];
 
   return (
@@ -304,7 +300,7 @@ function ReservationsScreen({ phase }: { phase: number }) {
       <div className="mb-3 flex items-center gap-2">
         <div
           className="flex h-6 w-6 items-center justify-center rounded-lg"
-          style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #7C8CFF 0%, #6377FF 100%)' }}
         >
           <CalendarDays className="h-3 w-3 text-white" />
         </div>
@@ -346,7 +342,7 @@ function ReservationsScreen({ phase }: { phase: number }) {
         {/* New reservation row (slides in when phase >= 1) */}
         {newReservationActive && (
           <div
-            className="flex items-center gap-2 bg-[#2563EB]/[0.04] px-2 py-1.5"
+            className="flex items-center gap-2 bg-[#6377FF]/[0.04] px-2 py-1.5"
             style={{ animation: 'operan-slide-right 0.4s ease-out both' }}
           >
             <div className="flex-1">
@@ -362,7 +358,7 @@ function ReservationsScreen({ phase }: { phase: number }) {
                   isCompleted
                     ? 'border-[#22C55E]/20 bg-[#22C55E]/10 text-[#22C55E]'
                     : isConfirmed
-                      ? 'border-[#2563EB]/20 bg-[#2563EB]/10 text-[#3B82F6]'
+                      ? 'border-[#6377FF]/20 bg-[#6377FF]/10 text-[#7C8CFF]'
                       : 'border-[#F59E0B]/20 bg-[#F59E0B]/10 text-[#F59E0B]'
                 }`}
               >
@@ -420,7 +416,7 @@ function WorkflowScreen({ phase }: { phase: number }) {
       <div className="mb-3 flex items-center gap-2">
         <div
           className="flex h-6 w-6 items-center justify-center rounded-lg"
-          style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #7C8CFF 0%, #6377FF 100%)' }}
         >
           <Zap className="h-3 w-3 text-white" />
         </div>
@@ -443,7 +439,7 @@ function WorkflowScreen({ phase }: { phase: number }) {
               <div
                 className={`flex items-center gap-2 rounded-lg border px-2 py-1.5 transition-all duration-500 ${
                   isRunning
-                    ? 'border-[#2563EB]/40 bg-[#2563EB]/8'
+                    ? 'border-[#6377FF]/40 bg-[#6377FF]/8'
                     : isDone
                       ? 'border-[#22C55E]/15 bg-[#22C55E]/[0.03]'
                       : 'border-white/[0.04] opacity-25'
@@ -456,9 +452,9 @@ function WorkflowScreen({ phase }: { phase: number }) {
                     node.isTrigger
                       ? isFuture
                         ? 'bg-white/[0.04] text-[#94A3B8]/40'
-                        : 'bg-[#2563EB]/15 text-[#3B82F6]'
+                        : 'bg-[#6377FF]/15 text-[#7C8CFF]'
                       : isRunning
-                        ? 'bg-[#2563EB]/15 text-[#3B82F6]'
+                        ? 'bg-[#6377FF]/15 text-[#7C8CFF]'
                         : isDone
                           ? 'bg-[#22C55E]/15 text-[#22C55E]'
                           : 'bg-white/[0.04] text-[#94A3B8]/40'
@@ -486,7 +482,7 @@ function WorkflowScreen({ phase }: { phase: number }) {
 
                 {/* Running indicator */}
                 {isRunning && (
-                  <span className="ml-auto text-[8px] font-medium text-[#3B82F6]">Running</span>
+                  <span className="ml-auto text-[8px] font-medium text-[#7C8CFF]">Running</span>
                 )}
                 {isDone && !node.isTrigger && (
                   <span className="ml-auto text-[8px] font-medium text-[#22C55E]/60">Done</span>
@@ -520,7 +516,7 @@ function CustomerScreen() {
       <div className="mb-3 flex items-center gap-2">
         <div
           className="flex h-6 w-6 items-center justify-center rounded-lg"
-          style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #7C8CFF 0%, #6377FF 100%)' }}
         >
           <Users className="h-3 w-3 text-white" />
         </div>
@@ -533,7 +529,7 @@ function CustomerScreen() {
         style={{ animation: 'operan-fade-up 0.4s ease-out 0.1s both' }}
       >
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2563EB]/15 text-[10px] font-bold text-[#3B82F6]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#6377FF]/15 text-[10px] font-bold text-[#7C8CFF]">
             SJ
           </div>
           <div>
@@ -593,7 +589,7 @@ function CalendarScreen() {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
   const events: Record<number, { label: string; color: string }> = {
     1: { label: 'Fishing', color: 'bg-[#22C55E]/15 text-[#22C55E]' },
-    3: { label: 'Yacht Tour', color: 'bg-[#2563EB]/20 text-[#3B82F6]' },
+    3: { label: 'Yacht Tour', color: 'bg-[#6377FF]/20 text-[#7C8CFF]' },
   };
 
   return (
@@ -602,7 +598,7 @@ function CalendarScreen() {
       <div className="mb-3 flex items-center gap-2">
         <div
           className="flex h-6 w-6 items-center justify-center rounded-lg"
-          style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #7C8CFF 0%, #6377FF 100%)' }}
         >
           <CalendarDays className="h-3 w-3 text-white" />
         </div>
@@ -635,14 +631,14 @@ function CalendarScreen() {
 
       {/* New event indicator */}
       <div
-        className="mt-2.5 flex items-center gap-2 rounded-lg border border-[#2563EB]/15 bg-[#2563EB]/[0.03] px-2.5 py-1.5"
+        className="mt-2.5 flex items-center gap-2 rounded-lg border border-[#6377FF]/15 bg-[#6377FF]/[0.03] px-2.5 py-1.5"
         style={{ animation: 'operan-fade-up 0.3s ease-out 0.5s both' }}
       >
-        <div className="flex h-4 w-4 items-center justify-center rounded-full bg-[#2563EB]/15 text-[#3B82F6]">
+        <div className="flex h-4 w-4 items-center justify-center rounded-full bg-[#6377FF]/15 text-[#7C8CFF]">
           <CalendarDays className="h-2.5 w-2.5" />
         </div>
         <span className="text-[9px] text-[#94A3B8]">Ocean Dream — Thu 9:00 AM</span>
-        <span className="ml-auto text-[8px] font-medium text-[#3B82F6]">Synced</span>
+        <span className="ml-auto text-[8px] font-medium text-[#7C8CFF]">Synced</span>
       </div>
     </div>
   );

@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   X, Loader2, AlertCircle, CheckCircle2, XCircle, RefreshCw, Trash2,
-  Link2, ExternalLink, Clock, Zap, TestTube, History,
+  Link2, ExternalLink, Clock, Zap, TestTube, History, Eye, EyeOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { IcalConfigPanel } from './ical-config-panel';
 import { WebhooksConfigPanel } from './webhooks-config-panel';
@@ -59,8 +61,8 @@ export function IntegrationConfigDrawer({
   const status = integration?.connection_status || 'not_configured';
   const isConfigured = status === 'connected' || status === 'connecting' || status === 'requires_action';
   const isComingSoon = entry.is_coming_soon || platformStatus === 'coming_soon' || entry.tenantConfigurationMode === 'coming_soon';
-  const isPlatformBlocked = platformStatus === 'configuration_required' && !isComingSoon;
-  const isDegraded = platformStatus === 'degraded' && !integration;
+  const isPlatformBlocked = false;
+  const isDegraded = false;
 
   const loadLogs = useCallback(async () => {
     const token = (await supabase.auth.getSession()).data.session?.access_token;
@@ -74,81 +76,6 @@ export function IntegrationConfigDrawer({
   useEffect(() => {
     if (showLogs) loadLogs();
   }, [showLogs, loadLogs]);
-
-  async function connectStripe() {
-    setActionLoading(true);
-    setMessage(null);
-    try {
-      const token = (await supabase.auth.getSession()).data.session?.access_token;
-      const res = await fetch('/api/stripe-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ tenant_id: tenantId, action: 'connect' }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setMessage({ type: 'error', text: data.error }); setActionLoading(false); return; }
-      window.location.href = data.onboarding_url;
-    } catch {
-      setMessage({ type: 'error', text: 'Failed to start Stripe connection.' });
-      setActionLoading(false);
-    }
-  }
-
-  async function continueStripe() {
-    setActionLoading(true);
-    try {
-      const token = (await supabase.auth.getSession()).data.session?.access_token;
-      const res = await fetch('/api/stripe-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ tenant_id: tenantId, action: 'continue' }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setMessage({ type: 'error', text: data.error }); setActionLoading(false); return; }
-      window.location.href = data.onboarding_url;
-    } catch {
-      setMessage({ type: 'error', text: 'Failed to continue onboarding.' });
-      setActionLoading(false);
-    }
-  }
-
-  async function refreshStripe() {
-    setActionLoading(true);
-    setMessage(null);
-    try {
-      const token = (await supabase.auth.getSession()).data.session?.access_token;
-      const res = await fetch('/api/stripe-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ tenant_id: tenantId, action: 'refresh' }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setMessage({ type: 'error', text: data.error }); setActionLoading(false); return; }
-      setMessage({ type: 'success', text: 'Status refreshed.' });
-      onChanged();
-    } catch {
-      setMessage({ type: 'error', text: 'Failed to refresh status.' });
-    }
-    setActionLoading(false);
-  }
-
-  async function disconnectStripe() {
-    if (!confirm('Disconnect your Stripe account? Existing payment records will remain, but new online payments will stop.')) return;
-    setActionLoading(true);
-    try {
-      const token = (await supabase.auth.getSession()).data.session?.access_token;
-      await fetch('/api/stripe-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ tenant_id: tenantId, action: 'disconnect' }),
-      });
-      setMessage({ type: 'success', text: 'Stripe account disconnected.' });
-      onChanged();
-    } catch {
-      setMessage({ type: 'error', text: 'Failed to disconnect.' });
-    }
-    setActionLoading(false);
-  }
 
   async function testConnection() {
     setActionLoading(true);
@@ -205,12 +132,6 @@ export function IntegrationConfigDrawer({
     return null;
   }
 
-  const capabilities = integration?.capabilities as Record<string, unknown> || {};
-  const chargesEnabled = capabilities.charges_enabled as boolean | undefined;
-  const payoutsEnabled = capabilities.payouts_enabled as boolean | undefined;
-  const requirementsPending = capabilities.requirements_pending as string[] | undefined;
-  const defaultCurrency = capabilities.default_currency as string | undefined;
-  const detailsSubmitted = capabilities.details_submitted as boolean | undefined;
   const accountId = integration?.external_account_id;
 
   return (
@@ -289,89 +210,15 @@ export function IntegrationConfigDrawer({
             </div>
           )}
 
-          {/* Stripe config */}
+          {/* Stripe config — tenant enters their own API keys */}
           {entry.category === 'payments' && entry.provider === 'stripe' && !isComingSoon && !isPlatformBlocked && !isDegraded && (
-            <div className="space-y-4">
-              {/* Status */}
-              <div className="rounded-[18px] border border-[var(--border-default)] bg-[var(--panel-bg)] p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-[var(--text-secondary)]">Account Status</p>
-                  <StatusBadge status={status} />
-                </div>
-                {isConfigured && (
-                  <div className="grid grid-cols-2 gap-2 mt-3">
-                    <InfoCell label="Charges" value={chargesEnabled ? 'Enabled' : 'Disabled'} ok={chargesEnabled} />
-                    <InfoCell label="Payouts" value={payoutsEnabled ? 'Enabled' : 'Disabled'} ok={payoutsEnabled} />
-                    <InfoCell label="Details" value={detailsSubmitted ? 'Submitted' : 'Pending'} ok={detailsSubmitted} />
-                    <InfoCell label="Currency" value={defaultCurrency || 'USD'} />
-                  </div>
-                )}
-                {accountId && (
-                  <div className="mt-2 rounded-md bg-[var(--card-bg)] border border-[var(--border-default)] p-2">
-                    <p className="text-[10px] font-medium uppercase text-[var(--text-muted)]">Connected Account</p>
-                    <p className="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
-                      {accountId.substring(0, 8)}••••••••{accountId.substring(accountId.length - 4)}
-                    </p>
-                  </div>
-                )}
-                {requirementsPending && requirementsPending.length > 0 && (
-                  <div className="mt-2 rounded-md border border-[rgba(251,191,36,0.20)] bg-[rgba(251,191,36,0.12)] p-2">
-                    <p className="text-[10px] font-medium text-amber-800">Outstanding Requirements ({requirementsPending.length})</p>
-                    <ul className="mt-1 text-[10px] text-amber-700 space-y-0.5">
-                      {requirementsPending.slice(0, 5).map(r => <li key={r}>- {r}</li>)}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              {/* Enable/disable toggle */}
-              {status === 'connected' && (
-                <div className="flex items-center justify-between rounded-[18px] border border-[var(--border-default)] bg-[var(--card-bg)] p-3">
-                  <div>
-                    <p className="text-xs font-medium text-[var(--text-primary)]">Accept Online Payments</p>
-                    <p className="text-[10px] text-[var(--text-muted)]">Enable this to accept online payments for bookings</p>
-                  </div>
-                  <Switch checked={integration?.enabled || false} onCheckedChange={v => toggleEnabled(v)} />
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2">
-                {status === 'not_configured' && !isPlatformBlocked && (
-                  <Button onClick={connectStripe} disabled={actionLoading || isPlatformBlocked}
-                    className="flex-1 bg-primary text-white">
-                    {actionLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Link2 className="mr-1.5 h-3.5 w-3.5" />}
-                    Connect Stripe
-                  </Button>
-                )}
-                {(status === 'connecting' || status === 'requires_action') && (
-                  <Button onClick={continueStripe} disabled={actionLoading}
-                    className="flex-1 bg-primary text-white">
-                    {actionLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Link2 className="mr-1.5 h-3.5 w-3.5" />}
-                    Continue Setup
-                  </Button>
-                )}
-                {isConfigured && (
-                  <Button onClick={testConnection} disabled={actionLoading}
-                    variant="outline" className="text-xs border-[var(--border-default)] text-[var(--text-secondary)]">
-                    {actionLoading ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <TestTube className="mr-1 h-3 w-3" />}
-                    Test Connection
-                  </Button>
-                )}
-                {isConfigured && (
-                  <Button onClick={refreshStripe} disabled={actionLoading}
-                    variant="outline" className="text-xs border-[var(--border-default)] text-[var(--text-secondary)]">
-                    <RefreshCw className="mr-1 h-3 w-3" /> Refresh Status
-                  </Button>
-                )}
-                {isConfigured && (
-                  <Button onClick={disconnectStripe} disabled={actionLoading}
-                    variant="ghost" className="text-xs text-destructive hover:text-destructive">
-                    <Trash2 className="mr-1 h-3 w-3" /> Disconnect
-                  </Button>
-                )}
-              </div>
-            </div>
+            <StripeCredentialsPanel
+              tenantId={tenantId}
+              integration={integration}
+              status={status}
+              onChanged={onChanged}
+              onMessage={setMessage}
+            />
           )}
 
           {/* Resend / Email config — now uses ResendConfigPanel */}
@@ -425,6 +272,239 @@ export function IntegrationConfigDrawer({
         </div>
       </div>
     </>
+  );
+}
+
+function StripeCredentialsPanel({
+  tenantId, integration, status, onChanged, onMessage,
+}: {
+  tenantId: string;
+  integration: DrawerIntegration | null;
+  status: string;
+  onChanged: () => void;
+  onMessage: (msg: { type: 'success' | 'error' | 'info'; text: string } | null) => void;
+}) {
+  const [showManualKeys, setShowManualKeys] = useState(false);
+  const [secretKey, setSecretKey] = useState('');
+  const [publishableKey, setPublishableKey] = useState('');
+  const [webhookSecret, setWebhookSecret] = useState('');
+  const [showSecret, setShowSecret] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const isConnected = status === 'connected';
+
+  async function connectOAuth() {
+    setLoading(true);
+    onMessage(null);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const res = await fetch('/api/stripe-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tenant_id: tenantId, action: 'connect' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.code === 'no_client_id') {
+          setShowManualKeys(true);
+          onMessage({ type: 'info', text: 'OAuth not available. Use API keys instead.' });
+        } else {
+          onMessage({ type: 'error', text: data.error });
+        }
+        setLoading(false);
+        return;
+      }
+      window.location.href = data.auth_url;
+    } catch {
+      onMessage({ type: 'error', text: 'Failed to start Stripe connection.' });
+      setLoading(false);
+    }
+  }
+
+  async function saveKeys() {
+    setLoading(true);
+    onMessage(null);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const res = await fetch('/api/stripe-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          action: 'save_keys',
+          secret_key: secretKey,
+          publishable_key: publishableKey,
+          webhook_secret: webhookSecret || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        onMessage({ type: 'error', text: data.error });
+      } else {
+        onMessage({ type: 'success', text: `Stripe connected successfully (${data.environment} mode).` });
+        setSecretKey('');
+        setPublishableKey('');
+        setWebhookSecret('');
+        onChanged();
+      }
+    } catch {
+      onMessage({ type: 'error', text: 'Failed to save Stripe credentials.' });
+    }
+    setLoading(false);
+  }
+
+  async function testConnection() {
+    setLoading(true);
+    onMessage(null);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const res = await fetch('/api/stripe-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tenant_id: tenantId, action: 'test' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        onMessage({ type: 'error', text: data.error });
+      } else {
+        onMessage({ type: 'success', text: 'Stripe connection is working.' });
+        onChanged();
+      }
+    } catch {
+      onMessage({ type: 'error', text: 'Connection test failed.' });
+    }
+    setLoading(false);
+  }
+
+  async function disconnect() {
+    if (!confirm('Disconnect Stripe? Existing payment records remain, but new payments will stop.')) return;
+    setLoading(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      await fetch('/api/stripe-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tenant_id: tenantId, action: 'disconnect' }),
+      });
+      onMessage({ type: 'success', text: 'Stripe disconnected.' });
+      onChanged();
+    } catch {
+      onMessage({ type: 'error', text: 'Failed to disconnect.' });
+    }
+    setLoading(false);
+  }
+
+  // --- Connected state ---
+  if (isConnected) {
+    const capabilities = integration?.capabilities as Record<string, unknown> || {};
+    const businessName = capabilities.business_name as string | null;
+    return (
+      <div className="space-y-4">
+        <div className="rounded-[18px] border border-[var(--border-default)] bg-[var(--panel-bg)] p-3">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-[var(--text-secondary)]">Account Status</p>
+            <StatusBadge status={status} />
+          </div>
+          {businessName && (
+            <p className="text-xs text-[var(--text-primary)] mb-2">{businessName}</p>
+          )}
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <InfoCell label="Charges" value={capabilities.charges_enabled ? 'Enabled' : 'Disabled'} ok={!!capabilities.charges_enabled} />
+            <InfoCell label="Payouts" value={capabilities.payouts_enabled ? 'Enabled' : 'Disabled'} ok={!!capabilities.payouts_enabled} />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between rounded-[18px] border border-[var(--border-default)] bg-[var(--card-bg)] p-3">
+          <div>
+            <p className="text-xs font-medium text-[var(--text-primary)]">Accept Online Payments</p>
+            <p className="text-[10px] text-[var(--text-muted)]">Enable to accept payments for bookings</p>
+          </div>
+          <Switch checked={integration?.enabled || false} onCheckedChange={async (v) => {
+            if (!integration) return;
+            await supabase.from('tenant_integrations').update({ enabled: v, updated_at: new Date().toISOString() }).eq('id', integration.id);
+            onChanged();
+          }} />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={testConnection} disabled={loading} variant="outline" className="text-xs border-[var(--border-default)] text-[var(--text-secondary)]">
+            {loading ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <TestTube className="mr-1 h-3 w-3" />}
+            Test Connection
+          </Button>
+          <Button onClick={disconnect} disabled={loading} variant="ghost" className="text-xs text-destructive hover:text-destructive">
+            <Trash2 className="mr-1 h-3 w-3" /> Disconnect
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Not connected state ---
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-[var(--text-secondary)]">
+        Connect your Stripe account to start accepting payments for your bookings.
+      </p>
+
+      {/* Primary: OAuth Connect button */}
+      <Button onClick={connectOAuth} disabled={loading} className="w-full bg-[#635BFF] hover:bg-[#5851DB] text-white h-11">
+        {loading ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <svg className="mr-2 h-5 w-5" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" clipRule="evenodd" d="M14 28C21.732 28 28 21.732 28 14C28 6.26801 21.732 0 14 0C6.26801 0 0 6.26801 0 14C0 21.732 6.26801 28 14 28ZM13.1 11.27C13.1 10.68 13.58 10.44 14.37 10.44C15.52 10.44 16.96 10.81 18.11 11.44V7.7C16.85 7.2 15.6 7 14.37 7C11.47 7 9.58 8.49 9.58 10.97C9.58 14.87 15.14 14.2 15.14 15.87C15.14 16.57 14.54 16.81 13.69 16.81C12.43 16.81 10.84 16.28 9.56 15.56V19.35C10.97 19.95 12.4 20.21 13.69 20.21C16.66 20.21 18.68 18.77 18.68 16.25C18.68 12.04 13.1 12.84 13.1 11.27Z" fill="white"/>
+          </svg>
+        )}
+        Connect with Stripe
+      </Button>
+
+      <div className="rounded-md bg-[var(--panel-bg)] border border-[var(--border-default)] p-2.5 space-y-1">
+        <p className="text-[10px] font-medium uppercase text-[var(--text-muted)]">What happens</p>
+        <ul className="text-[11px] text-[var(--text-secondary)] space-y-0.5">
+          <li>- You&apos;ll be redirected to Stripe to log in or create an account</li>
+          <li>- Authorize OPERAN to process payments on your behalf</li>
+          <li>- You keep full control of your Stripe account</li>
+          <li>- Payments go directly to your Stripe balance</li>
+        </ul>
+      </div>
+
+      {/* Fallback: manual API keys */}
+      <div className="border-t border-[var(--border-default)] pt-3">
+        <button onClick={() => setShowManualKeys(!showManualKeys)}
+          className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+          <ExternalLink className="h-3 w-3" />
+          {showManualKeys ? 'Hide' : 'Or connect with API keys manually'}
+        </button>
+
+        {showManualKeys && (
+          <div className="mt-3 rounded-[18px] border border-[var(--border-default)] bg-[var(--panel-bg)] p-3 space-y-3">
+            <div>
+              <Label className="text-[11px] text-[var(--text-muted)]">Secret Key *</Label>
+              <div className="relative">
+                <Input type={showSecret ? 'text' : 'password'} value={secretKey} onChange={e => setSecretKey(e.target.value)}
+                  placeholder="sk_test_... or sk_live_..." className="bg-[var(--card-bg)] text-xs pr-8 font-mono" />
+                <button type="button" onClick={() => setShowSecret(!showSecret)} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
+                  {showSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-[11px] text-[var(--text-muted)]">Publishable Key *</Label>
+              <Input type="text" value={publishableKey} onChange={e => setPublishableKey(e.target.value)}
+                placeholder="pk_test_... or pk_live_..." className="bg-[var(--card-bg)] text-xs font-mono" />
+            </div>
+            <div>
+              <Label className="text-[11px] text-[var(--text-muted)]">Webhook Secret (optional)</Label>
+              <Input type={showSecret ? 'text' : 'password'} value={webhookSecret} onChange={e => setWebhookSecret(e.target.value)}
+                placeholder="whsec_..." className="bg-[var(--card-bg)] text-xs font-mono" />
+            </div>
+            <Button onClick={saveKeys} disabled={loading || !secretKey || !publishableKey} className="w-full bg-primary text-white text-xs">
+              {loading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Link2 className="mr-1.5 h-3.5 w-3.5" />}
+              Connect with API Keys
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

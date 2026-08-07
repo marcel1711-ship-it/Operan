@@ -201,18 +201,7 @@ export function GoogleCalendarConfigPanel({ tenantId, platformStatus }: { tenant
       )}
 
       {/* Platform not ready */}
-      {platformStatus === 'configuration_required' && !isConnected && !needsReconnect && (
-        <div className="rounded-lg border border-[rgba(251,191,36,0.20)] bg-[rgba(251,191,36,0.12)] p-3 space-y-2">
-          <div className="flex items-center gap-1.5">
-            <AlertCircle className="h-4 w-4 text-[#FCD34D]" />
-            <p className="text-xs font-semibold text-amber-800">Google Calendar is not available yet</p>
-          </div>
-          <p className="text-[11px] text-amber-700">
-            Google Calendar OAuth has not been configured for this environment. Once the platform configuration is completed,
-            you will be able to connect your Google account and sync bookings to your calendar.
-          </p>
-        </div>
-      )}
+      {/* Platform config warning removed — tenants can always attempt connection */}
 
       {/* Needs reconnect */}
       {needsReconnect && (
@@ -368,7 +357,7 @@ export function GoogleCalendarConfigPanel({ tenantId, platformStatus }: { tenant
       )}
 
       {/* Not connected, platform ready */}
-      {!isConnected && !needsReconnect && platformStatus !== 'configuration_required' && (
+      {!isConnected && !needsReconnect && (
         <div className="space-y-3">
           <p className="text-xs text-[var(--text-secondary)]">
             Connect your Google account to automatically create calendar events for new bookings and sync availability.

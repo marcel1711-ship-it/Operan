@@ -61,7 +61,7 @@ export default function OperanPricing() {
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
               Plans that scale{' '}
               <span className="operan-accent-gradient">with your business.</span>
             </h2>
@@ -79,14 +79,14 @@ export default function OperanPricing() {
                 isVisible ? 'is-visible' : ''
               } ${
                 plan.highlighted
-                  ? 'border border-[#2563EB]/30 bg-[#111827] operan-glow'
+                  ? 'border border-[#6377FF]/30 bg-[#111827] operan-glow'
                   : 'border border-white/[0.08] bg-[#111827]'
               }`}
               style={{ transitionDelay: `${i * 80}ms` }}
             >
               {plan.highlighted && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <div className="rounded-full bg-[#2563EB] px-3 py-1 text-[10px] font-medium text-white">
+                  <div className="rounded-full bg-[#6377FF] px-3 py-1 text-[10px] font-medium text-white">
                     Most Popular
                   </div>
                 </div>
@@ -103,7 +103,7 @@ export default function OperanPricing() {
                 href="/login"
                 className={`mt-6 flex items-center justify-center rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                   plan.highlighted
-                    ? 'bg-[#2563EB] text-white hover:bg-[#1D4ED8]'
+                    ? 'bg-[#6377FF] text-white hover:bg-[#5063E8]'
                     : 'border border-white/[0.08] bg-white/[0.02] text-white hover:bg-white/[0.04]'
                 }`}
               >
@@ -114,8 +114,8 @@ export default function OperanPricing() {
               <div className="mt-8 space-y-3 border-t border-white/[0.06] pt-6">
                 {plan.features.map((feature) => (
                   <div key={feature} className="flex items-center gap-3">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#2563EB]/15">
-                      <svg className="h-3 w-3 text-[#2563EB]" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6377FF]/15">
+                      <svg className="h-3 w-3 text-[#6377FF]" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>

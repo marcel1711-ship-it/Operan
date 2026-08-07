@@ -96,7 +96,7 @@ export const ACTION_CATEGORIES = [
   {
     name: 'Communication',
     actions: [
-      { type: 'send_email', label: 'Email', icon: 'Mail', color: '#2563EB', desc: 'Send an email to the customer or a custom recipient' },
+      { type: 'send_email', label: 'Email', icon: 'Mail', color: '#6377FF', desc: 'Send an email to the customer or a custom recipient' },
       { type: 'send_sms', label: 'SMS', icon: 'Smartphone', color: '#22C55E', desc: 'Send an SMS message' },
       { type: 'send_whatsapp', label: 'WhatsApp', icon: 'MessageSquare', color: '#25D366', desc: 'Send a WhatsApp message' },
       { type: 'create_in_app_notification', label: 'Push Notification', icon: 'Bell', color: '#F59E0B', desc: 'Create an in-app notification for the team' },
@@ -138,8 +138,8 @@ export const ACTION_CATEGORIES = [
   {
     name: 'Internal',
     actions: [
-      { type: 'create_task', label: 'Task', icon: 'CheckSquare', color: '#2563EB', desc: 'Create an internal task' },
-      { type: 'update_opportunity_stage', label: 'Move Pipeline Stage', icon: 'GitBranch', color: '#2563EB', desc: 'Move an opportunity to a new pipeline stage' },
+      { type: 'create_task', label: 'Task', icon: 'CheckSquare', color: '#6377FF', desc: 'Create an internal task' },
+      { type: 'update_opportunity_stage', label: 'Move Pipeline Stage', icon: 'GitBranch', color: '#6377FF', desc: 'Move an opportunity to a new pipeline stage' },
     ],
   },
 ] as const;
@@ -396,7 +396,7 @@ export const EXECUTION_STATE_CONFIG: Record<
   { label: string; color: string; bgColor: string; icon: string }
 > = {
   idle: { label: 'Pending', color: '#94A3B8', bgColor: 'rgba(148,163,184,0.1)', icon: 'Circle' },
-  running: { label: 'Running', color: '#2563EB', bgColor: 'rgba(37,99,235,0.1)', icon: 'Loader' },
+  running: { label: 'Running', color: '#6377FF', bgColor: 'rgba(99,119,255,0.1)', icon: 'Loader' },
   waiting: { label: 'Waiting', color: '#F59E0B', bgColor: 'rgba(245,158,11,0.1)', icon: 'Clock' },
   completed: { label: 'Completed', color: '#22C55E', bgColor: 'rgba(34,197,94,0.1)', icon: 'Check' },
   failed: { label: 'Failed', color: '#EF4444', bgColor: 'rgba(239,68,68,0.1)', icon: 'X' },

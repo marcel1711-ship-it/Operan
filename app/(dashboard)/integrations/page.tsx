@@ -270,8 +270,8 @@ function ProviderCard({
   const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.not_configured;
   const StatusIcon = statusCfg.icon;
   const isComingSoon = entry.is_coming_soon || platformStatus === 'coming_soon';
-  const isPlatformBlocked = platformStatus === 'configuration_required' && !integration && !isComingSoon;
-  const isDegraded = platformStatus === 'degraded' && !integration;
+  const isPlatformBlocked = false;
+  const isDegraded = false;
 
   // Determine display status
   let displayStatus = statusCfg;
