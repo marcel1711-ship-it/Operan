@@ -94,29 +94,25 @@ export default function PaymentCancelledPage({ params }: { params: Promise<{ slu
               </div>
               <Button
                 className="w-full bg-primary text-white hover:bg-primary-hover"
-                onClick={() => {
-                  if (bookingData?.booking_reference && accessToken) {
-                    window.location.href = `/api/create-checkout`;
-                    // Use fetch to POST instead
-                    (async () => {
-                      try {
-                        const res = await fetch('/api/create-checkout', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            reservation_id: bookingData.reservation_id,
-                            booking_reference: bookingData.booking_reference,
-                            access_token: accessToken,
-                          }),
-                        });
-                        const data = await res.json();
-                        if (data.checkout_url) {
-                          window.location.href = data.checkout_url;
-                        }
-                      } catch {
-                        // Stay on page
+                onClick={async () => {
+                  if (bookingData?.reservation_id && accessToken) {
+                    try {
+                      const res = await fetch('/api/create-checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          reservation_id: bookingData.reservation_id,
+                          booking_reference: bookingData.booking_reference,
+                          access_token: accessToken,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.checkout_url) {
+                        window.location.href = data.checkout_url;
                       }
-                    })();
+                    } catch {
+                      // Stay on page
+                    }
                   }
                 }}
               >
