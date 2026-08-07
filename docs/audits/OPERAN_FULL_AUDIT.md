@@ -104,14 +104,20 @@ The entire booking-to-payment flow is non-functional:
 
 ## Database Infrastructure Gap
 
-### Existing (22 tables)
-bookings, captain_checklists, captains, customers, guests, integration_catalog, listing_blocks, listing_fixed_start_times, listing_operating_hours, listing_pricing_options, listings, opportunities, pipeline_stages, pipelines, plan_pricing, platform_provider_secrets, reservations, tenant_integrations, tenant_users, tenants, vessels, waivers
+### Existing (28 tables — 22 original + 6 Phase 1)
+bookings, booking_access_tokens, captain_checklists, captains, customers, guests, integration_catalog, listing_blocks, listing_fixed_start_times, listing_operating_hours, listing_pricing_options, listings, notifications, opportunities, payments, pipeline_stages, pipelines, plan_pricing, platform_fee_config, platform_provider_secrets, rate_limit_log, reservations, tenant_integrations, tenant_users, tenants, vessels, waivers, webhook_events
 
-### Missing (~34 tables referenced in code)
-payments, notifications, activity_log, webhook_events, platform_fee_config, booking_access_tokens, tenant_ical_feeds, listing_availability_blocks, tenant_calendar_connections, tenant_webhook_endpoints, tenant_webhook_deliveries, tenant_api_keys, tenant_email_domains, tenant_email_senders, tenant_communication_settings, communication_templates, communication_messages, automation_workflows, automation_workflow_versions, automation_runs, automation_step_runs, event_outbox, webhook_outbox, worker_health_log, platform_integrations, opportunity_notes_native, waiver_templates, invoices, integration_activity_logs, provider_events, reservation_status_labels, platform_secret_audit_log
+### Phase 1 Tables Created (booking & payments infrastructure)
+`payments`, `webhook_events`, `booking_access_tokens`, `platform_fee_config`, `notifications`, `rate_limit_log`
 
-### Missing RPC Functions (12)
-get_public_availability, calculate_booking_price, create_public_booking_hold, check_rate_limit, create_booking_access_token, create_booking_checkout, record_webhook_event, confirm_payment_from_webhook, expire_checkout_session, record_payment_failure, process_refund, mark_webhook_processed
+### Phase 1 RPC Functions Created (13)
+`check_rate_limit`, `get_public_availability`, `calculate_booking_price`, `create_public_booking_hold`, `create_booking_access_token`, `create_booking_checkout`, `record_webhook_event`, `confirm_payment_from_webhook`, `expire_checkout_session`, `record_payment_failure`, `process_refund`, `mark_webhook_processed`, `expire_stale_holds`
+
+### Missing (~28 tables referenced in code)
+activity_log, tenant_ical_feeds, listing_availability_blocks, tenant_calendar_connections, tenant_webhook_endpoints, tenant_webhook_deliveries, tenant_api_keys, tenant_email_domains, tenant_email_senders, tenant_communication_settings, communication_templates, communication_messages, automation_workflows, automation_workflow_versions, automation_runs, automation_step_runs, event_outbox, webhook_outbox, worker_health_log, platform_integrations, opportunity_notes_native, waiver_templates, invoices, integration_activity_logs, provider_events, reservation_status_labels, platform_secret_audit_log
+
+### Missing RPC Functions
+All 13 booking/payment RPCs have been created. Remaining RPCs will be added in Phase 2+.
 
 ---
 
@@ -148,18 +154,18 @@ Added 16 missing indexes on frequently-queried columns:
 
 ## Remediation Roadmap (Priority Order)
 
-### Phase 1 — Critical (Week 1-2)
-1. Create booking flow tables: `payments`, `booking_access_tokens`, `webhook_events`
-2. Create booking RPCs: `get_public_availability`, `calculate_booking_price`, `create_public_booking_hold`, `check_rate_limit`, `create_booking_access_token`
-3. Create payment RPCs: `create_booking_checkout`, `record_webhook_event`, `confirm_payment_from_webhook`, `expire_checkout_session`
-4. Create `platform_fee_config` table for Stripe Connect fees
-5. Fix edge function auth: remove `x-cron-internal` bypass, move CRON_SECRET to headers only
+### Phase 1 — Critical (Week 1-2) ✅ COMPLETE
+1. ✅ Created booking flow tables: `payments`, `booking_access_tokens`, `webhook_events`, `notifications`, `rate_limit_log`
+2. ✅ Created booking RPCs: `get_public_availability`, `calculate_booking_price`, `create_public_booking_hold`, `check_rate_limit`, `create_booking_access_token`
+3. ✅ Created payment RPCs: `create_booking_checkout`, `record_webhook_event`, `confirm_payment_from_webhook`, `expire_checkout_session`, `record_payment_failure`, `process_refund`, `mark_webhook_processed`, `expire_stale_holds`
+4. ✅ Created `platform_fee_config` table for Stripe Connect fees
+5. ⬚ Fix edge function auth: remove `x-cron-internal` bypass, move CRON_SECRET to headers only
 
 ### Phase 2 — High (Week 2-3)
 6. Create integration tables: `tenant_calendar_connections`, `listing_availability_blocks`, `tenant_ical_feeds`
 7. Create webhook tables: `tenant_webhook_endpoints`, `tenant_webhook_deliveries`
 8. Create API key table: `tenant_api_keys`
-9. Create activity/notification tables: `activity_log`, `notifications`
+9. Create activity table: `activity_log` (notifications table already created in Phase 1)
 10. Add SSRF protection to `deliver-webhooks`
 
 ### Phase 3 — Medium (Week 3-4)
@@ -193,6 +199,7 @@ Added 16 missing indexes on frequently-queried columns:
 | `app/api/create-checkout/route.ts` | Fixed `tenant_members` → `tenant_users` |
 | `app/(public)/w/[tenantSlug]/[waiverSlug]/page.tsx` | Added DOMPurify sanitization to `dangerouslySetInnerHTML` |
 | `supabase/migrations/20260806120000_audit_fix_rls_policies.sql` | **NEW** — RLS hardening, helper functions, indexes |
+| `supabase/migrations/20260806130000_phase8_booking_payment_infrastructure.sql` | **NEW** — 6 tables + 13 RPCs for booking-to-payment flow |
 | `docs/audits/OPERAN_FULL_AUDIT.md` | **NEW** — This file |
 | `docs/audits/OPERAN_ARCHITECTURE.md` | **NEW** — Architecture map |
 | `docs/audits/OPERAN_SECURITY.md` | **NEW** — Security audit report |
@@ -200,11 +207,18 @@ Added 16 missing indexes on frequently-queried columns:
 | `docs/audits/OPERAN_DATABASE_RLS.md` | **NEW** — RLS policy reference |
 
 ### Database Changes Applied (Live)
+
+**Audit phase (RLS hardening):**
 - Created `is_tenant_member()` and `is_super_admin()` helper functions
 - Replaced 20+ overly-permissive RLS policies with tenant-scoped versions
 - Added authorization checks to `get_dashboard_metrics`, `get_automation_metrics`
 - Fixed `ensure_tenant_membership` search_path
 - Added 16 performance indexes
+
+**Phase 1 (booking & payments infrastructure):**
+- Created 6 tables: `payments`, `webhook_events`, `booking_access_tokens`, `platform_fee_config`, `notifications`, `rate_limit_log`
+- Created 13 RPC functions: `check_rate_limit`, `get_public_availability`, `calculate_booking_price`, `create_public_booking_hold`, `create_booking_access_token`, `create_booking_checkout`, `record_webhook_event`, `confirm_payment_from_webhook`, `expire_checkout_session`, `record_payment_failure`, `process_refund`, `mark_webhook_processed`, `expire_stale_holds`
+- All tables have RLS enabled with tenant-scoped policies
 - Reloaded PostgREST schema cache
 
 ---
