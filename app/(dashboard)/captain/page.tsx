@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { Anchor } from 'lucide-react';
 
 export default function CaptainPage() {
