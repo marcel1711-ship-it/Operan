@@ -45,7 +45,7 @@ export default function BillingPage() {
         .order('due_date', { ascending: false }),
       supabase
         .from('tenants')
-        .select('id, name, plan, status, monthly_amount, next_renewal_at, last_payment_at, stripe_connected')
+        .select('id, name, plan, status, monthly_amount, next_renewal_at, last_payment_at, stripe_account_id')
         .order('name', { ascending: true }),
     ]);
 
@@ -175,7 +175,7 @@ export default function BillingPage() {
                   <p className="text-xs text-[var(--text-muted)]">
                     {t.next_renewal_at ? new Date(t.next_renewal_at).toLocaleDateString() : '—'}
                   </p>
-                  {t.stripe_connected && (
+                  {t.stripe_account_id && (
                     <Badge className="border-0 bg-[rgba(99,119,255,0.15)] text-[9px] text-[var(--brand-primary)]">Stripe</Badge>
                   )}
                 </div>
@@ -244,7 +244,7 @@ export default function BillingPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-[var(--text-primary)]">
-              {tenants.some((t: any) => t.stripe_connected)
+              {tenants.some((t: any) => t.stripe_account_id)
                 ? 'Some tenants have Stripe connected'
                 : 'No tenants have Stripe connected yet'}
             </p>
@@ -254,11 +254,11 @@ export default function BillingPage() {
           </div>
           <Badge className={cn(
             'border-0',
-            tenants.some((t: any) => t.stripe_connected)
+            tenants.some((t: any) => t.stripe_account_id)
               ? 'bg-[rgba(74,222,128,0.12)] text-[#86EFAC]'
               : 'bg-[var(--panel-bg)] text-[var(--text-muted)]'
           )}>
-            {tenants.some((t: any) => t.stripe_connected) ? 'Active' : 'Not Connected'}
+            {tenants.some((t: any) => t.stripe_account_id) ? 'Active' : 'Not Connected'}
           </Badge>
         </div>
       </div>

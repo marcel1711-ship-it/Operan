@@ -235,7 +235,7 @@ export default function ListingsPage() {
       supabase.from('listing_pricing_options').select('*').eq('listing_id', l.id).order('sort_order'),
       supabase.from('listing_operating_hours').select('*').eq('listing_id', l.id).order('day_of_week'),
       supabase.from('listing_blocks').select('*').eq('listing_id', l.id).order('start_at'),
-      supabase.from('listing_fixed_start_times').select('*').eq('listing_id', l.id).order('day_of_week, start_time'),
+      supabase.from('listing_fixed_start_times').select('*').eq('listing_id', l.id).order('day_of_week').order('start_time'),
     ]);
     setPricingOptions((po.data as PricingOption[]) || []);
     setOperatingHours((oh.data as OperatingHour[]) || []);
@@ -353,7 +353,7 @@ export default function ListingsPage() {
     if (!editing || !tenant?.id || !newBlock.start_at || !newBlock.end_at) return;
     if (new Date(newBlock.start_at) >= new Date(newBlock.end_at)) { setError('Block start must be before end'); return; }
     const { data, error } = await supabase.from('listing_blocks').insert({
-      listing_id: editing.id, tenant_id: tenant.id,
+      listing_id: editing.id,
       start_at: newBlock.start_at, end_at: newBlock.end_at,
       block_type: newBlock.block_type, reason: newBlock.reason || null, notes: newBlock.notes || null,
     }).select().single();
@@ -371,7 +371,7 @@ export default function ListingsPage() {
   async function addFixedTime(dayIdx: number) {
     if (!editing || !tenant?.id) return;
     const { data, error } = await supabase.from('listing_fixed_start_times').insert({
-      listing_id: editing.id, tenant_id: tenant.id,
+      listing_id: editing.id,
       day_of_week: dayIdx, start_time: '09:00', is_active: true, sort_order: 0,
     }).select().single();
     if (error) { setError(error.message); return; }
@@ -898,7 +898,7 @@ export default function ListingsPage() {
                       ))}
                       {editing && (
                         <button onClick={async () => {
-                          const newHour = { listing_id: editing.id, tenant_id: tenant?.id, day_of_week: dayIdx, start_time: '09:00', end_time: '17:00', is_active: true };
+                          const newHour = { listing_id: editing.id, day_of_week: dayIdx, start_time: '09:00', end_time: '17:00', is_active: true };
                           const { data } = await supabase.from('listing_operating_hours').insert(newHour).select().single();
                           if (data) setOperatingHours([...operatingHours, data as OperatingHour]);
                         }} className="text-xs text-primary hover:underline">+ Add hours</button>
@@ -912,7 +912,7 @@ export default function ListingsPage() {
                   const mondayHours = operatingHours.filter(h => h.day_of_week === 1);
                   for (const dayIdx of [2, 3, 4, 5]) {
                     for (const h of mondayHours) {
-                      await supabase.from('listing_operating_hours').insert({ listing_id: editing.id, tenant_id: tenant?.id, day_of_week: dayIdx, start_time: h.start_time, end_time: h.end_time, is_active: true });
+                      await supabase.from('listing_operating_hours').insert({ listing_id: editing.id, day_of_week: dayIdx, start_time: h.start_time, end_time: h.end_time, is_active: true });
                     }
                   }
                   const { data } = await supabase.from('listing_operating_hours').select('*').eq('listing_id', editing.id).order('day_of_week');
