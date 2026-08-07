@@ -2,9 +2,22 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sidebar } from '@/components/sidebar';
+import { Sidebar, SidebarProvider, useSidebar } from '@/components/sidebar';
 import { useAuth } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
+
+function DashboardContent({ children }: { children: React.ReactNode }) {
+  const { collapsed } = useSidebar();
+
+  return (
+    <div
+      className="hidden transition-all duration-300 ease-in-out lg:block"
+      style={{ paddingLeft: collapsed ? '72px' : '280px' }}
+    >
+      <div>{children}</div>
+    </div>
+  );
+}
 
 export default function DashboardLayout({
   children,
@@ -33,11 +46,12 @@ export default function DashboardLayout({
   }
 
   return (
-    <>
+    <SidebarProvider>
       <Sidebar />
-      <div className="lg:pl-64">
-        <div className="pb-16 lg:pb-0">{children}</div>
+      <div className="pb-16 lg:hidden">
+        {children}
       </div>
-    </>
+      <DashboardContent>{children}</DashboardContent>
+    </SidebarProvider>
   );
 }

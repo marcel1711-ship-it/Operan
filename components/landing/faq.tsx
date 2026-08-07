@@ -67,14 +67,14 @@ export default function OperanFAQ() {
   return (
     <section ref={ref} id="faq" className="relative overflow-hidden py-24 lg:py-32">
       <div className="absolute inset-0 operan-grid-bg opacity-20" />
-      <div className="absolute left-1/2 top-1/2 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2563EB]/[0.03] blur-3xl" />
+      <div className="absolute left-1/2 top-1/2 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6377FF]/[0.03] blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           {/* Left column: heading + CTA */}
           <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
             <div className="lg:sticky lg:top-32">
-              <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+              <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
                 Frequently Asked{' '}
                 <span className="operan-accent-gradient">Questions</span>
               </h2>
@@ -89,7 +89,7 @@ export default function OperanFAQ() {
                 </p>
                 <Link
                   href="/login"
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-medium text-white transition-all hover:bg-[#1D4ED8] operan-glow-sm"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-5 py-3 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
                 >
                   Book a Demo
                   <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -110,7 +110,7 @@ export default function OperanFAQ() {
                     key={i}
                     className={`overflow-hidden rounded-2xl border transition-colors duration-300 ${
                       isOpen
-                        ? 'border-[#2563EB]/30 bg-[#111827]'
+                        ? 'border-[#6377FF]/30 bg-[#111827]'
                         : 'border-white/[0.08] bg-[#111827] hover:border-white/[0.15]'
                     }`}
                   >
@@ -121,7 +121,7 @@ export default function OperanFAQ() {
                         aria-controls={`faq-panel-${i}`}
                         id={`faq-trigger-${i}`}
                         onClick={() => setOpenIndex(isOpen ? null : i)}
-                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/40 rounded-2xl"
+                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6377FF]/40 rounded-2xl"
                       >
                         <span className={`text-sm font-medium transition-colors duration-200 ${
                           isOpen ? 'text-white' : 'text-[#94A3B8]'
@@ -130,7 +130,7 @@ export default function OperanFAQ() {
                         </span>
                         <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${
                           isOpen
-                            ? 'bg-[#2563EB]/15 text-[#3B82F6] rotate-180'
+                            ? 'bg-[#6377FF]/15 text-[#7C8CFF] rotate-180'
                             : 'bg-white/[0.04] text-[#94A3B8]'
                         }`}>
                           {isOpen ? (

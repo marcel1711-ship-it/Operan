@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { OperanLogoIcon } from './operan-logo';
 
 const footerLinks = {
   Company: [
@@ -58,13 +59,8 @@ export default function OperanFooter() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563EB]">
-                <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M3 12l4-4 4 4 4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M3 18l4-4 4 4 4-4 4 4" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
-                </svg>
-              </div>
-              <span className="text-lg font-semibold tracking-tight text-white">OPERAN</span>
+              <OperanLogoIcon size={32} />
+              <span className="text-lg font-bold tracking-tight text-white">OPERAN</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#94A3B8]">
               The operating system for marine experience businesses. Configure once. Operate automatically.

@@ -52,7 +52,7 @@ export default function WorkflowNodeCard({
   const isBranch = node.actionType === 'if_else' || node.actionType === 'condition';
   const actionDef = !isTrigger ? getActionDef(node.actionType || '') : null;
   const Icon = isTrigger ? Zap : ICON_MAP[actionDef?.icon || ''] || GitBranch;
-  const accentColor = isTrigger ? '#2563EB' : actionDef?.color || '#2563EB';
+  const accentColor = isTrigger ? '#6377FF' : actionDef?.color || '#6377FF';
   const summary = getSummary(node);
   const execConfig = EXECUTION_STATE_CONFIG[executionState];
   const ExecIcon = EXEC_ICON_MAP[execConfig.icon] || Circle;

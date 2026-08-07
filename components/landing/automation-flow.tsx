@@ -45,16 +45,16 @@ export default function OperanAutomationFlow() {
   return (
     <section ref={ref} id="automations" className="relative overflow-hidden py-24 lg:py-32">
       <div className="absolute inset-0 operan-grid-bg opacity-20" />
-      <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-[#2563EB]/5 blur-3xl" />
+      <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-[#6377FF]/5 blur-3xl" />
 
       <div className="relative mx-auto max-w-5xl px-6 lg:px-8">
         <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
           <div className="mx-auto max-w-2xl text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5">
-              <span className="flex h-2 w-2 rounded-full bg-[#2563EB] animate-operan-pulse-glow" />
+              <span className="flex h-2 w-2 rounded-full bg-[#6377FF] animate-operan-pulse-glow" />
               <span className="text-xs font-medium text-[#94A3B8]">Live Workflow</span>
             </div>
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
               One booking.{' '}
               <span className="operan-accent-gradient">Every operation.</span>
             </h2>
@@ -78,7 +78,7 @@ export default function OperanAutomationFlow() {
                   <div
                     className={`relative flex items-center gap-4 rounded-xl border p-4 transition-all duration-500 ${
                       isActive
-                        ? 'border-[#2563EB]/40 bg-[#2563EB]/8 operan-glow-sm'
+                        ? 'border-[#6377FF]/40 bg-[#6377FF]/8 operan-glow-sm'
                         : isPast
                         ? 'border-[#22C55E]/15 bg-[#22C55E]/[0.03]'
                         : 'border-white/[0.04] bg-transparent opacity-30'
@@ -91,7 +91,7 @@ export default function OperanAutomationFlow() {
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all duration-500 ${
                         isActive
-                          ? 'bg-[#2563EB] text-white'
+                          ? 'bg-[#6377FF] text-white'
                           : isPast
                           ? 'bg-[#22C55E]/15 text-[#22C55E]'
                           : 'bg-white/[0.04] text-[#94A3B8]'
@@ -121,8 +121,8 @@ export default function OperanAutomationFlow() {
                     {/* Status indicator */}
                     {isActive && (
                       <div className="flex items-center gap-1.5">
-                        <span className="flex h-2 w-2 rounded-full bg-[#2563EB] animate-operan-pulse-glow" />
-                        <span className="text-[10px] font-medium text-[#2563EB]">Running</span>
+                        <span className="flex h-2 w-2 rounded-full bg-[#6377FF] animate-operan-pulse-glow" />
+                        <span className="text-[10px] font-medium text-[#6377FF]">Running</span>
                       </div>
                     )}
                     {isPast && (
@@ -143,7 +143,7 @@ export default function OperanAutomationFlow() {
                         {isActive && (
                           <div className="absolute inset-0 overflow-hidden">
                             <div
-                              className="absolute inset-0 bg-gradient-to-b from-[#2563EB] to-transparent"
+                              className="absolute inset-0 bg-gradient-to-b from-[#6377FF] to-transparent"
                               style={{ animation: 'operan-fade-up 0.6s ease-out' }}
                             />
                           </div>

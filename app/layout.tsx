@@ -1,9 +1,9 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { AuthProvider } from '@/lib/auth';
 
-const inter = Inter({ subsets: ['latin'] });
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'] });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://operan.io';
 
@@ -41,7 +41,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen`}>
+      <body className={`${jakarta.className} min-h-screen`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

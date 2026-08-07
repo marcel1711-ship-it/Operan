@@ -54,6 +54,11 @@
     --accent-blue-bg: rgba(99, 119, 255, 0.16);
     --accent-blue-border: rgba(99, 119, 255, 0.32);
 
+    /* Ocean accent (maritime identity) */
+    --accent-ocean: #14B8A6;
+    --accent-ocean-bg: rgba(20, 184, 166, 0.14);
+    --accent-ocean-border: rgba(20, 184, 166, 0.30);
+
     /* Focus ring */
     --focus-ring: 0 0 0 3px rgba(99, 119, 255, 0.15);
 

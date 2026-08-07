@@ -53,7 +53,7 @@ export function Charts({ stages, opportunities }: ChartsProps) {
               tickLine={false}
             />
             <Tooltip
-              cursor={{ fill: 'rgba(37, 99, 235, 0.06)' }}
+              cursor={{ fill: 'rgba(99, 119, 255, 0.06)' }}
               contentStyle={{
                 background: '#FFFFFF',
                 border: '1px solid #E5E7EB',

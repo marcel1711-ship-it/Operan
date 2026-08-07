@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   CalendarDays, Mail, CreditCard, Users, MessageSquare,
-  FileSignature, FileText, BookOpen, Compass, CheckCircle2,
+  FileSignature, FileText, BookOpen, CheckCircle2,
   type LucideIcon,
 } from 'lucide-react';
+import { OperanLogoIcon } from './operan-logo';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 const TOOLS: { name: string; icon: LucideIcon }[] = [
@@ -122,7 +123,7 @@ export default function OperanProblemSolution() {
         {/* Heading */}
         <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
               Replace the chaos.{' '}
               <span className="operan-accent-gradient">With one platform.</span>
             </h2>
@@ -224,13 +225,9 @@ export default function OperanProblemSolution() {
                     boxShadow: allConnected ? '0 0 40px -10px rgba(79,107,255,0.3)' : 'none',
                   }}
                 >
-                  <Compass
-                    className="h-7 w-7 transition-colors duration-500"
-                    style={{ color: allConnected ? '#4F6BFF' : '#A9B2C5' }}
-                    strokeWidth={1.5}
-                  />
+                  <OperanLogoIcon size={32} />
                   <span
-                    className="mt-1.5 text-xs font-semibold tracking-wide transition-colors duration-500"
+                    className="mt-1.5 text-xs font-bold tracking-wide transition-colors duration-500"
                     style={{ color: allConnected ? '#E8ECF4' : '#A9B2C5' }}
                   >
                     OPERAN
@@ -336,13 +333,9 @@ export default function OperanProblemSolution() {
                     boxShadow: allConnected ? '0 0 40px -10px rgba(79,107,255,0.3)' : 'none',
                   }}
                 >
-                  <Compass
-                    className="h-6 w-6 transition-colors duration-500"
-                    style={{ color: allConnected ? '#4F6BFF' : '#A9B2C5' }}
-                    strokeWidth={1.5}
-                  />
+                  <OperanLogoIcon size={28} />
                   <span
-                    className="mt-1 text-[11px] font-semibold tracking-wide transition-colors duration-500"
+                    className="mt-1 text-[11px] font-bold tracking-wide transition-colors duration-500"
                     style={{ color: allConnected ? '#E8ECF4' : '#A9B2C5' }}
                   >
                     OPERAN

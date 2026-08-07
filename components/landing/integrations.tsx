@@ -4,7 +4,7 @@ import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 const integrations = [
   { name: 'Stripe', desc: 'Payments & payouts', letter: 'S', color: '#635BFF' },
-  { name: 'Resend', desc: 'Transactional email', letter: 'R', color: '#2563EB' },
+  { name: 'Resend', desc: 'Transactional email', letter: 'R', color: '#6377FF' },
   { name: 'Google Calendar', desc: 'Two-way sync', letter: 'G', color: '#4285F4' },
   { name: 'Twilio', desc: 'SMS messaging', letter: 'T', color: '#F22F46' },
   { name: 'WhatsApp', desc: 'Customer messaging', letter: 'W', color: '#25D366' },
@@ -21,7 +21,7 @@ export default function OperanIntegrations() {
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
               Connects to{' '}
               <span className="operan-accent-gradient">everything.</span>
             </h2>
@@ -58,7 +58,7 @@ export default function OperanIntegrations() {
               </div>
 
               {/* Connected indicator */}
-              <div className="ml-auto flex h-2 w-2 shrink-0 rounded-full bg-[#22C55E]" />
+              <div className="ml-auto flex h-2 w-2 shrink-0 rounded-full bg-[#14B8A6]" />
             </div>
           ))}
         </div>

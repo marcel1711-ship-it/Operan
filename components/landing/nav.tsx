@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import { OperanLogoIcon } from './operan-logo';
 
 export default function OperanNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -43,13 +44,8 @@ export default function OperanNav() {
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563EB]">
-            <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M3 12l4-4 4 4 4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M3 18l4-4 4 4 4-4 4 4" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
-            </svg>
-          </div>
-          <span className="text-lg font-semibold tracking-tight text-white">OPERAN</span>
+          <OperanLogoIcon size={32} />
+          <span className="text-lg font-bold tracking-tight text-white">OPERAN</span>
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
@@ -73,7 +69,7 @@ export default function OperanNav() {
           </Link>
           <Link
             href="/login"
-            className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#1D4ED8]"
+            className="rounded-lg bg-[#6377FF] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#5063E8]"
           >
             Request Early Access
           </Link>
@@ -107,7 +103,7 @@ export default function OperanNav() {
               </Link>
               <Link
                 href="/login"
-                className="rounded-lg bg-[#2563EB] px-4 py-2 text-center text-sm font-medium text-white"
+                className="rounded-lg bg-[#6377FF] px-4 py-2 text-center text-sm font-medium text-white"
               >
                 Request Early Access
               </Link>
