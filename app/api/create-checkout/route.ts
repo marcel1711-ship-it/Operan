@@ -62,31 +62,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
 
-      const { data: tokenRecord } = await supabaseAdmin
+      const crypto = await import('crypto');
+      const tokenHash = crypto.createHash('sha256').update(access_token).digest('hex');
+
+      const { data: matchedToken } = await supabaseAdmin
         .from('booking_access_tokens')
         .select('id, expires_at')
         .eq('reservation_id', reservation.id)
-        .eq('is_used', false)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (!tokenRecord || tokenRecord.length === 0) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-      }
-
-      const crypto = await import('crypto');
-      const tokenHash = crypto.createHash('sha256').update(access_token).digest('hex');
-      const matchedToken = tokenRecord.find((t: { id: string; expires_at: string | null }) => {
-        const hash = crypto.createHash('sha256').update(access_token).digest('hex');
-        return hash === tokenHash;
-      });
+        .eq('token_hash', tokenHash)
+        .is('used_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
 
       if (!matchedToken) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-      }
-
-      if (matchedToken.expires_at && new Date(matchedToken.expires_at) < new Date()) {
-        return NextResponse.json({ error: 'Token expired' }, { status: 403 });
       }
 
       resolvedTenantId = reservation.tenant_id;

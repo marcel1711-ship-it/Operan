@@ -1894,6 +1894,7 @@ export type Database = {
           name: string
           pipeline_id: string | null
           stage_order: number
+          stage_type: string | null
           tenant_id: string
           updated_at: string | null
         }
@@ -1906,6 +1907,7 @@ export type Database = {
           name: string
           pipeline_id?: string | null
           stage_order?: number
+          stage_type?: string | null
           tenant_id: string
           updated_at?: string | null
         }
@@ -1918,6 +1920,7 @@ export type Database = {
           name?: string
           pipeline_id?: string | null
           stage_order?: number
+          stage_type?: string | null
           tenant_id?: string
           updated_at?: string | null
         }
@@ -2297,6 +2300,7 @@ export type Database = {
           completed_at: string | null
           confirmed_at: string | null
           created_at: string | null
+          created_by: string | null
           currency: string | null
           customer_id: string | null
           deposit_amount: number | null
@@ -2339,6 +2343,7 @@ export type Database = {
           completed_at?: string | null
           confirmed_at?: string | null
           created_at?: string | null
+          created_by?: string | null
           currency?: string | null
           customer_id?: string | null
           deposit_amount?: number | null
@@ -2381,6 +2386,7 @@ export type Database = {
           completed_at?: string | null
           confirmed_at?: string | null
           created_at?: string | null
+          created_by?: string | null
           currency?: string | null
           customer_id?: string | null
           deposit_amount?: number | null
@@ -2425,6 +2431,67 @@ export type Database = {
           },
           {
             foreignKeyName: "reservations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signed_waivers: {
+        Row: {
+          created_at: string
+          html_snapshot: string
+          id: string
+          reservation_id: string | null
+          signature_data_url: string
+          signed_at: string
+          signer_email: string | null
+          signer_name: string
+          template_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          html_snapshot: string
+          id?: string
+          reservation_id?: string | null
+          signature_data_url: string
+          signed_at?: string
+          signer_email?: string | null
+          signer_name: string
+          template_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          html_snapshot?: string
+          id?: string
+          reservation_id?: string | null
+          signature_data_url?: string
+          signed_at?: string
+          signer_email?: string | null
+          signer_name?: string
+          template_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signed_waivers_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signed_waivers_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "waiver_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signed_waivers_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -3555,6 +3622,26 @@ export type Database = {
         }
         Returns: Json
       }
+      cancel_reservation: {
+        Args: {
+          p_acting_user_id?: string
+          p_actor_name?: string
+          p_cancellation_reason?: string
+          p_reservation_id: string
+          p_target_cancelled_stage_id?: string
+        }
+        Returns: Json
+      }
+      check_listing_availability: {
+        Args: {
+          p_end_at: string
+          p_listing_id: string
+          p_reservation_id_to_exclude?: string
+          p_start_at: string
+          p_tenant_id?: string
+        }
+        Returns: Json
+      }
       check_listing_availability_with_blocks: {
         Args: {
           p_end_at: string
@@ -3612,6 +3699,28 @@ export type Database = {
         }
         Returns: Json
       }
+      create_manual_reservation: {
+        Args: {
+          p_acting_user_id?: string
+          p_actor_name?: string
+          p_booking_status?: string
+          p_client_email?: string
+          p_client_name: string
+          p_client_phone?: string
+          p_customer_id?: string
+          p_deposit_amount?: number
+          p_end_at: string
+          p_guest_count?: number
+          p_listing_id: string
+          p_notes?: string
+          p_opportunity_id?: string
+          p_payment_status?: string
+          p_source?: string
+          p_start_at: string
+          p_total_amount?: number
+        }
+        Returns: Json
+      }
       create_public_booking_hold: {
         Args: {
           p_client_email?: string
@@ -3635,6 +3744,7 @@ export type Database = {
         }
         Returns: number
       }
+      current_tenant_id: { Args: never; Returns: string }
       emit_customer_event: {
         Args: {
           p_customer_id: string
@@ -3718,6 +3828,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_public_booking_status: {
+        Args: { p_access_token: string; p_booking_reference: string }
+        Returns: Json
+      }
       is_super_admin: { Args: never; Returns: boolean }
       is_tenant_member: { Args: { p_tenant_id: string }; Returns: boolean }
       log_integration_activity: {
@@ -3765,6 +3879,15 @@ export type Database = {
         }
         Returns: Json
       }
+      reactivate_reservation: {
+        Args: {
+          p_acting_user_id?: string
+          p_actor_name?: string
+          p_reservation_id: string
+          p_target_stage_id?: string
+        }
+        Returns: Json
+      }
       record_payment_failure: {
         Args: {
           p_environment: string
@@ -3785,6 +3908,19 @@ export type Database = {
           p_provider: string
           p_provider_event_id: string
           p_safe_metadata?: Json
+        }
+        Returns: Json
+      }
+      submit_signed_waiver: {
+        Args: {
+          p_html_snapshot: string
+          p_listing_id?: string
+          p_reservation_id?: string
+          p_signature_data_url: string
+          p_signer_email?: string
+          p_signer_name: string
+          p_template_id: string
+          p_tenant_id: string
         }
         Returns: Json
       }
