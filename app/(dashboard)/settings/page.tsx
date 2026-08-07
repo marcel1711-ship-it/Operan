@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Loader2, Save, Palette, Globe, Image as ImageIcon,
   Anchor, AlertCircle, Check, ExternalLink, Copy, Code2, Frame,
+  Upload, X, Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
@@ -144,6 +145,45 @@ export default function SettingsPage() {
     );
   }
 
+  async function uploadImage(file: File, folder: string): Promise<string | null> {
+    if (!tenant?.id) return null;
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+    const path = `${tenant.id}/${folder}/${Date.now()}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from('tenant-assets')
+      .upload(path, file, { upsert: true });
+
+    if (uploadErr) {
+      setError(`Upload failed: ${uploadErr.message}`);
+      return null;
+    }
+
+    const { data } = supabase.storage.from('tenant-assets').getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async function handleImageUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: 'logo_url' | 'hero_image_url'
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be under 5MB');
+      return;
+    }
+
+    setError(null);
+    const folder = field === 'logo_url' ? 'logo' : 'hero';
+    const url = await uploadImage(file, folder);
+    if (url) {
+      setForm(prev => prev ? { ...prev, [field]: url } : prev);
+    }
+    e.target.value = '';
+  }
+
   if (role !== 'tenant_admin') return null;
 
   const landingUrl = form.landing_page_url || `/r/${form.slug}`;
@@ -194,17 +234,49 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Logo URL</Label>
+              <Label className="text-xs font-medium text-muted-foreground">Logo</Label>
               <div className="flex items-center gap-3">
                 {form.logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={form.logo_url} alt="Logo" className="h-12 w-12 rounded-lg border border-border object-cover" />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-secondary">
-                    <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                  <div className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.logo_url} alt="Logo" className="h-16 w-16 rounded-lg border border-border object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, logo_url: '' })}
+                      className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </div>
+                ) : (
+                  <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border bg-secondary transition-colors hover:border-primary/50 hover:bg-primary/5">
+                    <Upload className="h-5 w-5 text-muted-foreground/60" />
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      onChange={(e) => handleImageUpload(e, 'logo_url')}
+                      className="hidden"
+                    />
+                  </label>
                 )}
-                <Input value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://..." className="bg-[var(--card-bg)]" />
+                <div className="flex-1 space-y-1">
+                  {form.logo_url ? (
+                    <p className="text-xs text-muted-foreground truncate max-w-[280px]">{form.logo_url.split('/').pop()}</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Click to upload your logo (PNG, JPG, WebP, SVG — max 5MB)</p>
+                  )}
+                  {form.logo_url && (
+                    <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-[var(--brand-primary)] hover:underline">
+                      <Upload className="h-3 w-3" /> Replace
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                        onChange={(e) => handleImageUpload(e, 'logo_url')}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -288,8 +360,44 @@ export default function SettingsPage() {
               <Textarea value={form.hero_subtitle} onChange={(e) => setForm({ ...form, hero_subtitle: e.target.value })} placeholder="Browse our fleet of premium boats..." rows={2} className="resize-none bg-[var(--card-bg)]" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Hero Background Image URL</Label>
-              <Input value={form.hero_image_url} onChange={(e) => setForm({ ...form, hero_image_url: e.target.value })} placeholder="https://..." className="bg-[var(--card-bg)]" />
+              <Label className="text-xs font-medium text-muted-foreground">Hero Background Image</Label>
+              <div className="space-y-2">
+                {form.hero_image_url ? (
+                  <div className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.hero_image_url} alt="Hero" className="h-32 w-full rounded-lg border border-border object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, hero_image_url: '' })}
+                      className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-secondary transition-colors hover:border-primary/50 hover:bg-primary/5">
+                    <Upload className="h-6 w-6 text-muted-foreground/40" />
+                    <span className="text-xs text-muted-foreground">Click to upload hero image (PNG, JPG, WebP — max 5MB)</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(e) => handleImageUpload(e, 'hero_image_url')}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+                {form.hero_image_url && (
+                  <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-[var(--brand-primary)] hover:underline">
+                    <Upload className="h-3 w-3" /> Replace image
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(e) => handleImageUpload(e, 'hero_image_url')}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
             </div>
           </div>
         </section>
