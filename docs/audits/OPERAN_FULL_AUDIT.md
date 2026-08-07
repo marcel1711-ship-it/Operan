@@ -104,8 +104,8 @@ The entire booking-to-payment flow is non-functional:
 
 ## Database Infrastructure Gap
 
-### Existing (28 tables — 22 original + 6 Phase 1)
-bookings, booking_access_tokens, captain_checklists, captains, customers, guests, integration_catalog, listing_blocks, listing_fixed_start_times, listing_operating_hours, listing_pricing_options, listings, notifications, opportunities, payments, pipeline_stages, pipelines, plan_pricing, platform_fee_config, platform_provider_secrets, rate_limit_log, reservations, tenant_integrations, tenant_users, tenants, vessels, waivers, webhook_events
+### Existing (38 tables — 22 original + 6 Phase 1 + 10 Phase 2)
+activity_log, booking_access_tokens, bookings, captain_checklists, captains, customers, event_outbox, guests, integration_activity_logs, integration_catalog, listing_availability_blocks, listing_blocks, listing_fixed_start_times, listing_operating_hours, listing_pricing_options, listings, notifications, opportunities, payments, pipeline_stages, pipelines, plan_pricing, platform_fee_config, platform_provider_secrets, rate_limit_log, reservations, tenant_api_keys, tenant_calendar_connections, tenant_ical_feeds, tenant_integrations, tenant_users, tenant_webhook_deliveries, tenant_webhook_endpoints, tenants, vessels, waivers, webhook_events, webhook_outbox
 
 ### Phase 1 Tables Created (booking & payments infrastructure)
 `payments`, `webhook_events`, `booking_access_tokens`, `platform_fee_config`, `notifications`, `rate_limit_log`
@@ -113,11 +113,21 @@ bookings, booking_access_tokens, captain_checklists, captains, customers, guests
 ### Phase 1 RPC Functions Created (13)
 `check_rate_limit`, `get_public_availability`, `calculate_booking_price`, `create_public_booking_hold`, `create_booking_access_token`, `create_booking_checkout`, `record_webhook_event`, `confirm_payment_from_webhook`, `expire_checkout_session`, `record_payment_failure`, `process_refund`, `mark_webhook_processed`, `expire_stale_holds`
 
-### Missing (~28 tables referenced in code)
-activity_log, tenant_ical_feeds, listing_availability_blocks, tenant_calendar_connections, tenant_webhook_endpoints, tenant_webhook_deliveries, tenant_api_keys, tenant_email_domains, tenant_email_senders, tenant_communication_settings, communication_templates, communication_messages, automation_workflows, automation_workflow_versions, automation_runs, automation_step_runs, event_outbox, webhook_outbox, worker_health_log, platform_integrations, opportunity_notes_native, waiver_templates, invoices, integration_activity_logs, provider_events, reservation_status_labels, platform_secret_audit_log
+### Phase 2 Tables Created (integration infrastructure)
+`event_outbox`, `activity_log`, `tenant_ical_feeds`, `tenant_webhook_endpoints`, `tenant_webhook_deliveries`, `tenant_api_keys`, `integration_activity_logs`, `tenant_calendar_connections`, `listing_availability_blocks`, `webhook_outbox`
+
+### Phase 2 RPC Functions Created (12)
+`emit_domain_event`, `log_integration_activity`, `generate_ical_feed_token`, `generate_webhook_signing_secret`, `authenticate_api_key`, `create_webhook_deliveries_for_event`, `check_listing_availability_with_blocks`, `emit_reservation_event`, `emit_payment_event`, `emit_customer_event`, `emit_waiver_event`, `emit_workflow_event`
+
+### Phase 2 Modified Tables
+- `tenant_integrations`: Added columns — `connection_mode`, `display_name`, `configuration`, `last_tested_at`, `last_success_at`, `last_error_at`, `last_error_code`, `last_error_message`, `disconnected_at`
+- `reservations`: Added column — `google_calendar_event_id`
+
+### Missing (~18 tables referenced in code)
+tenant_email_domains, tenant_email_senders, tenant_communication_settings, communication_templates, communication_messages, automation_workflows, automation_workflow_versions, automation_runs, automation_step_runs, worker_health_log, platform_integrations, opportunity_notes_native, waiver_templates, invoices, provider_events, reservation_status_labels, platform_secret_audit_log
 
 ### Missing RPC Functions
-All 13 booking/payment RPCs have been created. Remaining RPCs will be added in Phase 2+.
+All booking/payment and integration RPCs have been created. Remaining RPCs will be added in Phase 3+.
 
 ---
 
@@ -161,12 +171,12 @@ Added 16 missing indexes on frequently-queried columns:
 4. ✅ Created `platform_fee_config` table for Stripe Connect fees
 5. ⬚ Fix edge function auth: remove `x-cron-internal` bypass, move CRON_SECRET to headers only
 
-### Phase 2 — High (Week 2-3)
-6. Create integration tables: `tenant_calendar_connections`, `listing_availability_blocks`, `tenant_ical_feeds`
-7. Create webhook tables: `tenant_webhook_endpoints`, `tenant_webhook_deliveries`
-8. Create API key table: `tenant_api_keys`
-9. Create activity table: `activity_log` (notifications table already created in Phase 1)
-10. Add SSRF protection to `deliver-webhooks`
+### Phase 2 — High (Week 2-3) ✅ COMPLETE
+6. ✅ Created integration tables: `tenant_calendar_connections`, `listing_availability_blocks`, `tenant_ical_feeds`
+7. ✅ Created webhook tables: `tenant_webhook_endpoints`, `tenant_webhook_deliveries`, `webhook_outbox`
+8. ✅ Created API key table: `tenant_api_keys` + `authenticate_api_key` RPC
+9. ✅ Created activity tables: `activity_log`, `event_outbox`, `integration_activity_logs`
+10. ⬚ Add SSRF protection to `deliver-webhooks`
 
 ### Phase 3 — Medium (Week 3-4)
 11. Create automation tables: `automation_workflows`, `automation_runs`, `automation_step_runs`, `automation_workflow_versions`
@@ -200,6 +210,7 @@ Added 16 missing indexes on frequently-queried columns:
 | `app/(public)/w/[tenantSlug]/[waiverSlug]/page.tsx` | Added DOMPurify sanitization to `dangerouslySetInnerHTML` |
 | `supabase/migrations/20260806120000_audit_fix_rls_policies.sql` | **NEW** — RLS hardening, helper functions, indexes |
 | `supabase/migrations/20260806130000_phase8_booking_payment_infrastructure.sql` | **NEW** — 6 tables + 13 RPCs for booking-to-payment flow |
+| `supabase/migrations/20260806140000_phase2_integration_infrastructure.sql` | **NEW** — 10 tables + 12 RPCs for integrations, webhooks, API keys, calendar |
 | `docs/audits/OPERAN_FULL_AUDIT.md` | **NEW** — This file |
 | `docs/audits/OPERAN_ARCHITECTURE.md` | **NEW** — Architecture map |
 | `docs/audits/OPERAN_SECURITY.md` | **NEW** — Security audit report |
@@ -219,6 +230,13 @@ Added 16 missing indexes on frequently-queried columns:
 - Created 6 tables: `payments`, `webhook_events`, `booking_access_tokens`, `platform_fee_config`, `notifications`, `rate_limit_log`
 - Created 13 RPC functions: `check_rate_limit`, `get_public_availability`, `calculate_booking_price`, `create_public_booking_hold`, `create_booking_access_token`, `create_booking_checkout`, `record_webhook_event`, `confirm_payment_from_webhook`, `expire_checkout_session`, `record_payment_failure`, `process_refund`, `mark_webhook_processed`, `expire_stale_holds`
 - All tables have RLS enabled with tenant-scoped policies
+
+**Phase 2 (integration infrastructure):**
+- Created 10 tables: `event_outbox`, `activity_log`, `tenant_ical_feeds`, `tenant_webhook_endpoints`, `tenant_webhook_deliveries`, `tenant_api_keys`, `integration_activity_logs`, `tenant_calendar_connections`, `listing_availability_blocks`, `webhook_outbox`
+- Created 12 RPC functions: `emit_domain_event`, `log_integration_activity`, `generate_ical_feed_token`, `generate_webhook_signing_secret`, `authenticate_api_key`, `create_webhook_deliveries_for_event`, `check_listing_availability_with_blocks`, `emit_reservation_event`, `emit_payment_event`, `emit_customer_event`, `emit_waiver_event`, `emit_workflow_event`
+- Modified `tenant_integrations`: added 9 operational columns
+- Modified `reservations`: added `google_calendar_event_id`
+- All tables have RLS enabled with `is_tenant_member()` policies (not `current_tenant_id()`)
 - Reloaded PostgREST schema cache
 
 ---
