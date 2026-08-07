@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireSuperAdmin } from '@/lib/integrations/super-admin-auth';
 import {
   testStripeConnection,
   testResendConnection,
   testGoogleCalendarConnection,
-} from '../../route';
+} from '../../test-connections';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { provider: string } }
 ) {
+  const authResult = await requireSuperAdmin(req);
+  if (authResult instanceof NextResponse) return authResult;
+
   const providerKey = params.provider;
 
   switch (providerKey) {

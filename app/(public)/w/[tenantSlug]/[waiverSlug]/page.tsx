@@ -413,7 +413,10 @@ export default function WaiverSigningPage() {
 
               <div
                 className="waiver-content px-6 py-6 text-sm leading-relaxed text-foreground"
-                dangerouslySetInnerHTML={{ __html: filledHtml }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(filledHtml, {
+                  ALLOWED_TAGS: ['h1','h2','h3','h4','h5','h6','p','br','hr','ul','ol','li','strong','em','u','s','a','span','div','table','thead','tbody','tr','th','td','blockquote','pre','code','img','sub','sup'],
+                  ALLOWED_ATTR: ['href','target','rel','src','alt','width','height','class','style','colspan','rowspan'],
+                }) }}
               />
             </div>
 
