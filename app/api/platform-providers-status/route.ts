@@ -1,21 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireSuperAdmin } from '@/lib/integrations/super-admin-auth';
 import {
-  isStripeConfigured,
-  isStripeConfiguredAsync,
-  getStripeWebhookSecret,
-  getStripeWebhookSecretAsync,
   getStripeEnvironment,
-  getStripePublishableKey,
-  getStripePublishableKeyAsync,
   getAppBaseUrl,
-  getStripeClient,
-  getStripeClientAsync,
 } from '@/lib/integrations/stripe-server';
-import { isResendConfigured, isResendConfiguredAsync, isResendWebhookConfigured, isResendWebhookConfiguredAsync, getApiKeyAsync } from '@/lib/integrations/resend-server';
-import { decrypt } from '@/lib/integrations/crypto';
 import { hasCredential } from '@/lib/integrations/credential-resolver';
 import { listProviderSecrets } from '@/lib/integrations/platform-secret-service';
-import { getGoogleClientIdAsync, getGoogleClientSecretAsync } from '@/lib/integrations/google-calendar-service';
 import {
   PROVIDER_DEFINITIONS,
   getProviderDefinition,
@@ -289,7 +279,10 @@ async function buildProviderReadiness(def: ProviderDefinition): Promise<Provider
   };
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authResult = await requireSuperAdmin(req);
+  if (authResult instanceof NextResponse) return authResult;
+
   const providers = await Promise.all(PROVIDER_DEFINITIONS.map(buildProviderReadiness));
   return NextResponse.json({ providers });
 }
@@ -298,7 +291,10 @@ export type RecheckResponse = {
   provider: ProviderReadiness;
 };
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const authResult = await requireSuperAdmin(req);
+  if (authResult instanceof NextResponse) return authResult;
+
   const body = await req.json().catch(() => ({}));
   const providerKey = body.providerKey as string | undefined;
 
@@ -315,55 +311,3 @@ export async function POST(req: Request) {
   return NextResponse.json({ provider });
 }
 
-// ── Provider connection test implementations ──
-
-export async function testStripeConnection(): Promise<{ ok: boolean; message: string }> {
-  const client = await getStripeClientAsync();
-  if (!client) return { ok: false, message: 'Stripe API key is not configured' };
-
-  try {
-    await client.balance.retrieve();
-    return { ok: true, message: 'Stripe API connection verified successfully' };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return { ok: false, message: `Stripe API rejected the request: ${msg}` };
-  }
-}
-
-export async function testResendConnection(): Promise<{ ok: boolean; message: string }> {
-  if (!(await isResendConfiguredAsync())) return { ok: false, message: 'Resend API key is not configured' };
-
-  try {
-    const apiKey = await getApiKeyAsync();
-    const response = await fetch('https://api.resend.com/domains', {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    if (response.ok) return { ok: true, message: 'Resend API connection verified successfully' };
-    return { ok: false, message: `Resend API returned status ${response.status}` };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    return { ok: false, message: `Resend API request failed: ${msg}` };
-  }
-}
-
-export async function testGoogleCalendarConnection(): Promise<{ ok: boolean; message: string }> {
-  const clientId = await getGoogleClientIdAsync();
-  const clientSecret = await getGoogleClientSecretAsync();
-  if (!clientId || !clientSecret) {
-    return { ok: false, message: 'Google OAuth credentials are not fully configured' };
-  }
-  if (!checkEnvVar('INTEGRATION_ENCRYPTION_KEY')) {
-    return { ok: false, message: 'Integration encryption key is not configured' };
-  }
-
-  try {
-    const crypto = require('crypto');
-    const key = process.env.INTEGRATION_ENCRYPTION_KEY;
-    if (key && key.length >= 32) {
-      crypto.createCipheriv('aes-256-gcm', Buffer.from(key, 'hex'), crypto.randomBytes(12));
-    }
-    return { ok: true, message: 'Google OAuth configuration and encryption key verified' };
-  } catch {
-    return { ok: false, message: 'Encryption key format is invalid — must be a 32-byte hex string' };
-  }
-}

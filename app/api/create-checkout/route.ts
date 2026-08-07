@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       const { data: { user } } = await userClient.auth.getUser();
       if (user) {
         const { data: membership } = await userClient
-          .from('tenant_members')
+          .from('tenant_users')
           .select('tenant_id')
           .eq('user_id', user.id)
           .maybeSingle();

@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireSuperAdmin } from '@/lib/integrations/super-admin-auth';
 import { isStripeConfigured, getStripeWebhookSecret, getStripeEnvironment, getStripePublishableKey } from '@/lib/integrations/stripe-server';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authResult = await requireSuperAdmin(req);
+  if (authResult instanceof NextResponse) return authResult;
+
   return NextResponse.json({
     configured: isStripeConfigured(),
     webhook_configured: !!getStripeWebhookSecret(),
