@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Anchor, Users, MapPin, Ship, Loader2, ArrowLeft, ChevronLeft, ChevronRight,
@@ -16,14 +16,6 @@ import {
 import { useTenantFavicon } from '@/hooks/use-tenant-favicon';
 
 export default function ListingDetailPage() {
-  return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-      <ListingDetailInner />
-    </Suspense>
-  );
-}
-
-function ListingDetailInner() {
   const params = useParams();
   const tenantSlug = params.tenantSlug as string;
   const listingSlug = params.listingSlug as string;
