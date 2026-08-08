@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { getAdapter } from '@/lib/integrations/registry';
+import { getAdapter } from '@/lib/integrations';
 import type { PaymentAdapter, CheckoutResult, CreateCheckoutParams } from '@/lib/integrations/types';
 import { isStripeConfigured, getStripeEnvironment } from '@/lib/integrations/stripe-server';
 
