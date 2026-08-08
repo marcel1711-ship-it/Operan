@@ -16,8 +16,8 @@ export async function GET(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
   const ctx = auth as { tenant_id: string };
 
-  const clientId = await getGoogleClientIdAsync();
-  const clientSecret = await getGoogleClientSecretAsync();
+  const clientId = await getGoogleClientIdAsync(ctx.tenant_id);
+  const clientSecret = await getGoogleClientSecretAsync(ctx.tenant_id);
 
   if (!clientId || !clientSecret) {
     return NextResponse.json({

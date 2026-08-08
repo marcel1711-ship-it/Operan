@@ -5,17 +5,48 @@ import { resolveCredential, hasCredential } from './credential-resolver';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const GOOGLE_CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
 
-export async function getGoogleClientIdAsync(): Promise<string | null> {
+export async function getGoogleClientIdAsync(tenantId?: string): Promise<string | null> {
+  if (tenantId) {
+    const tenantCreds = await getTenantGoogleCredentials(tenantId);
+    if (tenantCreds?.client_id) return tenantCreds.client_id;
+  }
   return await resolveCredential('google_calendar', 'GOOGLE_CLIENT_ID', 'production');
 }
 
-export async function getGoogleClientSecretAsync(): Promise<string | null> {
+export async function getGoogleClientSecretAsync(tenantId?: string): Promise<string | null> {
+  if (tenantId) {
+    const tenantCreds = await getTenantGoogleCredentials(tenantId);
+    if (tenantCreds?.client_secret) return tenantCreds.client_secret;
+  }
   return await resolveCredential('google_calendar', 'GOOGLE_CLIENT_SECRET', 'production');
 }
 
-export async function isGoogleCalendarConfiguredAsync(): Promise<boolean> {
+export async function isGoogleCalendarConfiguredAsync(tenantId?: string): Promise<boolean> {
+  if (tenantId) {
+    const tenantCreds = await getTenantGoogleCredentials(tenantId);
+    if (tenantCreds?.client_id && tenantCreds?.client_secret) return true;
+  }
   return await hasCredential('google_calendar', 'GOOGLE_CLIENT_ID', 'production') &&
          await hasCredential('google_calendar', 'GOOGLE_CLIENT_SECRET', 'production');
+}
+
+async function getTenantGoogleCredentials(tenantId: string): Promise<{ client_id: string; client_secret: string } | null> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('tenant_integrations')
+      .select('credentials')
+      .eq('tenant_id', tenantId)
+      .eq('category', 'calendar')
+      .eq('provider', 'google_calendar')
+      .maybeSingle();
+    if (data?.credentials) {
+      const creds = data.credentials as Record<string, string>;
+      if (creds.google_client_id && creds.google_client_secret) {
+        return { client_id: creds.google_client_id, client_secret: creds.google_client_secret };
+      }
+    }
+  } catch {}
+  return null;
 }
 
 type CalendarConnection = {
@@ -55,8 +86,8 @@ async function getDecryptedTokens(connection: CalendarConnection): Promise<Decry
 async function refreshAccessToken(connection: CalendarConnection, tokens: DecryptedTokens): Promise<DecryptedTokens | null> {
   if (!tokens.refresh_token) return null;
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const clientId = await getGoogleClientIdAsync(connection.tenant_id);
+  const clientSecret = await getGoogleClientSecretAsync(connection.tenant_id);
   if (!clientId || !clientSecret) return null;
 
   try {

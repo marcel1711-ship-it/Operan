@@ -147,17 +147,16 @@ export function KanbanBoard({
   onOpenDetail,
   onMoveStage,
 }: KanbanBoardProps) {
-  let draggedOppId: string | null = null;
-
-  function handleDragStart(_e: React.DragEvent, oppId: string) {
-    draggedOppId = oppId;
+  function handleDragStart(e: React.DragEvent, oppId: string) {
+    e.dataTransfer.setData('text/plain', oppId);
+    e.dataTransfer.effectAllowed = 'move';
   }
 
   function handleDrop(e: React.DragEvent, stageId: string) {
     e.preventDefault();
-    if (draggedOppId) {
-      onMoveStage(draggedOppId, stageId);
-      draggedOppId = null;
+    const oppId = e.dataTransfer.getData('text/plain');
+    if (oppId) {
+      onMoveStage(oppId, stageId);
     }
   }
 
@@ -175,7 +174,7 @@ export function KanbanBoard({
         return (
           <div
             key={stage.id}
-            onDragOver={(e) => e.preventDefault()}
+            onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
             onDrop={(e) => handleDrop(e, stage.id)}
             className={cn(
               'flex w-72 shrink-0 flex-col rounded-[18px] border border-border bg-secondary/20 border-t-2',

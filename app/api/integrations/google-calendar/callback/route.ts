@@ -26,8 +26,8 @@ export async function GET(req: NextRequest) {
   }
   const tenantId = stateResult.tenantId;
 
-  const clientId = await getGoogleClientIdAsync();
-  const clientSecret = await getGoogleClientSecretAsync();
+  const clientId = await getGoogleClientIdAsync(tenantId);
+  const clientSecret = await getGoogleClientSecretAsync(tenantId);
 
   if (!clientId || !clientSecret) {
     return NextResponse.redirect(`${baseUrl}/integrations?google_status=platform_error`);

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import {
   Calendar, Loader2, AlertCircle, CheckCircle2, XCircle, Link2, RefreshCw, Trash2,
-  Settings, Clock,
+  Settings, Clock, Eye, EyeOff, Save, ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,11 @@ export function GoogleCalendarConfigPanel({ tenantId, platformStatus }: { tenant
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [calendars, setCalendars] = useState<Array<{ id: string; name: string; timeZone: string }>>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [hasCreds, setHasCreds] = useState(false);
+  const [clientId, setClientId] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [showSecret, setShowSecret] = useState(false);
+  const [savingCreds, setSavingCreds] = useState(false);
   const [settings, setSettings] = useState({
     event_title_template: 'Booking: {{customer_name}}',
     event_description_template: '',
@@ -53,29 +58,39 @@ export function GoogleCalendarConfigPanel({ tenantId, platformStatus }: { tenant
 
   const loadConnection = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('tenant_calendar_connections')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('provider', 'google_calendar')
-      .neq('connection_status', 'disconnected')
-      .maybeSingle();
-    if (!error) {
-      setConnection(data as CalendarConnection | null);
-      if (data) {
+    const [connRes, intRes] = await Promise.all([
+      supabase
+        .from('tenant_calendar_connections')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .eq('provider', 'google_calendar')
+        .neq('connection_status', 'disconnected')
+        .maybeSingle(),
+      supabase
+        .from('tenant_integrations')
+        .select('credentials')
+        .eq('tenant_id', tenantId)
+        .eq('category', 'calendar')
+        .eq('provider', 'google_calendar')
+        .maybeSingle(),
+    ]);
+    if (!connRes.error) {
+      setConnection(connRes.data as CalendarConnection | null);
+      if (connRes.data) {
         setSettings({
-          event_title_template: data.event_title_template || 'Booking: {{customer_name}}',
-          event_description_template: data.event_description_template || '',
-          include_customer_details: data.include_customer_details,
-          include_meeting_point: data.include_meeting_point,
-          create_on_confirm: data.create_on_confirm,
-          update_on_change: data.update_on_change,
-          cancel_on_reservation_cancel: data.cancel_on_reservation_cancel,
-          block_availability_from_external: data.block_availability_from_external,
+          event_title_template: connRes.data.event_title_template || 'Booking: {{customer_name}}',
+          event_description_template: connRes.data.event_description_template || '',
+          include_customer_details: connRes.data.include_customer_details,
+          include_meeting_point: connRes.data.include_meeting_point,
+          create_on_confirm: connRes.data.create_on_confirm,
+          update_on_change: connRes.data.update_on_change,
+          cancel_on_reservation_cancel: connRes.data.cancel_on_reservation_cancel,
+          block_availability_from_external: connRes.data.block_availability_from_external,
         });
       }
     }
-
+    const creds = intRes.data?.credentials as Record<string, string> | null;
+    setHasCreds(!!(creds?.google_client_id && creds?.google_client_secret));
     setLoading(false);
   }, [tenantId]);
 
@@ -356,9 +371,9 @@ export function GoogleCalendarConfigPanel({ tenantId, platformStatus }: { tenant
         </div>
       )}
 
-      {/* Not connected, platform ready */}
+      {/* Not connected */}
       {!isConnected && !needsReconnect && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <p className="text-xs text-[var(--text-secondary)]">
             Connect your Google account to automatically create calendar events for new bookings and sync availability.
           </p>
@@ -371,10 +386,119 @@ export function GoogleCalendarConfigPanel({ tenantId, platformStatus }: { tenant
               <li>- Block availability from external busy events</li>
             </ul>
           </div>
-          <Button onClick={connect} disabled={actionLoading} className="w-full bg-primary text-white">
-            {actionLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Link2 className="mr-1.5 h-3.5 w-3.5" />}
-            Connect Google Calendar
-          </Button>
+
+          {/* Step 1: Google API Credentials */}
+          <div className="rounded-[18px] border border-[var(--border-default)] bg-[var(--panel-bg)] p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)]/20 text-[var(--brand-primary)] text-xs font-bold">1</div>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Google API Credentials</p>
+              </div>
+              {hasCreds && <Badge className="border-0 bg-[rgba(74,222,128,0.12)] text-[#86EFAC] text-[10px]"><CheckCircle2 className="mr-1 h-3 w-3" />Saved</Badge>}
+            </div>
+
+            <div className="rounded-md bg-[var(--card-bg)] border border-[var(--border-default)] p-3 space-y-2">
+              <p className="text-[11px] font-medium text-[var(--text-secondary)]">How to get your credentials:</p>
+              <ol className="text-[11px] text-[var(--text-muted)] space-y-1.5 list-decimal list-inside">
+                <li>Go to <span className="text-[var(--brand-primary)] font-medium">Google Cloud Console</span> &rarr; console.cloud.google.com</li>
+                <li>Create a new project (or select an existing one)</li>
+                <li>Go to <span className="font-medium text-[var(--text-secondary)]">APIs &amp; Services &rarr; Library</span> and enable <span className="font-medium text-[var(--text-secondary)]">Google Calendar API</span></li>
+                <li>Go to <span className="font-medium text-[var(--text-secondary)]">APIs &amp; Services &rarr; Credentials</span></li>
+                <li>Click <span className="font-medium text-[var(--text-secondary)]">Create Credentials &rarr; OAuth client ID</span></li>
+                <li>Select <span className="font-medium text-[var(--text-secondary)]">Web application</span> as the type</li>
+                <li>Add this <span className="font-medium text-[var(--text-secondary)]">Authorized redirect URI</span>:<br/>
+                  <code className="mt-1 block rounded bg-[var(--panel-bg)] border border-[var(--border-default)] px-2 py-1 text-[10px] font-mono text-[var(--text-primary)] select-all">
+                    {typeof window !== 'undefined' ? `${window.location.origin}/api/integrations/google-calendar/callback` : '/api/integrations/google-calendar/callback'}
+                  </code>
+                </li>
+                <li>Copy the <span className="font-medium text-[var(--text-secondary)]">Client ID</span> and <span className="font-medium text-[var(--text-secondary)]">Client Secret</span> below</li>
+              </ol>
+            </div>
+
+            <div className="space-y-2">
+              <div>
+                <Label className="text-[11px] text-[var(--text-muted)]">Client ID *</Label>
+                <Input
+                  type="text"
+                  value={clientId}
+                  onChange={e => setClientId(e.target.value)}
+                  placeholder={hasCreds ? '••••••••••••.apps.googleusercontent.com (saved)' : 'xxxx.apps.googleusercontent.com'}
+                  className="bg-[var(--card-bg)] text-xs font-mono"
+                />
+              </div>
+              <div>
+                <Label className="text-[11px] text-[var(--text-muted)]">Client Secret *</Label>
+                <div className="relative">
+                  <Input
+                    type={showSecret ? 'text' : 'password'}
+                    value={clientSecret}
+                    onChange={e => setClientSecret(e.target.value)}
+                    placeholder={hasCreds ? '•••••••••••••••• (saved)' : 'GOCSPX-...'}
+                    className="bg-[var(--card-bg)] text-xs font-mono pr-8"
+                  />
+                  <button type="button" onClick={() => setShowSecret(!showSecret)} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
+                    {showSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (!clientId || !clientSecret) return;
+                  setSavingCreds(true);
+                  setMessage(null);
+                  const { data: existing } = await supabase
+                    .from('tenant_integrations')
+                    .select('id')
+                    .eq('tenant_id', tenantId)
+                    .eq('category', 'calendar')
+                    .eq('provider', 'google_calendar')
+                    .maybeSingle();
+                  if (existing) {
+                    await supabase.from('tenant_integrations').update({
+                      credentials: { google_client_id: clientId, google_client_secret: clientSecret },
+                      updated_at: new Date().toISOString(),
+                    }).eq('id', existing.id);
+                  } else {
+                    await supabase.from('tenant_integrations').insert({
+                      tenant_id: tenantId,
+                      category: 'calendar',
+                      provider: 'google_calendar',
+                      environment: 'production',
+                      connection_status: 'not_configured',
+                      credentials: { google_client_id: clientId, google_client_secret: clientSecret },
+                      is_default: true,
+                      enabled: false,
+                    });
+                  }
+                  setHasCreds(true);
+                  setClientId('');
+                  setClientSecret('');
+                  setMessage({ type: 'success', text: 'Google API credentials saved.' });
+                  setSavingCreds(false);
+                }}
+                disabled={savingCreds || !clientId || !clientSecret}
+                className="w-full bg-[var(--brand-primary)] text-white hover:bg-primary-hover text-xs"
+              >
+                {savingCreds ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Save className="mr-1.5 h-3.5 w-3.5" />}
+                Save Credentials
+              </Button>
+            </div>
+          </div>
+
+          {/* Step 2: Connect */}
+          <div className={cn('rounded-[18px] border border-[var(--border-default)] bg-[var(--panel-bg)] p-4 space-y-3', !hasCreds && 'opacity-50 pointer-events-none')}>
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)]/20 text-[var(--brand-primary)] text-xs font-bold">2</div>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Connect Your Google Account</p>
+            </div>
+            <p className="text-[11px] text-[var(--text-muted)]">
+              After saving your credentials, click below to authorize OPERAN to access your Google Calendar.
+            </p>
+            <Button onClick={connect} disabled={actionLoading || !hasCreds} className="w-full bg-primary text-white">
+              {actionLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Link2 className="mr-1.5 h-3.5 w-3.5" />}
+              Connect Google Calendar
+            </Button>
+          </div>
         </div>
       )}
     </div>
