@@ -1,9 +1,19 @@
 import { supabase } from '@/lib/supabase';
 import type { Opportunity, PipelineStage } from '@/lib/types';
 
-/**
- * Opportunity service — centralized data access for opportunities.
- */
+function mapOpportunity(row: Record<string, unknown>): Opportunity {
+  return {
+    ...row,
+    name: (row.title || row.name || '') as string,
+    monetary_value: (row.value ?? row.monetary_value ?? 0) as number,
+    listing_id: (row.listing_id ?? null) as string | null,
+    reservation_id: (row.reservation_id ?? null) as string | null,
+    assigned_to: (row.assigned_to ?? null) as string | null,
+    expected_service_date: (row.expected_service_date ?? null) as string | null,
+    last_status_change_at: (row.last_status_change_at ?? null) as string | null,
+    legacy_ghl_opportunity_id: (row.legacy_ghl_opportunity_id ?? null) as string | null,
+  } as Opportunity;
+}
 
 export async function fetchOpportunitiesByPipeline(
   tenantId: string,
@@ -24,7 +34,7 @@ export async function fetchOpportunitiesByPipeline(
     .range(from, to);
 
   if (error) throw new Error(error.message);
-  return { data: (data as Opportunity[]) || [], total: count || 0 };
+  return { data: (data || []).map((d: Record<string, unknown>) => mapOpportunity(d)), total: count || 0 };
 }
 
 export async function fetchOpportunitiesByTenant(
@@ -44,7 +54,7 @@ export async function fetchOpportunitiesByTenant(
     .range(from, to);
 
   if (error) throw new Error(error.message);
-  return { data: (data as Opportunity[]) || [], total: count || 0 };
+  return { data: (data || []).map((d: Record<string, unknown>) => mapOpportunity(d)), total: count || 0 };
 }
 
 export async function moveOpportunityStage(
