@@ -115,6 +115,7 @@ export type CreateCheckoutParams = {
   cancel_url: string;
   platform_fee_amount?: number;
   metadata?: Record<string, string>;
+  tenant_secret_key?: string;
 };
 
 export interface IntegrationAdapter {

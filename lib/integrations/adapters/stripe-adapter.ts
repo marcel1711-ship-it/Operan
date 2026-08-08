@@ -164,8 +164,19 @@ export class StripeAdapter implements PaymentAdapter {
     }
   }
 
+  private async getClientForCheckout(params: CreateCheckoutParams): Promise<Stripe | null> {
+    if (params.tenant_secret_key) {
+      const Stripe = require('stripe');
+      return new Stripe(params.tenant_secret_key, {
+        apiVersion: '2025-08-27.basil' as Stripe.LatestApiVersion,
+        typescript: true,
+      });
+    }
+    return this.getClientAsync();
+  }
+
   async createCheckout(params: CreateCheckoutParams): Promise<CheckoutResult> {
-    const client = await this.getClientAsync();
+    const client = await this.getClientForCheckout(params);
     if (!client) {
       return {
         checkout_url: null,
@@ -175,6 +186,8 @@ export class StripeAdapter implements PaymentAdapter {
         error: NOT_CONFIGURED,
       };
     }
+
+    const useTenantKey = !!params.tenant_secret_key;
 
     try {
       const session = await client.checkout.sessions.create(
@@ -210,14 +223,14 @@ export class StripeAdapter implements PaymentAdapter {
               booking_reference: params.metadata?.booking_reference || '',
               internal_payment_id: params.metadata?.internal_payment_id || '',
             },
-            ...(params.platform_fee_amount && params.platform_fee_amount > 0
+            ...(!useTenantKey && params.platform_fee_amount && params.platform_fee_amount > 0
               ? {
                   application_fee_amount: Math.round(params.platform_fee_amount * 100),
                 }
               : {}),
           },
         },
-        {
+        useTenantKey ? undefined : {
           stripeAccount: params.metadata?.stripe_account_id || undefined,
         }
       );

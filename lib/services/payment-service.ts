@@ -163,6 +163,9 @@ export async function createBookingCheckout(
     };
   }
 
+  const credentials = integration.credentials as Record<string, string> | null;
+  const tenantSecretKey = credentials?.secret_key || undefined;
+
   const checkoutParams: CreateCheckoutParams = {
     tenant_id: req.tenant_id,
     listing_id: reservation.listing_id,
@@ -175,6 +178,7 @@ export async function createBookingCheckout(
     success_url: req.success_url,
     cancel_url: req.cancel_url,
     platform_fee_amount: platformFeeAmount > 0 ? platformFeeAmount : undefined,
+    tenant_secret_key: tenantSecretKey,
     metadata: {
       booking_reference: req.booking_reference,
       payment_type: paymentType,

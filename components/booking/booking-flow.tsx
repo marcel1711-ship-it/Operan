@@ -236,8 +236,8 @@ export function BookingFlow({
           window.location.href = checkoutData.checkout_url;
           return;
         }
-      } catch {
-        // fall through to success screen
+      } catch (err) {
+        console.error('[BookingFlow] Checkout redirect failed:', err);
       }
     }
 

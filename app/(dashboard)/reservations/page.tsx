@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   CalendarDays, Search, Loader2, Filter,
   Phone, Mail, Anchor, DollarSign,
-  ChevronLeft, ChevronRight, Check, X, Clock, Globe,
+  ChevronLeft, ChevronRight, Check, X, Clock, Globe, Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { fetchReservationsByTenant } from '@/lib/services/reservation-service';
@@ -51,6 +51,7 @@ export default function ReservationsPage() {
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
   const [page, setPage] = useState(0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -110,6 +111,21 @@ export default function ReservationsPage() {
       setReservations(prev => prev.map(r => r.id === reservationId ? { ...r, booking_status: 'cancelled' as BookingStatus } : r));
     }
     setActionLoading(null);
+  }
+
+  async function deleteReservation(reservationId: string) {
+    if (!tenant) return;
+    setActionLoading(reservationId);
+    const { data, error } = await supabase.rpc('delete_reservation', {
+      p_reservation_id: reservationId,
+      p_tenant_id: tenant.id,
+    });
+    if (!error && (data as { success?: boolean })?.success) {
+      setReservations(prev => prev.filter(r => r.id !== reservationId));
+      setTotal(prev => prev - 1);
+    }
+    setActionLoading(null);
+    setDeleteConfirm(null);
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -259,28 +275,45 @@ export default function ReservationsPage() {
                             {r.source === 'public_request' && <p className="text-[10px] text-[var(--brand-primary)] mt-0.5">Request</p>}
                           </td>
                           <td className="px-4 py-3 text-right">
-                            {isPending && (
-                              <div className="flex items-center justify-end gap-1">
-                                <Button size="sm" variant="outline" onClick={() => approveRequest(r.id)} disabled={actionLoading === r.id}
-                                  className="border-primary/30 bg-primary/5 text-[var(--brand-primary)] hover:bg-primary/10 px-2 py-1 text-xs">
-                                  {actionLoading === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Approve
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => declineRequest(r.id)} disabled={actionLoading === r.id}
-                                  className="border-destructive/30 bg-destructive/5 text-[#FB7185] hover:bg-destructive/10 px-2 py-1 text-xs">
-                                  {actionLoading === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />} Decline
-                                </Button>
-                              </div>
-                            )}
-                            {isAwaitingPayment && (
-                              <div className="flex items-center justify-end gap-1">
+                            <div className="flex items-center justify-end gap-1">
+                              {isPending && (
+                                <>
+                                  <Button size="sm" variant="outline" onClick={() => approveRequest(r.id)} disabled={actionLoading === r.id}
+                                    className="border-primary/30 bg-primary/5 text-[var(--brand-primary)] hover:bg-primary/10 px-2 py-1 text-xs">
+                                    {actionLoading === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Approve
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => declineRequest(r.id)} disabled={actionLoading === r.id}
+                                    className="border-destructive/30 bg-destructive/5 text-[#FB7185] hover:bg-destructive/10 px-2 py-1 text-xs">
+                                    {actionLoading === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />} Decline
+                                  </Button>
+                                </>
+                              )}
+                              {isAwaitingPayment && (
                                 <span className="text-[10px] text-[#FCD34D] mr-1">
                                   {r.payment_status === 'processing' ? 'Payment processing' : 'Awaiting payment'}
                                 </span>
-                              </div>
-                            )}
-                            {(r.booking_status === 'confirmed' || r.booking_status === 'completed') && r.payment_status && r.payment_status !== 'unpaid' && (
-                              <span className="text-[10px] text-[#86EFAC]">{r.payment_status.replace(/_/g, ' ')}</span>
-                            )}
+                              )}
+                              {(r.booking_status === 'confirmed' || r.booking_status === 'completed') && r.payment_status && r.payment_status !== 'unpaid' && (
+                                <span className="text-[10px] text-[#86EFAC]">{r.payment_status.replace(/_/g, ' ')}</span>
+                              )}
+                              {deleteConfirm === r.id ? (
+                                <div className="flex items-center gap-1">
+                                  <Button size="sm" variant="outline" onClick={() => deleteReservation(r.id)} disabled={actionLoading === r.id}
+                                    className="border-destructive/30 bg-destructive/10 text-[#FB7185] hover:bg-destructive/20 px-2 py-1 text-xs">
+                                    {actionLoading === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Confirm'}
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(null)}
+                                    className="border-border px-2 py-1 text-xs">
+                                    Cancel
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button size="sm" variant="ghost" onClick={() => setDeleteConfirm(r.id)}
+                                  className="text-muted-foreground hover:text-[#FB7185] px-1.5 py-1">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
