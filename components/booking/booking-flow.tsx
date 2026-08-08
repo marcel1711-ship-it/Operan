@@ -477,7 +477,7 @@ export function BookingFlow({
           {rateLimited && <p className="text-xs text-warning">Too many requests. Please slow down.</p>}
           {selectedDate && (
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Available Times ({formatTimezoneLabel(listing.timezone)})</Label>
+              <Label className="text-xs font-medium text-muted-foreground">Available Times</Label>
               {loadingSlots ? (
                 <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} /></div>
               ) : slots.length === 0 ? (
@@ -546,7 +546,7 @@ export function BookingFlow({
           <div className="space-y-2 rounded-xl bg-secondary/50 p-4 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Experience</span><span className="font-medium text-foreground">{selectedOption?.name}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="font-medium text-foreground">{selectedDate}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="font-medium text-foreground">{selectedSlot?.start} - {selectedSlot?.end} ({listing.timezone})</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Time</span><span className="font-medium text-foreground">{selectedSlot?.start} - {selectedSlot?.end}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Guests</span><span className="font-medium text-foreground">{guestCount}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Name</span><span className="font-medium text-foreground">{customer.name}</span></div>
           </div>
