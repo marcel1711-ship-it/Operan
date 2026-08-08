@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle2, Clock, Loader2, AlertCircle, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function PaymentSuccessPage({ params }: { params: Promise<{ slug: string }> }) {
-  const bookingReference = use(params).slug;
+export default function PaymentSuccessPage() {
+  const params = useParams();
+  const bookingReference = params.slug as string;
   const searchParams = useSearchParams();
   const accessToken = searchParams.get('token') || '';
   const [status, setStatus] = useState<'verifying' | 'confirmed' | 'failed'>('verifying');
