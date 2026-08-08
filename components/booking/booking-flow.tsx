@@ -27,6 +27,7 @@ export type BookingTenant = {
   id: string; name: string; slug: string;
   primary_color: string; secondary_color: string;
   logo_url: string | null;
+  phone: string | null;
 };
 
 export type BookingListing = {
