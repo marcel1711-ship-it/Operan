@@ -217,10 +217,19 @@ export function BookingFlow({
     // If awaiting payment and tenant can accept payments, redirect to checkout
     if (result.booking_status === 'awaiting_payment' && tenantCanAcceptPayments && result.reservation_id) {
       try {
-        const { data: tokenData } = await supabase.rpc('create_booking_access_token', {
+        const { data: tokenData, error: tokenError } = await supabase.rpc('create_booking_access_token', {
           p_reservation_id: result.reservation_id,
         });
-        const accessToken = (tokenData as { token?: string })?.token || '';
+        if (tokenError) {
+          console.error('[BookingFlow] Token creation failed:', tokenError);
+          throw new Error(tokenError.message);
+        }
+        const accessToken = (tokenData as { token?: string; error?: string })?.token || '';
+        const tokenErr = (tokenData as { error?: string })?.error;
+        if (tokenErr || !accessToken) {
+          console.error('[BookingFlow] Token RPC returned error:', tokenErr);
+          throw new Error(tokenErr || 'No token returned');
+        }
 
         const checkoutResponse = await fetch('/api/create-checkout', {
           method: 'POST',
@@ -236,8 +245,15 @@ export function BookingFlow({
           window.location.href = checkoutData.checkout_url;
           return;
         }
+        console.error('[BookingFlow] Checkout API error:', checkoutData);
+        setError(checkoutData.error || 'Payment redirect failed. Please try again.');
+        setSubmitting(false);
+        return;
       } catch (err) {
         console.error('[BookingFlow] Checkout redirect failed:', err);
+        setError('Payment setup failed. Please try again or contact the business.');
+        setSubmitting(false);
+        return;
       }
     }
 
@@ -492,7 +508,7 @@ export function BookingFlow({
             </div>
           )}
           <Button onClick={submitBooking} disabled={submitting} className="w-full text-primary-foreground hover:opacity-90" style={{ backgroundColor: primary }}>
-            {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</> : (listing.payment_mode === 'request_only' || (price && price.amount_due_now > 0 && !tenantCanAcceptPayments)) ? 'Submit Request' : 'Hold My Booking'}
+            {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</> : listing.payment_mode === 'request_only' ? 'Submit Request' : (price && price.amount_due_now > 0 && !tenantCanAcceptPayments) ? 'Submit Request' : (tenantCanAcceptPayments && listing.payment_mode !== 'request_only' && listing.payment_mode !== 'pay_at_location') ? 'Pay & Reserve' : 'Hold My Booking'}
           </Button>
         </>
       )}

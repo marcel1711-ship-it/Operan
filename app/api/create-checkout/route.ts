@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (result.status === 'failed' || !result.checkout_url) {
+      console.error('[create-checkout] Checkout failed:', result.error);
       return NextResponse.json(
         { error: result.error || 'Failed to create checkout' },
         { status: 400 }
@@ -113,9 +114,10 @@ export async function POST(req: NextRequest) {
       checkout_session_id: result.checkout_session_id,
       payment_id: result.payment_id,
     });
-  } catch {
+  } catch (err) {
+    console.error('[create-checkout] Unhandled error:', err);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 }
     );
   }
