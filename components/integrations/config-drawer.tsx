@@ -16,6 +16,8 @@ import { WebhooksConfigPanel } from './webhooks-config-panel';
 import { ApiKeysConfigPanel } from './api-keys-config-panel';
 import { GoogleCalendarConfigPanel } from './google-calendar-config-panel';
 import { ResendConfigPanel } from './resend-config-panel';
+import { TwilioConfigPanel } from './twilio-config-panel';
+import { QuickBooksConfigPanel } from './quickbooks-config-panel';
 import { supabase } from '@/lib/supabase';
 
 export type DrawerEntry = {
@@ -129,6 +131,15 @@ export function IntegrationConfigDrawer({
     }
     if (entry.category === 'communication' && entry.provider === 'resend') {
       return <ResendConfigPanel tenantId={tenantId} />;
+    }
+    if (entry.category === 'messaging' && entry.provider === 'twilio') {
+      return <TwilioConfigPanel tenantId={tenantId} channel="sms" />;
+    }
+    if (entry.category === 'messaging' && entry.provider === 'meta_whatsapp') {
+      return <TwilioConfigPanel tenantId={tenantId} channel="whatsapp" />;
+    }
+    if (entry.category === 'accounting' && entry.provider === 'quickbooks') {
+      return <QuickBooksConfigPanel tenantId={tenantId} />;
     }
     return null;
   }

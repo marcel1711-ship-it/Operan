@@ -1,6 +1,7 @@
 import type { CommunicationProviderAdapter, CommunicationChannel } from './types';
 import { mockAdapter } from './adapters/mock-adapter';
 import { resendAdapter } from './adapters/resend-adapter';
+import { createTwilioSmsAdapter, createTwilioWhatsAppAdapter } from './adapters/twilio-adapter';
 
 const adapterRegistry = new Map<string, CommunicationProviderAdapter>();
 
@@ -45,3 +46,15 @@ registerCommunicationAdapter('email', 'mock', mockAdapter);
 registerCommunicationAdapter('email', 'resend', resendAdapter);
 registerCommunicationAdapter('sms', 'mock', mockAdapter);
 registerCommunicationAdapter('whatsapp', 'mock', mockAdapter);
+
+export function createTenantTwilioAdapters(creds: {
+  account_sid: string;
+  auth_token: string;
+  phone_number: string;
+  whatsapp_number?: string;
+}) {
+  return {
+    sms: createTwilioSmsAdapter(creds),
+    whatsapp: createTwilioWhatsAppAdapter(creds),
+  };
+}
