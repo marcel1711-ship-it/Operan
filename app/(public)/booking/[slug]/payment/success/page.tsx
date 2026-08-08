@@ -16,6 +16,8 @@ export default function PaymentSuccessPage() {
   const [pollCount, setPollCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function verifyPayment() {
       if (!accessToken) {
         setStatus('failed');
@@ -23,6 +25,7 @@ export default function PaymentSuccessPage() {
       }
 
       try {
+        // First check DB status
         const { data, error } = await supabase.rpc('get_public_booking_status', {
           p_booking_reference: bookingReference,
           p_access_token: accessToken,
@@ -35,25 +38,41 @@ export default function PaymentSuccessPage() {
 
         setBookingData(data);
 
-        // Check if payment has been confirmed by webhook
-        if (data.payment_status === 'deposit_paid' || data.payment_status === 'paid_in_full') {
+        if (data.payment_status === 'deposit_paid' || data.payment_status === 'paid_in_full' || data.booking_status === 'confirmed') {
           setStatus('confirmed');
           return;
         }
 
-        // If booking is confirmed, payment is done
-        if (data.booking_status === 'confirmed') {
-          setStatus('confirmed');
-          return;
+        // DB not updated yet — verify directly with Stripe
+        if (data.reservation_id) {
+          const res = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              reservation_id: data.reservation_id,
+              booking_reference: bookingReference,
+              access_token: accessToken,
+            }),
+          });
+          const verifyResult = await res.json();
+
+          if (verifyResult.verified) {
+            setBookingData((prev: Record<string, unknown> | null) => ({
+              ...prev,
+              booking_status: verifyResult.booking_status || 'confirmed',
+              payment_status: verifyResult.payment_status || 'deposit_paid',
+            }));
+            setStatus('confirmed');
+            return;
+          }
         }
 
-        // Still processing — poll up to 10 times (30 seconds)
-        if (pollCount < 10) {
+        // Still not verified — poll a few more times
+        if (!cancelled && pollCount < 5) {
           setPollCount(pollCount + 1);
           setTimeout(verifyPayment, 3000);
         } else {
-          // Timeout — show "still processing" state
-          setStatus('verifying');
+          setStatus('failed');
         }
       } catch {
         setStatus('failed');
@@ -61,6 +80,7 @@ export default function PaymentSuccessPage() {
     }
 
     verifyPayment();
+    return () => { cancelled = true; };
   }, [bookingReference, accessToken, pollCount]);
 
   return (
