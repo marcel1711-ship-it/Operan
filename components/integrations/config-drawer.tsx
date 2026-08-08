@@ -233,11 +233,6 @@ export function IntegrationConfigDrawer({
             />
           )}
 
-          {/* Resend / Email config — now uses ResendConfigPanel */}
-          {entry.category === 'communication' && entry.provider === 'resend' && !isComingSoon && !isPlatformBlocked && !isDegraded && (
-            <ResendConfigPanel tenantId={tenantId} />
-          )}
-
           {/* Provider-specific config panels */}
           {!isComingSoon && !isPlatformBlocked && renderConfigPanel()}
 

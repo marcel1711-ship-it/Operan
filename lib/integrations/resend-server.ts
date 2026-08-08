@@ -1,18 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { resolveCredential, hasCredential } from './credential-resolver';
 
-/**
- * Server-only Resend client.
- *
- * Credentials are resolved in this order:
- * 1. Platform Secrets Vault (database, AES-256-GCM encrypted)
- * 2. Environment variable fallback (backward compatibility)
- *
- * The API key is NEVER sent to the browser, stored in database metadata,
- * or included in API responses. This module must only be imported from
- * server-side code (API routes, server components, edge functions).
- */
-
 const RESEND_API_BASE = 'https://api.resend.com';
 
 function getApiKey(): string | null {
@@ -27,7 +15,40 @@ function getWebhookSecret(): string | null {
   return secret;
 }
 
-export async function getApiKeyAsync(): Promise<string | null> {
+export async function getTenantResendCredentials(tenantId: string): Promise<{
+  api_key: string;
+  from_name?: string;
+  from_email?: string;
+} | null> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('tenant_integrations')
+      .select('credentials')
+      .eq('tenant_id', tenantId)
+      .eq('category', 'communication')
+      .eq('provider', 'resend')
+      .eq('connection_status', 'connected')
+      .maybeSingle();
+
+    if (data?.credentials) {
+      const creds = data.credentials as Record<string, string>;
+      if (creds.resend_api_key) {
+        return {
+          api_key: creds.resend_api_key,
+          from_name: creds.resend_from_name,
+          from_email: creds.resend_from_email,
+        };
+      }
+    }
+  } catch {}
+  return null;
+}
+
+export async function getApiKeyAsync(tenantId?: string): Promise<string | null> {
+  if (tenantId) {
+    const tenantCreds = await getTenantResendCredentials(tenantId);
+    if (tenantCreds) return tenantCreds.api_key;
+  }
   return await resolveCredential('resend', 'RESEND_API_KEY', 'production');
 }
 
@@ -39,7 +60,11 @@ export function isResendConfigured(): boolean {
   return getApiKey() !== null;
 }
 
-export async function isResendConfiguredAsync(): Promise<boolean> {
+export async function isResendConfiguredAsync(tenantId?: string): Promise<boolean> {
+  if (tenantId) {
+    const tenantCreds = await getTenantResendCredentials(tenantId);
+    if (tenantCreds) return true;
+  }
   return await hasCredential('resend', 'RESEND_API_KEY', 'production');
 }
 
@@ -83,8 +108,8 @@ function sanitizeError(err: unknown): string {
   return 'Unknown provider error';
 }
 
-async function resendFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const apiKey = await getApiKeyAsync();
+async function resendFetch(path: string, options: RequestInit = {}, tenantId?: string): Promise<Response> {
+  const apiKey = await getApiKeyAsync(tenantId);
   if (!apiKey) {
     throw new Error('RESEND_NOT_CONFIGURED');
   }
@@ -241,8 +266,9 @@ export async function sendResendEmail(params: {
   reply_to?: string;
   tags?: { name: string; value: string }[];
   idempotency_key?: string;
+  tenant_id?: string;
 }): Promise<ResendSendResult> {
-  if (!(await isResendConfiguredAsync())) {
+  if (!(await isResendConfiguredAsync(params.tenant_id))) {
     return {
       success: false,
       provider_message_id: null,
@@ -273,7 +299,7 @@ export async function sendResendEmail(params: {
       method: 'POST',
       body: JSON.stringify(body),
       headers,
-    });
+    }, params.tenant_id);
 
     const data = await response.json();
 

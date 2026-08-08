@@ -192,7 +192,13 @@ export default function IntegrationsPage() {
         {/* Email Delivery — special section with EmailSetupCard */}
         <section className="space-y-3">
           <SectionHeader icon={Mail} label="Email Delivery" description="Send transactional and marketing emails through Resend." connectedCount={integrations.filter(i => i.category === 'communication' && i.connection_status === 'connected').length} />
-          <EmailSetupCard />
+          <button className="w-full text-left" onClick={() => {
+            const resendEntry = catalog.find(e => e.category === 'communication' && e.provider === 'resend');
+            if (resendEntry) openDrawer(resendEntry);
+            else openDrawer({ category: 'communication', provider: 'resend', display_name: 'Email Delivery (Resend)', description: 'Send transactional and marketing emails.', icon: 'mail', is_coming_soon: false, connection_scope: 'tenant', tenant_configuration_mode: 'credentials_form' } as CatalogEntry);
+          }}>
+            <EmailSetupCard />
+          </button>
         </section>
 
         {/* Catalog categories */}
