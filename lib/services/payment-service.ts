@@ -72,7 +72,7 @@ export async function createBookingCheckout(
   // 6. Determine payment type and amount from server-stored reservation data
   const listing = await supabaseAdmin
     .from('listings')
-    .select('payment_mode, deposit_type, deposit_percentage, deposit_fixed_amount, require_full_payment, currency')
+    .select('payment_mode, deposit_type, deposit_percentage, deposit_fixed_amount, currency')
     .eq('id', reservation.listing_id)
     .maybeSingle();
 
@@ -88,7 +88,7 @@ export async function createBookingCheckout(
   let amountDue: number;
   let paymentType: string;
 
-  if (listing.data.require_full_payment || paymentMode === 'full_payment') {
+  if (paymentMode === 'full_payment') {
     amountDue = Number(reservation.total_amount);
     paymentType = 'full_payment';
   } else {
