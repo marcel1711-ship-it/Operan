@@ -18,7 +18,8 @@ import { IntegrationConfigDrawer, type DrawerEntry, type DrawerIntegration } fro
 type TenantIntegration = {
   id: string; category: string; provider: string; environment: string;
   connection_status: string; external_account_id: string | null;
-  capabilities: Record<string, unknown>; is_default: boolean; enabled: boolean;
+  capabilities: Record<string, unknown>; credentials: Record<string, unknown> | null;
+  is_default: boolean; enabled: boolean;
   connected_at: string | null; last_synced_at: string | null;
   last_tested_at: string | null; last_success_at: string | null;
   last_error_at: string | null; last_error_message: string | null;
@@ -141,7 +142,8 @@ export default function IntegrationsPage() {
     setDrawerIntegration(integration ? {
       id: integration.id, connection_status: integration.connection_status,
       external_account_id: integration.external_account_id,
-      capabilities: integration.capabilities, is_default: integration.is_default,
+      capabilities: integration.capabilities, credentials: integration.credentials,
+      is_default: integration.is_default,
       enabled: integration.enabled, last_synced_at: integration.last_synced_at,
       last_tested_at: integration.last_tested_at, last_success_at: integration.last_success_at,
       last_error_at: integration.last_error_at, last_error_message: integration.last_error_message,

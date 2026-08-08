@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   X, Loader2, AlertCircle, CheckCircle2, XCircle, RefreshCw, Trash2,
-  Link2, ExternalLink, Clock, Zap, TestTube, History, Eye, EyeOff,
+  Link2, ExternalLink, Clock, Zap, TestTube, History, Eye, EyeOff, Copy, Webhook, Save,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,7 @@ export type DrawerIntegration = {
   connection_status: string;
   external_account_id: string | null;
   capabilities: Record<string, unknown>;
+  credentials: Record<string, unknown> | null;
   is_default: boolean;
   enabled: boolean;
   last_synced_at: string | null;
@@ -434,6 +435,8 @@ function StripeCredentialsPanel({
             <Trash2 className="mr-1 h-3 w-3" /> Disconnect
           </Button>
         </div>
+
+        <WebhookConfigSection tenantId={tenantId} integration={integration} loading={loading} setLoading={setLoading} onMessage={onMessage} />
       </div>
     );
   }
@@ -504,6 +507,132 @@ function StripeCredentialsPanel({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function WebhookConfigSection({
+  tenantId, integration, loading, setLoading, onMessage,
+}: {
+  tenantId: string;
+  integration: DrawerIntegration | null;
+  loading: boolean;
+  setLoading: (v: boolean) => void;
+  onMessage: (msg: { type: 'success' | 'error' | 'info'; text: string } | null) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [whSecret, setWhSecret] = useState('');
+  const [showSecret, setShowSecret] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const creds = integration?.credentials as Record<string, string> | null;
+  const hasWebhookSecret = !!creds?.webhook_secret;
+  const webhookUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/api/stripe-webhook`
+    : '/api/stripe-webhook';
+
+  async function copyUrl() {
+    await navigator.clipboard.writeText(webhookUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function saveWebhookSecret() {
+    setLoading(true);
+    onMessage(null);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const res = await fetch('/api/stripe-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ tenant_id: tenantId, action: 'update_webhook_secret', webhook_secret: whSecret }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        onMessage({ type: 'error', text: data.error });
+      } else {
+        onMessage({ type: 'success', text: 'Webhook secret saved successfully.' });
+        setWhSecret('');
+        setExpanded(false);
+      }
+    } catch {
+      onMessage({ type: 'error', text: 'Failed to save webhook secret.' });
+    }
+    setLoading(false);
+  }
+
+  return (
+    <div className="rounded-[18px] border border-[var(--border-default)] bg-[var(--panel-bg)] p-3 space-y-2">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <div className="flex items-center gap-1.5">
+          <Webhook className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+          <span className="text-xs font-medium text-[var(--text-primary)]">Webhook Configuration</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {hasWebhookSecret ? (
+            <Badge className="border-0 bg-[rgba(74,222,128,0.12)] text-[#86EFAC] text-[10px]">Configured</Badge>
+          ) : (
+            <Badge className="border-0 bg-[rgba(251,191,36,0.12)] text-[#FCD34D] text-[10px]">Not Set</Badge>
+          )}
+          <ExternalLink className={cn('h-3 w-3 text-[var(--text-muted)] transition-transform', expanded && 'rotate-90')} />
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="space-y-3 pt-1">
+          <div>
+            <Label className="text-[11px] text-[var(--text-muted)]">Webhook URL</Label>
+            <p className="text-[10px] text-[var(--text-muted)] mb-1">Add this URL in your Stripe Dashboard → Developers → Webhooks</p>
+            <div className="flex items-center gap-1">
+              <Input readOnly value={webhookUrl} className="bg-[var(--card-bg)] text-[10px] font-mono flex-1" />
+              <Button variant="outline" size="sm" onClick={copyUrl} className="h-8 px-2 border-[var(--border-default)]">
+                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-[#86EFAC]" /> : <Copy className="h-3.5 w-3.5 text-[var(--text-muted)]" />}
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-[11px] text-[var(--text-muted)]">Required Events</Label>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {['checkout.session.completed', 'checkout.session.expired', 'payment_intent.succeeded', 'payment_intent.payment_failed'].map(evt => (
+                <span key={evt} className="rounded bg-[var(--card-bg)] border border-[var(--border-default)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--text-secondary)]">{evt}</span>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-[11px] text-[var(--text-muted)]">
+              Signing Secret {hasWebhookSecret && <span className="text-[#86EFAC]">(saved)</span>}
+            </Label>
+            <p className="text-[10px] text-[var(--text-muted)] mb-1">After creating the webhook in Stripe, copy the signing secret (whsec_...) and paste it here</p>
+            <div className="flex items-center gap-1">
+              <div className="relative flex-1">
+                <Input
+                  type={showSecret ? 'text' : 'password'}
+                  value={whSecret}
+                  onChange={e => setWhSecret(e.target.value)}
+                  placeholder={hasWebhookSecret ? 'whsec_••••••••••••••• (update)' : 'whsec_...'}
+                  className="bg-[var(--card-bg)] text-xs font-mono pr-8"
+                />
+                <button type="button" onClick={() => setShowSecret(!showSecret)} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
+                  {showSecret ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+              <Button
+                onClick={saveWebhookSecret}
+                disabled={loading || !whSecret || !whSecret.startsWith('whsec_')}
+                size="sm"
+                className="h-8 bg-primary text-white text-xs"
+              >
+                {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -270,6 +270,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, environment });
     }
 
+    if (action === 'update_webhook_secret') {
+      const { webhook_secret } = body;
+
+      if (!webhook_secret) {
+        return NextResponse.json({ error: 'Webhook secret is required.' }, { status: 400 });
+      }
+
+      if (!webhook_secret.startsWith('whsec_')) {
+        return NextResponse.json({ error: 'Invalid webhook secret format. Must start with whsec_.' }, { status: 400 });
+      }
+
+      const { data: integration } = await supabaseAdmin
+        .from('tenant_integrations')
+        .select('id, credentials')
+        .eq('tenant_id', tenant_id)
+        .eq('category', 'payments')
+        .eq('provider', 'stripe')
+        .maybeSingle();
+
+      if (!integration) {
+        return NextResponse.json({ error: 'Stripe integration not found.' }, { status: 404 });
+      }
+
+      const existingCreds = (integration.credentials as Record<string, unknown>) || {};
+      await supabaseAdmin
+        .from('tenant_integrations')
+        .update({
+          credentials: { ...existingCreds, webhook_secret },
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', integration.id);
+
+      return NextResponse.json({ success: true });
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (err) {
     return NextResponse.json(
