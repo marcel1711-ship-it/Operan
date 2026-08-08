@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   Loader2, FileSignature, Plus, Trash2, Copy, Check, ExternalLink,
   Code, Eye, FileText, Clock, X, ChevronDown, ChevronUp, Link2, Ship,
+  Upload, FileUp,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
@@ -41,6 +42,7 @@ type WaiverTemplate = {
   html_content: string;
   form_fields: FormField[];
   listing_id: string | null;
+  document_type: 'waiver' | 'contract';
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -93,7 +95,9 @@ export default function FormsPage() {
   const [htmlContent, setHtmlContent] = useState('');
   const [formFields, setFormFields] = useState<FormField[]>([]);
   const [listingId, setListingId] = useState<string>('none');
+  const [documentType, setDocumentType] = useState<'waiver' | 'contract'>('waiver');
   const [saving, setSaving] = useState(false);
+  const [pdfExtracting, setPdfExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -150,6 +154,7 @@ export default function FormsPage() {
     setHtmlContent('');
     setFormFields([]);
     setListingId('none');
+    setDocumentType('waiver');
     setError(null);
     setShowCreate(true);
   }
@@ -161,8 +166,28 @@ export default function FormsPage() {
     setHtmlContent(t.html_content);
     setFormFields(t.form_fields || []);
     setListingId(t.listing_id || 'none');
+    setDocumentType(t.document_type || 'waiver');
     setError(null);
     setShowCreate(true);
+  }
+
+  async function handlePdfUpload(file: File) {
+    setPdfExtracting(true);
+    setError(null);
+    try {
+      const { extractTextFromPdf, textToHtml } = await import('@/lib/pdf-extract');
+      const text = await extractTextFromPdf(file);
+      const html = textToHtml(text);
+      setHtmlContent(html);
+      if (!title.trim()) {
+        const name = file.name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
+        setTitle(name);
+        if (!editing) setSlug(slugify(name));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to extract PDF content');
+    }
+    setPdfExtracting(false);
   }
 
   function addField() {
@@ -217,6 +242,7 @@ export default function FormsPage() {
           html_content: htmlContent,
           form_fields: cleanFields,
           listing_id: finalListingId,
+          document_type: documentType,
           updated_at: new Date().toISOString(),
         })
         .eq('id', editing.id);
@@ -235,6 +261,7 @@ export default function FormsPage() {
           html_content: htmlContent,
           form_fields: cleanFields,
           listing_id: finalListingId,
+          document_type: documentType,
         });
       if (err) setError(err.message);
       else {
@@ -298,8 +325,8 @@ export default function FormsPage() {
               <FileSignature className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-foreground">Forms & Templates</h1>
-              <p className="text-xs text-muted-foreground">Create waiver forms, link them to boats, get signing links</p>
+              <h1 className="text-lg font-bold tracking-tight text-foreground">Waivers & Contracts</h1>
+              <p className="text-xs text-muted-foreground">Upload PDFs, create digital documents, link them to boats</p>
             </div>
           </div>
           <Button onClick={openCreate} className="bg-[var(--brand-primary)] text-primary-foreground hover:bg-primary/90">
@@ -323,7 +350,7 @@ export default function FormsPage() {
             <div className="text-center">
               <h3 className="text-sm font-semibold text-foreground">No forms yet</h3>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                Create a waiver form, paste your HTML, add fields, and link it to a boat. You&apos;ll get a link to send customers for signing.
+                Upload a PDF or create a digital waiver/contract, link it to a boat, and get a signing link for your customers.
               </p>
             </div>
             <Button onClick={openCreate} variant="outline" className="mt-2 border-border bg-[var(--card-bg)]">
@@ -352,6 +379,9 @@ export default function FormsPage() {
                         <div className="mt-1 flex flex-wrap items-center gap-2">
                           <Badge variant={t.is_active ? 'default' : 'secondary'} className="text-[10px]">
                             {t.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                          <Badge variant="outline" className={cn('text-[10px]', t.document_type === 'contract' ? 'border-amber-300 text-amber-600' : 'border-sky-300 text-sky-600')}>
+                            {t.document_type === 'contract' ? 'Contract' : 'Waiver'}
                           </Badge>
                           {boatName && (
                             <Badge variant="outline" className="flex items-center gap-1 text-[10px]">
@@ -451,6 +481,39 @@ export default function FormsPage() {
                   placeholder="rental-agreement"
                   className="bg-[var(--card-bg)]"
                 />
+              </div>
+            </div>
+
+            {/* Document type */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Document Type</Label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDocumentType('waiver')}
+                  className={cn(
+                    'flex-1 rounded-xl border-2 px-4 py-3 text-left transition-all',
+                    documentType === 'waiver'
+                      ? 'border-sky-400 bg-sky-50'
+                      : 'border-border bg-[var(--card-bg)] hover:border-sky-200'
+                  )}
+                >
+                  <span className={cn('text-sm font-bold', documentType === 'waiver' ? 'text-sky-700' : 'text-foreground')}>Waiver</span>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">Liability release — each guest signs individually</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDocumentType('contract')}
+                  className={cn(
+                    'flex-1 rounded-xl border-2 px-4 py-3 text-left transition-all',
+                    documentType === 'contract'
+                      ? 'border-amber-400 bg-amber-50'
+                      : 'border-border bg-[var(--card-bg)] hover:border-amber-200'
+                  )}
+                >
+                  <span className={cn('text-sm font-bold', documentType === 'contract' ? 'text-amber-700' : 'text-foreground')}>Contract</span>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">Rental agreement — signed by the primary renter</p>
+                </button>
               </div>
             </div>
 
@@ -562,6 +625,45 @@ export default function FormsPage() {
               )}
             </div>
 
+            {/* PDF Upload */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <FileUp className="h-3.5 w-3.5" /> Upload PDF (optional)
+              </Label>
+              <label
+                className={cn(
+                  'flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-5 text-center transition-colors',
+                  pdfExtracting
+                    ? 'border-primary/40 bg-primary/5'
+                    : 'border-border bg-[var(--card-bg)] hover:border-primary/40 hover:bg-primary/5'
+                )}
+              >
+                {pdfExtracting ? (
+                  <>
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <span className="text-xs font-medium text-primary">Extracting content from PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+                    <span className="text-xs font-medium text-foreground">Drop a PDF here or click to upload</span>
+                    <span className="text-[10px] text-muted-foreground">We&apos;ll extract the text and convert it to a digital document</span>
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept=".pdf"
+                  className="hidden"
+                  disabled={pdfExtracting}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handlePdfUpload(file);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+
             <div className="space-y-1.5">
               <Label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Code className="h-3.5 w-3.5" /> HTML Content
@@ -569,12 +671,12 @@ export default function FormsPage() {
               <Textarea
                 value={htmlContent}
                 onChange={(e) => setHtmlContent(e.target.value)}
-                placeholder="Paste your full HTML document here. Use {{field_key}} placeholders where you want form data to appear..."
+                placeholder="Upload a PDF above or paste your HTML directly. Use {{field_key}} placeholders where you want form data to appear..."
                 rows={14}
                 className="resize-none bg-[var(--card-bg)] font-mono text-xs"
               />
               <p className="text-[10px] text-muted-foreground">
-                Paste the complete HTML of your waiver or contract. Use placeholders like <code className="rounded bg-[var(--panel-bg)] px-1">{'{{first_name}}'}</code> where form values should appear. The signing page fills them in, then shows the signature pad.
+                Upload a PDF to auto-extract, or paste HTML directly. Use placeholders like <code className="rounded bg-[var(--panel-bg)] px-1">{'{{signer_name}}'}</code> where form values should appear.
               </p>
             </div>
             {error && (

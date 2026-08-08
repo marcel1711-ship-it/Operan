@@ -138,6 +138,9 @@ export function IntegrationConfigDrawer({
     if (entry.category === 'messaging' && entry.provider === 'meta_whatsapp') {
       return <TwilioConfigPanel tenantId={tenantId} channel="whatsapp" />;
     }
+    if (entry.category === 'messaging' && entry.provider === 'twilio_whatsapp') {
+      return <TwilioConfigPanel tenantId={tenantId} channel="whatsapp" />;
+    }
     if (entry.category === 'accounting' && entry.provider === 'quickbooks') {
       return <QuickBooksConfigPanel tenantId={tenantId} />;
     }

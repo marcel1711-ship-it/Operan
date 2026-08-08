@@ -5,7 +5,7 @@
 // The Edge Function imports this instead of duplicating logic.
 // ============================================================
 
-const ALLOWED_PREFIXES = ['customer', 'reservation', 'listing', 'tenant', 'payment', 'waiver'];
+const ALLOWED_PREFIXES = ['customer', 'reservation', 'listing', 'tenant', 'payment', 'waiver', 'captain'];
 const SENSITIVE_KEYS = ['token', 'secret', 'password', 'api_key', 'access_token', 'provider_secret', 'metadata'];
 
 export type TemplateVariableContext = {
@@ -48,6 +48,9 @@ export type TemplateVariableContext = {
     signing_url?: string;
     signed_count?: number;
     required_count?: number;
+  };
+  captain?: {
+    url?: string;
   };
 };
 

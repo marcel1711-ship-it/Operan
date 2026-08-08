@@ -44,8 +44,8 @@ const navSections = [
     label: 'Communication',
     items: [
       { href: '/communications', label: 'Templates', icon: Mail },
-      { href: '/forms', label: 'Forms', icon: ClipboardList },
-      { href: '/waivers', label: 'Waivers', icon: FileSignature },
+      { href: '/forms', label: 'Documents', icon: ClipboardList },
+      { href: '/waivers', label: 'Signed Docs', icon: FileSignature },
     ],
   },
   {
