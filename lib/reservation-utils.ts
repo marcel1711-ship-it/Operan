@@ -110,5 +110,7 @@ export function getReservationEndDate(r: Reservation | NormalizedReservation): D
 }
 
 export function getReservationVessel(r: Reservation | NormalizedReservation): string | null {
-  return r.vessel || r.title || null;
+  const listing = (r as NormalizedReservation).listing as { name?: string } | null;
+  if (listing?.name) return listing.name;
+  return r.vessel || null;
 }

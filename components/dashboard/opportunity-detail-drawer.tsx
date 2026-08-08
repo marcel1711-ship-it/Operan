@@ -176,10 +176,6 @@ export function OpportunityDetailDrawer({
             <DetailRow icon={Mail} label="Email" value={email || '—'} />
             <DetailRow icon={Phone} label="Phone" value={phone || '—'} />
             <DetailRow icon={DollarSign} label="Value" value={formatCurrency(totalAmount)} />
-            <DetailRow icon={AlertCircle} label="Status" value={bookingStatus || opportunity.status} />
-            {paymentStatus && (
-              <DetailRow icon={DollarSign} label="Payment" value={paymentStatus.replace(/_/g, ' ')} />
-            )}
           </div>
         </div>
 

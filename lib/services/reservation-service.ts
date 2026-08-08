@@ -19,7 +19,7 @@ export async function fetchReservationsByTenant(
 
   let query = supabase
     .from('reservations')
-    .select('*', { count: 'exact' })
+    .select('*, listing:listings(name)', { count: 'exact' })
     .eq('tenant_id', tenantId)
     .order('start_at', { ascending: true, nullsFirst: false });
 
