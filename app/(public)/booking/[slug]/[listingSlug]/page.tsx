@@ -13,6 +13,7 @@ import {
   type BookingPricingOption,
   type BookingResult,
 } from '@/components/booking/booking-flow';
+import { useTenantFavicon } from '@/hooks/use-tenant-favicon';
 
 export default function DirectBookingPage() {
   return (
@@ -35,6 +36,12 @@ function DirectBookingInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { sendClose } = useEmbedPostMessage(isEmbed);
+
+  useTenantFavicon(tenant?.logo_url);
+
+  useEffect(() => {
+    if (tenant?.name && listing?.name) document.title = `${listing.name} — ${tenant.name}`;
+  }, [tenant?.name, listing?.name]);
 
   useEffect(() => {
     async function load() {

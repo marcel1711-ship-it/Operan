@@ -13,6 +13,7 @@ import {
   type BookingListing,
   type BookingPricingOption,
 } from '@/components/booking/booking-flow';
+import { useTenantFavicon } from '@/hooks/use-tenant-favicon';
 
 export default function ListingDetailPage() {
   return (
@@ -33,6 +34,12 @@ function ListingDetailInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
+
+  useTenantFavicon(tenant?.logo_url);
+
+  useEffect(() => {
+    if (tenant?.name && listing?.name) document.title = `${listing.name} — ${tenant.name}`;
+  }, [tenant?.name, listing?.name]);
 
   const photoCount = listing?.photos?.length || 0;
 

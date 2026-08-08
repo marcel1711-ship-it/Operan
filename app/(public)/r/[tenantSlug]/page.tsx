@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
+import { useTenantFavicon } from '@/hooks/use-tenant-favicon';
 
 type Tenant = {
   id: string; name: string; slug: string;
@@ -54,6 +55,12 @@ function TenantLandingPageInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activePhoto, setActivePhoto] = useState<Record<string, number>>({});
+
+  useTenantFavicon(tenant?.logo_url);
+
+  useEffect(() => {
+    if (tenant?.name) document.title = `${tenant.name} — Book Now`;
+  }, [tenant?.name]);
 
   useEffect(() => {
     async function load() {
