@@ -14,6 +14,15 @@ import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useEmbedPostMessage } from '@/hooks/use-embed-postmessage';
 
+function formatTimezoneLabel(tz: string): string {
+  try {
+    const parts = Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'long' }).formatToParts(new Date());
+    const tzName = parts.find(p => p.type === 'timeZoneName')?.value;
+    if (tzName) return tzName;
+  } catch {}
+  return tz.replace(/_/g, ' ').split('/').pop() || tz;
+}
+
 export type BookingTenant = {
   id: string; name: string; slug: string;
   primary_color: string; secondary_color: string;
@@ -100,6 +109,8 @@ export function BookingFlow({
     const d = new Date();
     return { year: d.getFullYear(), month: d.getMonth() };
   });
+  const [monthAvailability, setMonthAvailability] = useState<Record<string, boolean>>({});
+  const [loadingMonth, setLoadingMonth] = useState(false);
 
   // Check payment capability
   useEffect(() => {
@@ -149,6 +160,56 @@ export function BookingFlow({
       });
     });
   }, [selectedDate, selectedOption, tenant, listing]);
+
+  // Prefetch month availability
+  useEffect(() => {
+    if (!selectedOption || !tenant || !listing) return;
+    setLoadingMonth(true);
+    const year = calendarMonth.year;
+    const month = calendarMonth.month;
+    const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const maxAdv = listing.maximum_advance_days || 365;
+    const maxD = new Date(); maxD.setDate(maxD.getDate() + maxAdv);
+
+    const datesToCheck: string[] = [];
+    for (let day = 1; day <= lastDayOfMonth; day++) {
+      const d = new Date(year, month, day);
+      if (d >= now && d <= maxD) {
+        datesToCheck.push(d.toISOString().split('T')[0]);
+      }
+    }
+
+    if (datesToCheck.length === 0) {
+      setMonthAvailability({});
+      setLoadingMonth(false);
+      return;
+    }
+
+    let active = true;
+    (async () => {
+      const avail: Record<string, boolean> = {};
+      const batchSize = 5;
+      for (let i = 0; i < datesToCheck.length; i += batchSize) {
+        if (!active) return;
+        const batch = datesToCheck.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map(dateStr =>
+            supabase.rpc('get_public_availability', {
+              p_tenant_slug: tenant.slug,
+              p_listing_slug: listing.slug,
+              p_pricing_option_id: selectedOption.id,
+              p_date: dateStr,
+            }).then(({ data }) => ({ date: dateStr, hasSlots: (data?.slots?.length || 0) > 0 }))
+          )
+        );
+        for (const r of results) avail[r.date] = r.hasSlots;
+        setMonthAvailability({ ...avail });
+      }
+      setLoadingMonth(false);
+    })().catch(() => setLoadingMonth(false));
+    return () => { active = false; };
+  }, [calendarMonth, selectedOption, tenant, listing]);
 
   // Calculate price
   useEffect(() => {
@@ -282,6 +343,8 @@ export function BookingFlow({
   function isDateAvailable(d: Date): boolean {
     if (d < today) return false;
     if (d > maxDate) return false;
+    const dStr = d.toISOString().split('T')[0];
+    if (Object.keys(monthAvailability).length > 0 && monthAvailability[dStr] === false) return false;
     return true;
   }
 
@@ -398,18 +461,23 @@ export function BookingFlow({
                 return (
                   <button key={dayNum} disabled={!available} onClick={() => setSelectedDate(dStr)}
                     className={cn('aspect-square rounded-lg text-xs font-medium transition-all',
-                      selected ? 'text-white shadow-sm' : available ? 'text-foreground hover:bg-secondary' : 'text-muted-foreground/30 cursor-not-allowed')}
+                      selected ? 'text-white shadow-sm' : available ? 'text-foreground hover:bg-secondary' : 'text-muted-foreground/30 cursor-not-allowed line-through')}
                     style={selected ? { backgroundColor: primary } : {}}>
                     {dayNum}
                   </button>
                 );
               })}
             </div>
+            {loadingMonth && (
+              <div className="flex items-center justify-center py-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </div>
           {rateLimited && <p className="text-xs text-warning">Too many requests. Please slow down.</p>}
           {selectedDate && (
             <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground">Available Times ({listing.timezone})</Label>
+              <Label className="text-xs font-medium text-muted-foreground">Available Times ({formatTimezoneLabel(listing.timezone)})</Label>
               {loadingSlots ? (
                 <div className="flex items-center justify-center py-4"><Loader2 className="h-5 w-5 animate-spin" style={{ color: primary }} /></div>
               ) : slots.length === 0 ? (
