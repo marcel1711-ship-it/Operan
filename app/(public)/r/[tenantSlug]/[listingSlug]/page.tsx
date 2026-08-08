@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import {
-  Anchor, Users, MapPin, Ship, Loader2, ArrowLeft,
+  Anchor, Users, MapPin, Ship, Loader2, ArrowLeft, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/lib/supabase';
@@ -32,6 +32,17 @@ function ListingDetailInner() {
   const [pricingOptions, setPricingOptions] = useState<BookingPricingOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [photoIndex, setPhotoIndex] = useState(0);
+
+  const photoCount = listing?.photos?.length || 0;
+
+  const nextPhoto = useCallback(() => {
+    if (photoCount > 1) setPhotoIndex(i => (i + 1) % photoCount);
+  }, [photoCount]);
+
+  const prevPhoto = useCallback(() => {
+    if (photoCount > 1) setPhotoIndex(i => (i - 1 + photoCount) % photoCount);
+  }, [photoCount]);
 
   useEffect(() => {
     async function load() {
@@ -54,6 +65,12 @@ function ListingDetailInner() {
     }
     load();
   }, [tenantSlug, listingSlug]);
+
+  useEffect(() => {
+    if (photoCount <= 1) return;
+    const timer = setInterval(nextPhoto, 5000);
+    return () => clearInterval(timer);
+  }, [photoCount, nextPhoto]);
 
   if (loading) return <div className="theme-light flex min-h-screen items-center justify-center bg-slate-50"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (error || !tenant || !listing) return (
@@ -98,10 +115,41 @@ function ListingDetailInner() {
           {/* Left: Listing info */}
           <div className="space-y-6">
             {/* Gallery */}
-            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-              {listing.photos?.length > 0 ? (
+            <div className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              {photoCount > 0 ? (
                 <div className="relative h-80 sm:h-96">
-                  <img src={listing.photos[0]} alt={listing.name} className="h-full w-full object-cover" />
+                  {listing.photos.map((photo, i) => (
+                    <img
+                      key={i}
+                      src={photo}
+                      alt={`${listing.name} — photo ${i + 1}`}
+                      className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
+                      style={{ opacity: i === photoIndex ? 1 : 0 }}
+                    />
+                  ))}
+                  {photoCount > 1 && (
+                    <>
+                      <button onClick={prevPhoto} className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/60 group-hover:opacity-100">
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button onClick={nextPhoto} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/60 group-hover:opacity-100">
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+                        {listing.photos.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setPhotoIndex(i)}
+                            className="h-2 rounded-full transition-all"
+                            style={{
+                              width: i === photoIndex ? 20 : 8,
+                              backgroundColor: i === photoIndex ? '#fff' : 'rgba(255,255,255,0.5)',
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="flex h-80 items-center justify-center bg-secondary"><Ship className="h-16 w-16 text-muted-foreground/30" /></div>
