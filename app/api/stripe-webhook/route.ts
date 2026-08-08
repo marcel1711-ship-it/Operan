@@ -3,29 +3,68 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { getStripeClientAsync, getStripeWebhookSecretAsync } from '@/lib/integrations/stripe-server';
 import type { Stripe } from 'stripe';
 
+async function verifyWebhookEvent(
+  body: string,
+  signature: string
+): Promise<{ event: Stripe.Event; client: Stripe } | null> {
+  const StripeLib = require('stripe');
+
+  const platformClient = await getStripeClientAsync();
+  const platformSecret = await getStripeWebhookSecretAsync();
+  if (platformClient && platformSecret) {
+    try {
+      const event = platformClient.webhooks.constructEvent(body, signature, platformSecret);
+      return { event, client: platformClient };
+    } catch {
+      // Platform secret didn't match — try tenant secrets below
+    }
+  }
+
+  const { data: tenantIntegrations } = await supabaseAdmin
+    .from('tenant_integrations')
+    .select('id, credentials, connection_mode')
+    .eq('category', 'payments')
+    .eq('provider', 'stripe')
+    .eq('enabled', true);
+
+  if (tenantIntegrations) {
+    for (const integration of tenantIntegrations) {
+      const creds = integration.credentials as Record<string, string> | null;
+      const whSecret = creds?.webhook_secret;
+      const secretKey = creds?.secret_key;
+      if (!whSecret || !whSecret.startsWith('whsec_') || !secretKey) continue;
+
+      try {
+        const tenantClient = new StripeLib(secretKey, {
+          apiVersion: '2025-08-27.basil' as Stripe.LatestApiVersion,
+          typescript: true,
+        });
+        const event = tenantClient.webhooks.constructEvent(body, signature, whSecret);
+        return { event, client: tenantClient };
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get('stripe-signature') || '';
 
-  const client = await getStripeClientAsync();
-  const webhookSecret = await getStripeWebhookSecretAsync();
+  const result = await verifyWebhookEvent(body, signature);
 
-  if (!client || !webhookSecret) {
+  if (!result) {
+    console.error('[stripe-webhook] No matching webhook secret found for signature');
     return NextResponse.json(
-      { error: 'Stripe webhook handler not configured' },
-      { status: 503 }
-    );
-  }
-
-  let event: Stripe.Event;
-  try {
-    event = client.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch {
-    return NextResponse.json(
-      { error: 'Invalid signature' },
+      { error: 'Invalid signature or webhook not configured' },
       { status: 400 }
     );
   }
+
+  const { event, client } = result;
 
   const environment = event.livemode ? 'live' : 'test';
 
