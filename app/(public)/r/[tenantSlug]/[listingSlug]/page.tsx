@@ -55,9 +55,9 @@ function ListingDetailInner() {
     load();
   }, [tenantSlug, listingSlug]);
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-slate-50"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (loading) return <div className="theme-light flex min-h-screen items-center justify-center bg-slate-50"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (error || !tenant || !listing) return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50">
+    <div className="theme-light flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50">
       <Anchor className="h-12 w-12 text-slate-300" />
       <div className="text-center">
         <h1 className="text-lg font-bold text-foreground">{error || 'Not found'}</h1>
@@ -70,11 +70,11 @@ function ListingDetailInner() {
   const secondary = tenant.secondary_color || '#0f766e';
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="theme-light min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="relative overflow-hidden" style={{ backgroundColor: '#0f172a' }}>
+      <header className="relative overflow-hidden" style={{ backgroundColor: primary }}>
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 left-1/4 h-72 w-72 rounded-full blur-[100px]" style={{ backgroundColor: primary, opacity: 0.2 }} />
+          <div className="absolute -top-24 left-1/4 h-72 w-72 rounded-full blur-[100px]" style={{ backgroundColor: primary, opacity: 0.3 }} />
         </div>
         <div className="relative mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
           <a href={`/r/${tenantSlug}`} className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white">

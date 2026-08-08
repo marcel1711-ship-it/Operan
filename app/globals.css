@@ -151,6 +151,36 @@
   }
 }
 
+@layer base {
+  .theme-light {
+    --app-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --elevated-bg: #f1f5f9;
+    --panel-bg: #f8fafc;
+    --input-bg: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-disabled: #94a3b8;
+    --border-default: rgba(0, 0, 0, 0.10);
+    --border-strong: rgba(0, 0, 0, 0.16);
+    color-scheme: light;
+    color: #0f172a;
+  }
+
+  .theme-light .bg-card { background-color: #ffffff !important; }
+  .theme-light .bg-secondary { background-color: #f1f5f9 !important; }
+  .theme-light .bg-secondary\/50 { background-color: rgba(241, 245, 249, 0.5) !important; }
+  .theme-light .bg-background { background-color: #f8fafc !important; }
+  .theme-light .text-foreground { color: #0f172a !important; }
+  .theme-light .text-muted-foreground { color: #64748b !important; }
+  .theme-light .text-card-foreground { color: #0f172a !important; }
+  .theme-light .border-border { border-color: rgba(0, 0, 0, 0.10) !important; }
+  .theme-light .bg-muted { background-color: #f1f5f9 !important; }
+  .theme-light .border-input { border-color: #e2e8f0 !important; }
+  .theme-light input, .theme-light textarea { background-color: #ffffff; color: #0f172a; border-color: #e2e8f0; }
+}
+
 @layer utilities {
   /* OPERAN landing page utilities — these use hardcoded values and must NOT change */
 

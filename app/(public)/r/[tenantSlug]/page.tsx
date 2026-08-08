@@ -95,7 +95,7 @@ function TenantLandingPageInner() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="theme-light min-h-screen bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -112,7 +112,7 @@ function TenantLandingPageInner() {
 
   if (error || !tenant) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50">
+      <div className="theme-light flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50">
         <Anchor className="h-12 w-12 text-slate-300" />
         <div className="text-center">
           <h1 className="text-lg font-bold text-foreground">Business not found</h1>
@@ -208,8 +208,8 @@ function TenantLandingPageInner() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="relative overflow-hidden" style={{ backgroundColor: '#0f172a' }}>
+    <div className="theme-light min-h-screen bg-slate-50">
+      <header className="relative overflow-hidden" style={{ backgroundColor: primary }}>
         {tenant.hero_image_url && (
           <div className="pointer-events-none absolute inset-0 opacity-30">
             <img src={tenant.hero_image_url} alt="" className="h-full w-full object-cover" />
