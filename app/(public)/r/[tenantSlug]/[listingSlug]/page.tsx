@@ -85,6 +85,7 @@ function ListingDetailInner() {
 
   const primary = tenant.primary_color || '#0d9488';
   const secondary = tenant.secondary_color || '#0f766e';
+  const whatsappNumber = tenant.phone?.replace(/\D/g, '') || null;
 
   return (
     <div className="theme-light min-h-screen bg-slate-50">
@@ -218,6 +219,21 @@ function ListingDetailInner() {
           </div>
         </div>
       </main>
+
+      {whatsappNumber && (
+        <a
+          href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi! I have a question about booking with ${tenant.name}.`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110"
+          style={{ backgroundColor: '#25D366' }}
+          aria-label="Chat on WhatsApp"
+        >
+          <svg viewBox="0 0 32 32" className="h-7 w-7 fill-white">
+            <path d="M16.004 0h-.008C7.174 0 0 7.176 0 16c0 3.5 1.128 6.744 3.046 9.378L1.054 31.29l6.118-1.958A15.9 15.9 0 0016.004 32C24.826 32 32 24.822 32 16S24.826 0 16.004 0zm9.335 22.594c-.39 1.1-1.932 2.012-3.2 2.278-.868.18-2.002.324-5.82-1.25-4.886-2.016-8.03-6.964-8.274-7.29-.234-.326-1.966-2.62-1.966-4.998 0-2.378 1.246-3.548 1.688-4.034.39-.43 1.028-.622 1.64-.622.198 0 .376.01.536.018.442.02.664.046.956.74.364.866 1.25 2.984 1.36 3.202.11.218.218.514.072.826-.136.316-.256.512-.476.786-.218.274-.46.488-.676.78-.198.258-.42.534-.18.972.24.43 1.066 1.756 2.288 2.846 1.572 1.402 2.896 1.836 3.31 2.038.322.156.704.136.952-.124.316-.33.706-.878 1.102-1.42.282-.386.638-.434.996-.29.362.136 2.296 1.084 2.69 1.28.394.2.656.29.752.454.094.164.094.95-.296 2.048z"/>
+          </svg>
+        </a>
+      )}
     </div>
   );
 }
