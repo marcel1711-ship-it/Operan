@@ -64,9 +64,9 @@ export default function PaymentSuccessPage() {
   }, [bookingReference, accessToken, pollCount]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-8">
+    <div className="theme-light min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-8">
       <div className="mx-auto max-w-lg">
-        <div className="rounded-2xl border border-slate-200 bg-card p-8 shadow-lg">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
           {status === 'verifying' && (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">

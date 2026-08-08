@@ -31,9 +31,9 @@ export default function PaymentCancelledPage() {
   const canRetry = !holdExpired && bookingData?.booking_status === 'awaiting_payment';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-8">
+    <div className="theme-light min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 px-4 py-8">
       <div className="mx-auto max-w-lg">
-        <div className="rounded-2xl border border-slate-200 bg-card p-8 shadow-lg">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
               <XCircle className="h-8 w-8 text-destructive" />
