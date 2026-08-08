@@ -125,28 +125,37 @@ function TenantLandingPageInner() {
   const primary = tenant.primary_color || '#0d9488';
   const secondary = tenant.secondary_color || '#0f766e';
 
+  const embedHeaderBg = (isEmbed && searchParams.get('headerBg')) ? `#${searchParams.get('headerBg')}` : primary;
+  const embedAccent = (isEmbed && searchParams.get('accent')) ? `#${searchParams.get('accent')}` : primary;
+  const embedBg = (isEmbed && searchParams.get('bg')) ? `#${searchParams.get('bg')}` : 'transparent';
+  const embedCardBg = (isEmbed && searchParams.get('cardBg')) ? `#${searchParams.get('cardBg')}` : undefined;
+  const embedTextColor = (isEmbed && searchParams.get('text')) ? `#${searchParams.get('text')}` : undefined;
+  const embedMuted = (isEmbed && searchParams.get('muted')) ? `#${searchParams.get('muted')}` : undefined;
+  const embedHideHeader = isEmbed && searchParams.get('hideHeader') === '1';
+
   if (isEmbed) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: '#0f172a' }}>
-          <div className="flex items-center gap-2">
-            {tenant.logo_url ? (
-              <img src={tenant.logo_url} alt={tenant.name} className="h-7 w-7 rounded-lg object-cover" />
-            ) : (
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: primary }}><Anchor className="h-4 w-4 text-white" /></div>
+      <div className="min-h-screen" style={{ backgroundColor: embedBg }}>
+        {!embedHideHeader && (
+          <div className="flex items-center justify-between px-4 py-3" style={{ backgroundColor: embedHeaderBg }}>
+            <div className="flex items-center gap-2">
+              {tenant.logo_url ? (
+                <img src={tenant.logo_url} alt={tenant.name} className="h-7 w-7 rounded-lg object-cover" />
+              ) : (
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: embedAccent }}><Anchor className="h-4 w-4 text-white" /></div>
+              )}
+              <span className="text-sm font-bold text-white">{tenant.name}</span>
+            </div>
+            {tenant.landing_page_url && (
+              <a href={tenant.landing_page_url} target="_blank" rel="noopener noreferrer" className="text-xs text-white/60 hover:text-white">Visit site →</a>
             )}
-            <span className="text-sm font-bold text-white">{tenant.name}</span>
           </div>
-          {tenant.landing_page_url && (
-            <a href={tenant.landing_page_url} target="_blank" rel="noopener noreferrer" className="text-xs text-slate-400 hover:text-white">Visit site →</a>
-          )}
-        </div>
+        )}
         <main className="px-4 py-4">
-          <h2 className="mb-3 text-sm font-bold text-foreground">Available Experiences</h2>
           {listings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-card py-12">
-              <Ship className="h-8 w-8 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">No experiences available right now.</p>
+            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border py-12" style={{ borderColor: `${embedAccent}20`, backgroundColor: embedCardBg }}>
+              <Ship className="h-8 w-8" style={{ color: `${embedAccent}60` }} />
+              <p className="text-sm" style={{ color: embedMuted || '#6b9090' }}>No experiences available right now.</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -154,23 +163,23 @@ function TenantLandingPageInner() {
                 const photoIdx = getPhotoIndex(boat.id, boat.photos.length);
                 const lowestPrice = listingPrices[boat.id];
                 return (
-                  <a key={boat.id} href={`/r/${slug}/${boat.slug}`} className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md">
-                    <div className="relative h-40 overflow-hidden bg-secondary">
+                  <a key={boat.id} href={`/r/${slug}/${boat.slug}`} target="_blank" rel="noopener noreferrer" className="flex flex-col overflow-hidden rounded-xl shadow-sm transition-all hover:shadow-md" style={{ backgroundColor: embedCardBg || '#ffffff', border: `1px solid ${embedAccent}20` }}>
+                    <div className="relative h-40 overflow-hidden">
                       {boat.photos.length > 0 ? (
                         <img src={boat.photos[photoIdx]} alt={boat.name} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center"><Ship className="h-8 w-8 text-muted-foreground/30" /></div>
+                        <div className="flex h-full w-full items-center justify-center" style={{ backgroundColor: `${embedAccent}10` }}><Ship className="h-8 w-8" style={{ color: `${embedAccent}40` }} /></div>
                       )}
                     </div>
                     <div className="flex flex-1 flex-col p-4">
-                      <h3 className="text-sm font-bold text-foreground">{boat.name}</h3>
-                      <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-1"><Users className="h-3 w-3" style={{ color: primary }} />{boat.capacity} guests</span>
+                      <h3 className="text-sm font-bold" style={{ color: embedTextColor || '#1a3a3a' }}>{boat.name}</h3>
+                      <div className="mt-1 flex items-center gap-2 text-[11px]" style={{ color: embedMuted || '#6b9090' }}>
+                        <span className="flex items-center gap-1"><Users className="h-3 w-3" style={{ color: embedAccent }} />{boat.capacity} guests</span>
                       </div>
                       {lowestPrice !== undefined && (
-                        <div className="mt-2"><span className="text-[9px] uppercase tracking-wider text-muted-foreground">From</span><p className="text-sm font-bold text-foreground">{formatCurrency(lowestPrice, boat.currency)}</p></div>
+                        <div className="mt-2"><span className="text-[9px] uppercase tracking-wider" style={{ color: embedMuted || '#6b9090' }}>From</span><p className="text-sm font-bold" style={{ color: embedTextColor || '#1a3a3a' }}>{formatCurrency(lowestPrice, boat.currency)}</p></div>
                       )}
-                      <div className="mt-3 rounded-lg py-2 text-center text-xs font-semibold text-white" style={{ backgroundColor: primary }}>View Details</div>
+                      <div className="mt-3 rounded-lg py-2 text-center text-xs font-semibold text-white" style={{ backgroundColor: embedAccent }}>View Details</div>
                     </div>
                   </a>
                 );
