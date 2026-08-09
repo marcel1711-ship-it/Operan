@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import {
   Loader2, FileSignature, Plus, Trash2, Copy, Check, ExternalLink,
   Code, Eye, FileText, Clock, X, ChevronDown, ChevronUp, Link2, Ship,
-  Upload, FileUp,
+  Upload, FileUp, LayoutTemplate,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { DOCUMENT_TEMPLATES } from '@/lib/document-templates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -649,10 +650,43 @@ export default function FormsPage() {
               )}
             </div>
 
-            {/* PDF Upload */}
+            {/* Template Picker */}
+            {!editing && !htmlContent && (
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <LayoutTemplate className="h-3.5 w-3.5" /> Start from a template
+                </Label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {DOCUMENT_TEMPLATES.map((tpl) => (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      onClick={() => {
+                        setHtmlContent(tpl.html);
+                        setDocumentType(tpl.type);
+                        if (!title.trim()) {
+                          setTitle(tpl.name);
+                          setSlug(slugify(tpl.name));
+                        }
+                      }}
+                      className="flex flex-col items-start gap-1 rounded-xl border border-border bg-[var(--card-bg)] p-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
+                        <span className="text-xs font-medium text-foreground">{tpl.name}</span>
+                      </span>
+                      <span className="text-[10px] leading-tight text-muted-foreground">{tpl.description}</span>
+                      <Badge variant="outline" className="mt-0.5 text-[9px] capitalize">{tpl.type}</Badge>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* File Upload */}
             <div className="space-y-1.5">
               <Label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <FileUp className="h-3.5 w-3.5" /> Upload PDF (optional)
+                <FileUp className="h-3.5 w-3.5" /> Upload file (optional)
               </Label>
               <label
                 className={cn(
