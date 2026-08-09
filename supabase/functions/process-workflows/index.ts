@@ -459,9 +459,16 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
     if (step.action_type === 'send_email' || step.action_type === 'send_sms' || step.action_type === 'send_whatsapp') {
       const channel = step.action_type.replace('send_', '');
       const templateId = config.template_id as string;
+      const inlineSubject = config.subject as string | undefined;
+      const inlineBody = config.body as string | undefined;
+      const inlineMessage = config.message as string | undefined;
 
-      if (!templateId) {
-        throw new Error(`Missing template_id for ${step.action_type}`);
+      const hasInlineContent = channel === 'email'
+        ? !!(inlineSubject && inlineBody)
+        : !!inlineMessage;
+
+      if (!templateId && !hasInlineContent) {
+        throw new Error(`Missing template_id or inline content for ${step.action_type}`);
       }
 
       // Check provider readiness
@@ -563,22 +570,6 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         }
       }
 
-      // Render template using CANONICAL renderer
-      const { data: template } = await supabase
-        .from('communication_templates')
-        .select('subject, body, channel')
-        .eq('id', templateId)
-        .maybeSingle();
-
-      if (!template) {
-        throw new Error(`Template ${templateId} not found`);
-      }
-
-      // Validate template channel matches action channel
-      if (template.channel !== channel) {
-        throw new Error(`Template channel ${template.channel} does not match action channel ${channel}`);
-      }
-
       // Build context using canonical builder
       const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id);
 
@@ -587,14 +578,41 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         tplContext.captain = { url: input.captain_url };
       }
 
-      // Validate template variables
-      const varCheck = validateTemplateVariables(template.body);
-      if (!varCheck.valid) {
-        throw new Error(`Template contains unknown variables: ${varCheck.unknown.join(', ')}`);
-      }
+      let renderedBody = '';
+      let renderedSubject = '';
 
-      let renderedBody = renderTemplate(template.body, tplContext);
-      let renderedSubject = template.subject ? renderTemplate(template.subject, tplContext) : '';
+      if (templateId) {
+        // Render from template
+        const { data: template } = await supabase
+          .from('communication_templates')
+          .select('subject, body, channel')
+          .eq('id', templateId)
+          .maybeSingle();
+
+        if (!template) {
+          throw new Error(`Template ${templateId} not found`);
+        }
+
+        if (template.channel !== channel) {
+          throw new Error(`Template channel ${template.channel} does not match action channel ${channel}`);
+        }
+
+        const varCheck = validateTemplateVariables(template.body);
+        if (!varCheck.valid) {
+          throw new Error(`Template contains unknown variables: ${varCheck.unknown.join(', ')}`);
+        }
+
+        renderedBody = renderTemplate(template.body, tplContext);
+        renderedSubject = template.subject ? renderTemplate(template.subject, tplContext) : '';
+      } else {
+        // Render from inline content
+        if (channel === 'email') {
+          renderedBody = renderTemplate(inlineBody || '', tplContext);
+          renderedSubject = renderTemplate(inlineSubject || '', tplContext);
+        } else {
+          renderedBody = renderTemplate(inlineMessage || '', tplContext);
+        }
+      }
 
       // Sanitize HTML for email channel
       if (channel === 'email') {
@@ -801,6 +819,67 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
       return { failed: false, deadLetter: false };
     }
 
+    // Handle update_opportunity_stage
+    if (step.action_type === 'update_opportunity_stage') {
+      const pipelineId = config.pipeline_id as string;
+      const stageId = config.stage_id as string;
+      if (!pipelineId || !stageId) throw new Error('Missing pipeline_id or stage_id');
+
+      if (ctx.opportunity_id) {
+        await supabase
+          .from('opportunities')
+          .update({ stage_id: stageId, updated_at: new Date().toISOString() })
+          .eq('id', ctx.opportunity_id);
+      } else if (ctx.customer_id) {
+        const { data: opp } = await supabase
+          .from('opportunities')
+          .select('id')
+          .eq('customer_id', ctx.customer_id)
+          .eq('pipeline_id', pipelineId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (opp) {
+          await supabase
+            .from('opportunities')
+            .update({ stage_id: stageId, updated_at: new Date().toISOString() })
+            .eq('id', opp.id);
+        }
+      }
+
+      await supabase.rpc('update_step_run_status', {
+        p_step_run_id: step.id, p_status: 'completed',
+        p_output: { status: 'stage_updated', pipeline_id: pipelineId, stage_id: stageId },
+      });
+      await proceedToNext(supabase, step, nodes, edges, ctx);
+      return { failed: false, deadLetter: false };
+    }
+
+    // Handle create_task
+    if (step.action_type === 'create_task') {
+      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id);
+      const title = config.title ? renderTemplate(String(config.title), tplContext) : 'Task';
+      const description = config.description ? renderTemplate(String(config.description), tplContext) : '';
+
+      await supabase.from('tasks').insert({
+        tenant_id: ctx.tenant_id,
+        title,
+        description,
+        assigned_user_id: config.assigned_user_id || null,
+        entity_type: ctx.entity_type || 'reservation',
+        entity_id: ctx.entity_id || ctx.reservation_id,
+        priority: config.priority || 'normal',
+        status: 'pending',
+      });
+
+      await supabase.rpc('update_step_run_status', {
+        p_step_run_id: step.id, p_status: 'completed',
+        p_output: { status: 'task_created', title },
+      });
+      await proceedToNext(supabase, step, nodes, edges, ctx);
+      return { failed: false, deadLetter: false };
+    }
+
     // Unknown action — fail safely, do not execute
     await supabase.rpc('update_step_run_status', {
       p_step_run_id: step.id, p_status: 'failed',
@@ -940,8 +1019,84 @@ async function processMessage(supabase: any, msg: any) {
     return;
   }
 
-  // Real providers would be handled here when configured
-  // For now, record as failed since no real adapter is active
+  // Resend provider
+  if (msg.provider === 'resend') {
+    // Resolve Resend API key from tenant integration credentials
+    const { data: integration } = await supabase
+      .from('tenant_integrations')
+      .select('credentials')
+      .eq('tenant_id', msg.tenant_id)
+      .eq('provider', 'resend')
+      .eq('enabled', true)
+      .maybeSingle();
+
+    const apiKey = integration?.credentials?.api_key;
+    if (!apiKey) {
+      await supabase.rpc('update_communication_message_status', {
+        p_message_id: msg.id,
+        p_status: 'failed',
+        p_failure_code: 'NO_API_KEY',
+        p_failure_reason: 'Resend API key not found in tenant integration',
+      });
+      return;
+    }
+
+    // Resolve from_email from tenant communication settings
+    const { data: settings } = await supabase
+      .from('tenant_communication_settings')
+      .select('from_email, sender_name, reply_to_email')
+      .eq('tenant_id', msg.tenant_id)
+      .maybeSingle();
+
+    const fromEmail = settings?.from_email || 'noreply@operan.app';
+    const senderName = settings?.sender_name || '';
+    const from = senderName ? `${senderName} <${fromEmail}>` : fromEmail;
+    const replyTo = settings?.reply_to_email || undefined;
+
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from,
+          to: [msg.recipient],
+          subject: msg.rendered_subject || '(No Subject)',
+          html: msg.rendered_body,
+          ...(replyTo ? { reply_to: replyTo } : {}),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        await supabase.rpc('update_communication_message_status', {
+          p_message_id: msg.id,
+          p_status: 'sent',
+          p_provider_message_id: data.id || null,
+        });
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        await supabase.rpc('update_communication_message_status', {
+          p_message_id: msg.id,
+          p_status: 'failed',
+          p_failure_code: 'RESEND_ERROR',
+          p_failure_reason: errData?.message || `Resend API returned ${res.status}`,
+        });
+      }
+    } catch (err) {
+      await supabase.rpc('update_communication_message_status', {
+        p_message_id: msg.id,
+        p_status: 'failed',
+        p_failure_code: 'SEND_EXCEPTION',
+        p_failure_reason: err instanceof Error ? err.message : 'Failed to call Resend API',
+      });
+    }
+    return;
+  }
+
+  // Unknown provider — fail
   await supabase.rpc('update_communication_message_status', {
     p_message_id: msg.id,
     p_status: 'failed',
