@@ -543,10 +543,17 @@ export default function WorkflowBuilderPage() {
         });
     }
 
+    // Refresh versions list without full page reload (which resets UI state)
+    const { data: freshVersions } = await supabase
+      .from('automation_workflow_versions')
+      .select('*')
+      .eq('workflow_id', workflowId)
+      .order('version_number', { ascending: false });
+    if (freshVersions) setVersions(freshVersions as Version[]);
+
     setSaving(false);
     setSaveSuccess(true);
     setUnsavedChanges(false);
-    await load(tenant.id);
   }
 
   function checkProviderReadiness(): string[] {
@@ -613,7 +620,13 @@ export default function WorkflowBuilderPage() {
     if (result) {
       setUnsavedChanges(false);
       setPublishError(null);
-      await load(tenant.id);
+      // Refresh versions and workflow status without full page reload
+      const [{ data: freshVersions }, { data: freshWf }] = await Promise.all([
+        supabase.from('automation_workflow_versions').select('*').eq('workflow_id', workflowId).order('version_number', { ascending: false }),
+        supabase.from('automation_workflows').select('*').eq('id', workflowId).maybeSingle(),
+      ]);
+      if (freshVersions) setVersions(freshVersions as Version[]);
+      if (freshWf) setWorkflow(freshWf as Workflow);
     }
   }
 
