@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const TEMPLATE_VARIABLES = [
-  { key: 'signer_name', description: 'Full name of the person signing (filled from registration form)' },
+  { key: 'signer_name', description: 'Full name of the person signing / Charterer name (filled from registration form)' },
+  { key: 'signer_signature', description: 'Digital signature of the signer (rendered as signature field)' },
+  { key: 'signer_initials', description: 'Initials of the signer (rendered as initials field)' },
   { key: 'email', description: 'Email of the signer (filled from registration form)' },
   { key: 'phone', description: 'Phone number of the signer (filled from registration form)' },
   { key: 'vessel_name', description: 'Name of the boat/vessel (auto-filled from reservation)' },
+  { key: 'vessel_length', description: 'Length of the vessel in feet (auto-filled from vessel data)' },
+  { key: 'vessel_type', description: 'Type of vessel — Motor, Sail, etc. (auto-filled from vessel data)' },
   { key: 'charter_date', description: 'Date of the charter/rental (auto-filled from reservation)' },
   { key: 'departure_time', description: 'Departure/start time (auto-filled from reservation)' },
   { key: 'end_time', description: 'End/return time (auto-filled from reservation)' },
   { key: 'guest_count', description: 'Number of guests (auto-filled from reservation)' },
   { key: 'booking_reference', description: 'Reservation/booking reference number (auto-filled)' },
   { key: 'company_name', description: 'Name of the charter company/tenant (auto-filled)' },
+  { key: 'meeting_location', description: 'Meeting point / marina / yacht club (auto-filled from reservation)' },
+  { key: 'cruising_area', description: 'Cruising area or route (auto-filled from reservation if available)' },
   { key: 'today', description: 'Current date when the document is signed (auto-filled)' },
   { key: 'deposit_amount', description: 'Deposit amount paid (auto-filled from reservation if available)' },
   { key: 'total_amount', description: 'Total rental/charter amount (auto-filled from reservation if available)' },
+  { key: 'charter_fee', description: 'Charter/yacht services fee (auto-filled from reservation)' },
 ];
 
 const SYSTEM_PROMPT = `You are a document converter for a marine charter business platform. Convert raw PDF text into clean, professional, well-structured HTML that looks like a proper legal document when rendered.
@@ -21,9 +28,14 @@ const SYSTEM_PROMPT = `You are a document converter for a marine charter busines
 ## Critical Rules:
 1. Output ONLY raw HTML tags — NEVER wrap in \`\`\`html code fences, NEVER use markdown. Start directly with <section> or <h2>.
 2. NEVER replace actual names of people or companies in the document. Keep them exactly as they appear.
-3. Only use template variables (like {{signer_name}}) where there are fill-in blanks (_____, ------, dotted lines) — never to replace existing text.
+3. Use template variables where there are BLANK or EMPTY fields that should be filled from the reservation:
+   - Fill-in blanks: _____, ------, dotted lines → replace with the matching {{variable}}
+   - Empty fields after colons: "Charterer: ." or "Start time/date: ." → replace the empty value with {{variable}}
+   - Signature/initials lines: "Charterer Signature: ____" → {{signer_signature}}, "Charterer Printed Name: ____" → {{signer_name}}, "Charterer's Initials: ____" → {{signer_initials}}
+   - NEVER replace existing filled-in values (real names, real dates, real amounts already written in the document)
 4. Keep ALL original legal content — do not summarize, omit, or rephrase anything.
 5. Fix OCR/extraction artifacts: missing spaces between words, broken line wraps, garbled characters.
+6. For "Agreement Details" or "Booking Details" sections: fields like Date, Place, Yacht name, Length, Type, Charterer, Start time, End time, Cruising area, and Fee should use the appropriate template variables ONLY if their values are blank/empty/placeholder.
 
 ## HTML Structure Requirements:
 - Wrap each numbered/titled section in a <section> tag
@@ -89,7 +101,21 @@ ${TEMPLATE_VARIABLES.map(v => `- {{${v.key}}} — ${v.description}`).join('\n')}
 <p>The guest is responsible for any damage to the vessel or equipment caused by negligence or misuse during the rental period. The charter company reserves the right to charge the payment method on file for any repair costs incurred.</p>
 </section>
 
-Follow this structure precisely. Every waiver or contract should have clearly numbered sections, proper lists, and flowing paragraphs — never a wall of disconnected lines.`;
+<section>
+<h2>AGREEMENT DETAILS</h2>
+<p>Date: <strong>{{charter_date}}</strong>. Place: <strong>{{meeting_location}}</strong>. Yacht name: <strong>{{vessel_name}}</strong>. Length: <strong>{{vessel_length}}</strong>. Type: <strong>{{vessel_type}}</strong>. Crew: <strong>Captain +</strong>. Owner: <strong>LAZARO LOPEZ</strong>. Charterer: <strong>{{signer_name}}</strong>. Start time/date: <strong>{{departure_time}}</strong>. End time/date: <strong>{{end_time}}</strong>. Cruising area: <strong>{{cruising_area}}</strong>. Yacht Services fee: <strong>{{charter_fee}}</strong>.</p>
+</section>
+
+<section>
+<h2>SIGNATURE AND ACKNOWLEDGMENT</h2>
+<p>I have read and understand this Charter Agreement in its entirety.</p>
+<p>Charterer Signature: <strong>{{signer_signature}}</strong></p>
+<p>Charterer Printed Name: <strong>{{signer_name}}</strong></p>
+<p>Owner: <strong>LAZARO LOPEZ</strong></p>
+<p>Charterer's Initials: <strong>{{signer_initials}}</strong></p>
+</section>
+
+Follow this structure precisely. Every waiver or contract should have clearly numbered sections, proper lists, and flowing paragraphs — never a wall of disconnected lines. For agreement/booking detail sections, use template variables for empty fields that will be filled from reservation data. For signature sections, use {{signer_signature}}, {{signer_name}}, and {{signer_initials}} for the charterer/guest blanks — NEVER for the owner's fields.`;
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY_OPERAN || process.env.ANTHROPIC_API_KEY;
