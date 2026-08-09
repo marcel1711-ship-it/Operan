@@ -47,7 +47,7 @@ ${TEMPLATE_VARIABLES.map(v => `- {{${v.key}}} — ${v.description}`).join('\n')}
 </section>`;
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY_OPERAN || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
       { error: 'ANTHROPIC_API_KEY not configured' },
