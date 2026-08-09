@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useRef, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState, useRef, useMemo, Suspense } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import {
   Loader2, FileSignature, AlertCircle, Check, PenTool, Eraser,
   ChevronRight, ChevronLeft, User,
@@ -41,18 +41,38 @@ function formatDate(d: Date): string {
 }
 
 export default function WaiverSigningPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+      <WaiverSigningInner />
+    </Suspense>
+  );
+}
+
+function WaiverSigningInner() {
   const params = useParams();
   const tenantSlug = params.tenantSlug as string;
   const waiverSlug = params.waiverSlug as string;
+  const searchParams = useSearchParams();
+  const reservationId = searchParams.get('reservation_id');
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [template, setTemplate] = useState<Template | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Form values
-  const [formValues, setFormValues] = useState<Record<string, string>>({});
-  const [step, setStep] = useState<'form' | 'sign'>('form');
+  // Form values — pre-fill from query params if coming from registration page
+  const [formValues, setFormValues] = useState<Record<string, string>>(() => {
+    const prefill: Record<string, string> = {};
+    const signerName = searchParams.get('signer_name');
+    const emailParam = searchParams.get('email');
+    const phoneParam = searchParams.get('phone');
+    if (signerName) { prefill['signer_name'] = signerName; prefill['full_name'] = signerName; prefill['name'] = signerName; }
+    if (emailParam) { prefill['email'] = emailParam; prefill['signer_email'] = emailParam; }
+    if (phoneParam) { prefill['phone'] = phoneParam; }
+    return prefill;
+  });
+  const prefilled = !!(searchParams.get('signer_name') && searchParams.get('email'));
+  const [step, setStep] = useState<'form' | 'sign'>(prefilled ? 'sign' : 'form');
   const [formError, setFormError] = useState<string | null>(null);
 
   // Signature
@@ -238,6 +258,7 @@ export default function WaiverSigningPage() {
         body: JSON.stringify({
           tenant_id: tenant.id,
           template_id: template.id,
+          reservation_id: reservationId || null,
           signer_name: signerName,
           signer_email: formValues['email'] || formValues['signer_email'] || null,
           signature_data_url: signatureDataUrl,

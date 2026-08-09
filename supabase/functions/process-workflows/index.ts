@@ -582,6 +582,11 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
       // Build context using canonical builder
       const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id);
 
+      // Inject captain URL if available from a prior create_captain_session step
+      if (input?.captain_url) {
+        tplContext.captain = { url: input.captain_url };
+      }
+
       // Validate template variables
       const varCheck = validateTemplateVariables(template.body);
       if (!varCheck.valid) {
@@ -732,6 +737,68 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         });
         return { failed: true, deadLetter: false };
       }
+    }
+
+    // Handle create_captain_session — generates a captain ops link for the reservation
+    if (step.action_type === 'create_captain_session') {
+      if (!ctx.reservation_id || !ctx.tenant_id) {
+        await supabase.rpc('update_step_run_status', {
+          p_step_run_id: step.id, p_status: 'failed',
+          p_error_message: 'Missing reservation_id or tenant_id for captain session',
+        });
+        return { failed: true, deadLetter: false };
+      }
+
+      const captainName = config.captain_name as string || null;
+      const expiresHours = (config.expires_hours as number) || 48;
+
+      const { data: sessionResult, error: sessionErr } = await supabase.rpc('create_captain_session', {
+        p_tenant_id: ctx.tenant_id,
+        p_reservation_id: ctx.reservation_id,
+        p_captain_name: captainName,
+        p_expires_hours: expiresHours,
+      });
+
+      if (sessionErr || !sessionResult?.token) {
+        await supabase.rpc('update_step_run_status', {
+          p_step_run_id: step.id, p_status: 'failed',
+          p_error_message: sessionErr?.message || 'Failed to create captain session',
+        });
+        return { failed: true, deadLetter: false };
+      }
+
+      const { data: tenant } = await supabase
+        .from('tenants').select('custom_domain, slug').eq('id', ctx.tenant_id).maybeSingle();
+
+      const baseUrl = tenant?.custom_domain
+        ? `https://${tenant.custom_domain}`
+        : Deno.env.get('SITE_URL') || Deno.env.get('NEXT_PUBLIC_SITE_URL') || '';
+      const captainUrl = `${baseUrl}/captain/${sessionResult.token}`;
+
+      await supabase.rpc('update_step_run_status', {
+        p_step_run_id: step.id, p_status: 'completed',
+        p_output: { captain_url: captainUrl, token: sessionResult.token, reused: sessionResult.reused },
+      });
+
+      // Inject captain_url into context for subsequent template rendering
+      const enrichedInput = { ...step.input, captain_url: captainUrl };
+      const nextEdges = edges.filter((e: any) => e.source === step.node_id && !e.source_handle);
+      for (const edge of nextEdges) {
+        const nextNode = nodes.find((n: any) => n.node_id === edge.target);
+        if (nextNode) {
+          await supabase.rpc('create_workflow_step_run', {
+            p_tenant_id: ctx.tenant_id, p_automation_run_id: step.automation_run_id,
+            p_node_id: nextNode.node_id, p_action_type: nextNode.action_type,
+            p_input: { ...enrichedInput, config: nextNode.configuration || {}, node_id: nextNode.node_id },
+          });
+        }
+      }
+      if (nextEdges.length === 0) {
+        await supabase.rpc('update_workflow_run_status', {
+          p_run_id: step.automation_run_id, p_status: 'completed',
+        });
+      }
+      return { failed: false, deadLetter: false };
     }
 
     // Unknown action — fail safely, do not execute
