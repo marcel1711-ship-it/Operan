@@ -565,9 +565,16 @@ export default function WorkflowBuilderPage() {
       }
     }
     walk(tree.children);
+    const CHANNEL_PROVIDERS: Record<string, string[]> = {
+      email: ['resend'],
+      sms: ['twilio', 'twilio_sms'],
+      whatsapp: ['twilio_whatsapp', 'whatsapp'],
+    };
     commChannels.forEach((channel) => {
+      const providerNames = CHANNEL_PROVIDERS[channel] || [];
       const hasIntegration = integrations.some((i) =>
-        i.enabled && i.connection_status === 'connected' && (i as any).capabilities?.[channel] === true
+        i.enabled && i.connection_status === 'connected' &&
+        ((i as any).capabilities?.[channel] === true || providerNames.includes(i.provider))
       );
       if (!hasIntegration && !workflow?.test_mode) {
         warnings.push(`No connected ${channel} provider. Actions will be queued as action_required until a provider is connected.`);
