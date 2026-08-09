@@ -17,8 +17,7 @@ DECLARE
   v_workflow RECORD;
   v_nodes jsonb;
   v_edges jsonb;
-  v_node_record RECORD;
-  v_edge_record RECORD;
+  v_node jsonb;
   v_node_id text;
   v_action_type text;
   v_config jsonb;
@@ -36,50 +35,73 @@ DECLARE
   v_stage_pipeline uuid;
   v_listing_id uuid;
   v_listing_tenant uuid;
-  v_duration_val int;
-  v_duration_unit text;
+  v_url text;
   v_field_path text;
   v_operator text;
+  v_duration_val int;
+  v_duration_unit text;
   v_has_true_branch boolean;
   v_has_false_branch boolean;
-  v_url text;
+  v_reachable text[];
+  v_changed boolean := true;
+  v_node_record RECORD;
+  v_edge_record RECORD;
+  v_all_node_ids text[];
+  v_dup_check int;
   v_user_id uuid;
   v_user_tenant uuid;
-  v_reachable text[];
-  v_all_node_ids text[];
-  v_changed boolean;
   v_has_inline_content boolean;
 BEGIN
-  -- Verify workflow belongs to tenant
+  -- Verify workflow ownership
   SELECT * INTO v_workflow FROM automation_workflows
   WHERE id = p_workflow_id AND tenant_id = p_tenant_id;
 
-  IF v_workflow IS NULL THEN
-    RAISE EXCEPTION 'Workflow not found or does not belong to tenant';
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Workflow not found or not owned by tenant';
+  END IF;
+
+  -- Validate definition structure
+  IF NOT (p_definition ? 'nodes' AND p_definition ? 'edges') THEN
+    RAISE EXCEPTION 'Definition must contain nodes and edges arrays';
   END IF;
 
   v_nodes := p_definition->'nodes';
   v_edges := p_definition->'edges';
 
-  IF v_nodes IS NULL OR jsonb_array_length(v_nodes) = 0 THEN
-    RAISE EXCEPTION 'Workflow definition must contain at least one node';
+  IF jsonb_array_length(v_nodes) = 0 THEN
+    RAISE EXCEPTION 'Definition must contain at least one node';
   END IF;
 
-  -- Collect all node IDs for reachability
-  SELECT array_agg(n->>'id') INTO v_all_node_ids
-  FROM jsonb_array_elements(v_nodes) AS n;
+  -- Check for duplicate node IDs
+  SELECT count(*) - count(DISTINCT node_id) INTO v_dup_check
+  FROM jsonb_array_elements(v_nodes) AS j(node),
+  LATERAL (SELECT node->>'node_id' AS node_id) AS t;
+
+  IF v_dup_check > 0 THEN
+    RAISE EXCEPTION 'Duplicate node IDs detected in definition';
+  END IF;
+
+  -- Collect all node IDs
+  SELECT array_agg(node->>'node_id') INTO v_all_node_ids
+  FROM jsonb_array_elements(v_nodes) AS j(node);
 
   -- Validate each node
-  FOR v_node_record IN SELECT * FROM jsonb_array_elements(v_nodes) AS n LOOP
-    v_node_id := v_node_record.n->>'id';
-    v_action_type := v_node_record.n->>'action_type';
-    v_config := COALESCE(v_node_record.n->'configuration', '{}'::jsonb);
+  FOR v_node IN SELECT * FROM jsonb_array_elements(v_nodes) LOOP
+    v_node_id := v_node->>'node_id';
+    v_action_type := v_node->>'action_type';
+    v_config := COALESCE(v_node->'configuration', '{}'::jsonb);
 
+    -- Check action_type is not null
+    IF v_action_type IS NULL THEN
+      v_errors := array_append(v_errors, 'Node ' || v_node_id || ': missing action_type');
+      CONTINUE;
+    END IF;
+
+    -- Trigger validation
     IF v_action_type = 'trigger' THEN
       v_trigger_count := v_trigger_count + 1;
-
-      IF p_trigger_type = 'listing_event' THEN
-        v_listing_id := NULLIF(v_config->>'listing_id', '')::uuid;
+      v_listing_id := NULLIF(v_config->>'listing_id', '')::uuid;
+      IF v_listing_id IS NOT NULL THEN
         SELECT tenant_id INTO v_listing_tenant FROM listings WHERE id = v_listing_id;
         IF v_listing_tenant IS NULL OR v_listing_tenant != p_tenant_id THEN
           v_errors := array_append(v_errors, 'Trigger: listing does not belong to tenant');
@@ -344,10 +366,6 @@ BEGIN
     updated_at = now()
   WHERE id = p_workflow_id;
 
-  RETURN jsonb_build_object(
-    'version_id', v_version_id,
-    'version_number', v_version_number,
-    'status', 'published'
-  );
+  RETURN jsonb_build_object('version_id', v_version_id, 'version_number', v_version_number);
 END;
 $function$;
