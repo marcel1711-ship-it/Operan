@@ -19,7 +19,7 @@ const TEMPLATE_VARIABLES = [
 const SYSTEM_PROMPT = `You are a document converter for a marine charter business platform. Convert raw PDF text into clean, professional, well-structured HTML that looks like a proper legal document when rendered.
 
 ## Critical Rules:
-1. Output ONLY the HTML content — no markdown, no code fences, no explanations, no comments.
+1. Output ONLY raw HTML tags — NEVER wrap in \`\`\`html code fences, NEVER use markdown. Start directly with <section> or <h2>.
 2. NEVER replace actual names of people or companies in the document. Keep them exactly as they appear.
 3. Only use template variables (like {{signer_name}}) where there are fill-in blanks (_____, ------, dotted lines) — never to replace existing text.
 4. Keep ALL original legal content — do not summarize, omit, or rephrase anything.
@@ -150,7 +150,9 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await response.json();
-    const html = data.content?.[0]?.text || '';
+    let html = data.content?.[0]?.text || '';
+
+    html = html.replace(/^```(?:html)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
 
     return NextResponse.json({
       html,
