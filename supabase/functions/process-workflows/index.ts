@@ -1030,7 +1030,7 @@ async function processMessage(supabase: any, msg: any) {
       .eq('enabled', true)
       .maybeSingle();
 
-    const apiKey = integration?.credentials?.api_key;
+    const apiKey = integration?.credentials?.api_key || integration?.credentials?.resend_api_key;
     if (!apiKey) {
       await supabase.rpc('update_communication_message_status', {
         p_message_id: msg.id,
