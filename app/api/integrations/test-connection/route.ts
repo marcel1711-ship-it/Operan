@@ -69,22 +69,60 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Resend test: check platform readiness
+    // Resend test: check tenant or platform readiness by calling Resend API
     if ((category === 'communication' || category === 'messaging') && provider === 'resend') {
-      const configured = isResendConfigured();
+      const { isResendConfiguredAsync, getTenantResendCredentials } = await import('@/lib/integrations/resend-server');
+      const configured = await isResendConfiguredAsync(ctx.tenant_id);
+
+      if (!configured) {
+        await supabaseAdmin.rpc('log_integration_activity', {
+          p_tenant_id: ctx.tenant_id,
+          p_category: category,
+          p_provider: 'resend',
+          p_action: 'test_connection',
+          p_status: 'failed',
+          p_message: 'No Resend API key configured',
+        });
+        return NextResponse.json({
+          success: false,
+          details: { error: 'No API key configured. Add your Resend API key in the integration settings.' },
+        });
+      }
+
+      // Actually call Resend API to verify the key works
+      const tenantCreds = await getTenantResendCredentials(ctx.tenant_id);
+      const apiKey = tenantCreds?.api_key || process.env.RESEND_API_KEY;
+      let verified = false;
+      let errorMsg = '';
+
+      try {
+        const res = await fetch('https://api.resend.com/domains', {
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+        });
+        if (res.ok) {
+          verified = true;
+        } else {
+          const data = await res.json().catch(() => ({}));
+          errorMsg = data?.message || `API returned ${res.status}`;
+        }
+      } catch (err) {
+        errorMsg = err instanceof Error ? err.message : 'Failed to reach Resend API';
+      }
 
       await supabaseAdmin.rpc('log_integration_activity', {
         p_tenant_id: ctx.tenant_id,
         p_category: category,
         p_provider: 'resend',
         p_action: 'test_connection',
-        p_status: configured ? 'success' : 'failed',
-        p_message: configured ? 'Resend platform is configured' : 'Resend platform is not configured',
+        p_status: verified ? 'success' : 'failed',
+        p_message: verified ? 'Resend API key verified' : `Resend API key invalid: ${errorMsg}`,
       });
 
       return NextResponse.json({
-        success: configured,
-        details: configured ? { status: 'Platform ready' } : { error: 'Email delivery platform is not configured' },
+        success: verified,
+        details: verified
+          ? { status: 'API key verified', from_email: tenantCreds?.from_email }
+          : { error: errorMsg || 'API key is invalid' },
       });
     }
 
