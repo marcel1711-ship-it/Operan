@@ -190,6 +190,43 @@ export default function ConfigPanel({
                 </SelectContent>
               </Select>
             </div>
+            {!config.template_id && node.actionType === 'send_email' && (
+              <>
+                <div>
+                  <Label className="text-xs text-[#94A3B8]">Subject</Label>
+                  <Input
+                    className="mt-1.5 operan-config-input border-white/[0.08] bg-[#202A40] text-sm text-white"
+                    value={(config.subject as string) || ''}
+                    onChange={(e) => onUpdateConfig('subject', e.target.value)}
+                    placeholder="e.g. Your reservation is confirmed!"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-[#94A3B8]">Body</Label>
+                  <Textarea
+                    className="mt-1.5 operan-config-input border-white/[0.08] bg-[#202A40] text-sm text-white resize-none"
+                    rows={5}
+                    value={(config.body as string) || ''}
+                    onChange={(e) => onUpdateConfig('body', e.target.value)}
+                    placeholder="Hi {{customer_name}}, your reservation on {{vessel_name}} for {{rental_date}} is confirmed..."
+                  />
+                  <p className="mt-1 text-[10px] text-[#94A3B8]/60">Use {'{{customer_name}}'}, {'{{vessel_name}}'}, {'{{rental_date}}'}, {'{{start_time}}'}, {'{{company_name}}'} as placeholders.</p>
+                </div>
+              </>
+            )}
+            {!config.template_id && (node.actionType === 'send_sms' || node.actionType === 'send_whatsapp') && (
+              <div>
+                <Label className="text-xs text-[#94A3B8]">Message</Label>
+                <Textarea
+                  className="mt-1.5 operan-config-input border-white/[0.08] bg-[#202A40] text-sm text-white resize-none"
+                  rows={4}
+                  value={(config.body as string) || ''}
+                  onChange={(e) => onUpdateConfig('body', e.target.value)}
+                  placeholder="Hi {{customer_name}}, your reservation is confirmed for {{rental_date}}..."
+                />
+                <p className="mt-1 text-[10px] text-[#94A3B8]/60">Use {'{{customer_name}}'}, {'{{vessel_name}}'}, {'{{rental_date}}'} as placeholders.</p>
+              </div>
+            )}
             <div>
               <Label className="text-xs text-[#94A3B8]">Recipient</Label>
               <Select

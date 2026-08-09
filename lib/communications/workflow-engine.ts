@@ -47,10 +47,17 @@ const ACTION_HANDLERS: Record<string, (config: Record<string, unknown>, ctx: Exe
       return { output: { status: 'skipped', reason: 'no_recipient' } };
     }
 
+    const inlineSubject = config.subject as string | undefined;
+    const inlineBody = config.body as string | undefined;
+
+    if (!templateId && !inlineBody) {
+      return { output: { status: 'skipped', reason: 'no_template_or_content' } };
+    }
+
     const result = await sendMessage({
       tenant_id: ctx.tenant_id,
       channel: 'email',
-      template_id: templateId,
+      template_id: templateId || undefined,
       recipient,
       customer_id: ctx.customer_id,
       reservation_id: ctx.reservation_id,
@@ -58,6 +65,7 @@ const ACTION_HANDLERS: Record<string, (config: Record<string, unknown>, ctx: Exe
       workflow_run_id: ctx.run_id,
       is_transactional: isTransactional,
       idempotency_key: `email-${ctx.run_id}-${ctx.node_outputs ? Object.keys(ctx.node_outputs).length : 0}`,
+      variables: !templateId ? { subject: inlineSubject || '', body: inlineBody || '' } : undefined,
     });
 
     return { output: { status: result.status, message_id: result.message_id, error: result.error } };
@@ -67,15 +75,20 @@ const ACTION_HANDLERS: Record<string, (config: Record<string, unknown>, ctx: Exe
     const templateId = config.template_id as string;
     const recipient = (config.recipient as string) || (ctx.customer_id ? await resolveCustomerPhone(ctx.tenant_id, ctx.customer_id) : '');
     const isTransactional = config.is_transactional !== false;
+    const inlineMessage = config.message as string | undefined;
 
     if (!recipient) {
       return { output: { status: 'skipped', reason: 'no_recipient' } };
     }
 
+    if (!templateId && !inlineMessage) {
+      return { output: { status: 'skipped', reason: 'no_template_or_content' } };
+    }
+
     const result = await sendMessage({
       tenant_id: ctx.tenant_id,
       channel: 'sms',
-      template_id: templateId,
+      template_id: templateId || undefined,
       recipient,
       customer_id: ctx.customer_id,
       reservation_id: ctx.reservation_id,
@@ -83,6 +96,7 @@ const ACTION_HANDLERS: Record<string, (config: Record<string, unknown>, ctx: Exe
       workflow_run_id: ctx.run_id,
       is_transactional: isTransactional,
       idempotency_key: `sms-${ctx.run_id}-${Object.keys(ctx.node_outputs).length}`,
+      variables: !templateId ? { body: inlineMessage || '' } : undefined,
     });
 
     return { output: { status: result.status, message_id: result.message_id, error: result.error } };
@@ -92,15 +106,20 @@ const ACTION_HANDLERS: Record<string, (config: Record<string, unknown>, ctx: Exe
     const templateId = config.template_id as string;
     const recipient = (config.recipient as string) || (ctx.customer_id ? await resolveCustomerPhone(ctx.tenant_id, ctx.customer_id) : '');
     const isTransactional = config.is_transactional !== false;
+    const inlineMessage = config.message as string | undefined;
 
     if (!recipient) {
       return { output: { status: 'skipped', reason: 'no_recipient' } };
     }
 
+    if (!templateId && !inlineMessage) {
+      return { output: { status: 'skipped', reason: 'no_template_or_content' } };
+    }
+
     const result = await sendMessage({
       tenant_id: ctx.tenant_id,
       channel: 'whatsapp',
-      template_id: templateId,
+      template_id: templateId || undefined,
       recipient,
       customer_id: ctx.customer_id,
       reservation_id: ctx.reservation_id,
@@ -108,6 +127,7 @@ const ACTION_HANDLERS: Record<string, (config: Record<string, unknown>, ctx: Exe
       workflow_run_id: ctx.run_id,
       is_transactional: isTransactional,
       idempotency_key: `wa-${ctx.run_id}-${Object.keys(ctx.node_outputs).length}`,
+      variables: !templateId ? { body: inlineMessage || '' } : undefined,
     });
 
     return { output: { status: result.status, message_id: result.message_id, error: result.error } };
