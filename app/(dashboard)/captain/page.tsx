@@ -65,7 +65,7 @@ export default function CaptainPage() {
     const { data: resData } = await query.limit(50);
 
     if (resData && resData.length > 0) {
-      const listingIds = [...new Set(resData.map(r => r.listing_id).filter(Boolean))];
+      const listingIds = Array.from(new Set(resData.map(r => r.listing_id).filter(Boolean)));
       const { data: listings } = await supabase
         .from('listings')
         .select('id, name')

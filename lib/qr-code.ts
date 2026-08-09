@@ -72,7 +72,7 @@ function encodeData(bytes: Uint8Array, totalDataCW: number): number[] {
   };
   push(0b0100, 4); // byte mode
   push(bytes.length, 8); // count
-  for (const b of bytes) push(b, 8);
+  for (let i = 0; i < bytes.length; i++) push(bytes[i], 8);
   push(0, 4); // terminator
   while (bits.length % 8) bits.push(0);
   while (bits.length < totalDataCW * 8) {
