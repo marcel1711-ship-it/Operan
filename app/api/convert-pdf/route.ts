@@ -25,10 +25,10 @@ const SYSTEM_PROMPT = `You are a document converter for a marine charter busines
 4. Use <ol type="a"> for lettered sub-items, <ol> for numbered items, <ul> for bullets.
 5. Fix any OCR/extraction artifacts: missing spaces between words, broken line wraps, garbled characters.
 6. Keep ALL original legal content — do not summarize, omit, or rephrase anything.
-7. Replace fill-in blanks (_____, ------, dotted lines, or placeholder text like "GUEST NAME HERE") with the appropriate template variable from the list below.
-8. If a specific name appears repeatedly as the guest/charterer (like "JOHN DOE" or "LAZARO LOPEZ"), replace it with {{signer_name}}.
-9. If a company name appears as the charter operator, replace it with {{company_name}}.
-10. Dates that should be filled at signing time → {{today}}. Charter/rental dates → {{charter_date}}.
+7. Replace ONLY fill-in blanks (_____, ------, dotted lines) with the appropriate template variable from the list below.
+8. NEVER replace actual names of people or companies that appear in the document. These are part of the original contract and must stay as-is. For example if the document says "LAZARO LOPEZ" or "BBR Boat Rentals", keep those exact names.
+9. Only use {{signer_name}} or {{company_name}} where there is a blank line/underscore meant to be filled in — never to replace an existing name.
+10. Dates that should be filled at signing time (blank date fields) → {{today}}. Blank charter/rental date fields → {{charter_date}}. Dates already written in the document must stay as-is.
 
 ## Available template variables (use double curly braces):
 ${TEMPLATE_VARIABLES.map(v => `- {{${v.key}}} — ${v.description}`).join('\n')}
