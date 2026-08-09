@@ -1,3 +1,10 @@
+type TextItem = {
+  str: string;
+  transform: number[];
+  width: number;
+  height: number;
+};
+
 export async function extractTextFromPdf(file: File): Promise<string> {
   const pdfjsLib = await import('pdfjs-dist');
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -10,23 +17,78 @@ export async function extractTextFromPdf(file: File): Promise<string> {
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
-    const lines: string[] = [];
-    let lastY: number | null = null;
 
+    const items: TextItem[] = [];
     for (const item of content.items) {
       if (!('str' in item)) continue;
-      const text = item.str.trim();
-      if (!text) continue;
-
-      const y = Math.round(item.transform[5]);
-      if (lastY !== null && Math.abs(y - lastY) > 8) {
-        lines.push('\n');
-      }
-      lines.push(text);
-      lastY = y;
+      const ti = item as TextItem;
+      if (ti.str === '') continue;
+      items.push(ti);
     }
 
-    pages.push(lines.join(' ').replace(/ \n /g, '\n').replace(/\n{3,}/g, '\n\n'));
+    if (items.length === 0) continue;
+
+    const avgCharWidth = items.reduce((sum, it) => {
+      const len = it.str.length || 1;
+      return sum + (it.width / len);
+    }, 0) / items.length;
+    const spaceThreshold = avgCharWidth * 0.3;
+
+    const lineGroups: TextItem[][] = [];
+    let currentLine: TextItem[] = [items[0]];
+    let lastY = Math.round(items[0].transform[5]);
+
+    for (let j = 1; j < items.length; j++) {
+      const item = items[j];
+      const y = Math.round(item.transform[5]);
+
+      if (Math.abs(y - lastY) > 5) {
+        lineGroups.push(currentLine);
+        currentLine = [item];
+        lastY = y;
+      } else {
+        currentLine.push(item);
+      }
+    }
+    lineGroups.push(currentLine);
+
+    const outputLines: string[] = [];
+
+    for (const group of lineGroups) {
+      const sorted = group.sort((a, b) => a.transform[4] - b.transform[4]);
+      let lineText = '';
+
+      for (let k = 0; k < sorted.length; k++) {
+        const item = sorted[k];
+        const text = item.str;
+
+        if (k === 0) {
+          lineText = text;
+          continue;
+        }
+
+        const prev = sorted[k - 1];
+        const prevEnd = prev.transform[4] + prev.width;
+        const curStart = item.transform[4];
+        const gap = curStart - prevEnd;
+
+        if (gap > spaceThreshold) {
+          if (!lineText.endsWith(' ') && !text.startsWith(' ')) {
+            lineText += ' ';
+          }
+        }
+
+        lineText += text;
+      }
+
+      outputLines.push(lineText.trim());
+    }
+
+    const pageText = outputLines
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n');
+
+    pages.push(pageText);
   }
 
   return pages.join('\n\n---\n\n');
