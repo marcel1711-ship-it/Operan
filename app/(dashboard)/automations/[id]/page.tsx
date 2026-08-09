@@ -120,18 +120,13 @@ export default function WorkflowBuilderPage() {
     if (vers && vers.length > 0) {
       const latestDraft = vers.find((v: any) => v.published_at === null);
       const latest = latestDraft || vers[0];
-      console.log('[workflow-load] versions:', vers.length, 'using:', latest.version_number, 'isDraft:', !latest.published_at, 'nodes:', latest.definition?.nodes?.length, 'edges:', latest.definition?.edges?.length);
-      console.log('[workflow-load] definition:', JSON.stringify(latest.definition));
       if (latest.definition?.nodes?.length > 0) {
         const built = flatToTree(latest.definition.nodes, latest.definition.edges, wf.trigger_type);
-        console.log('[workflow-load] built tree children:', built.children.length, built.children.map(c => c.actionType));
         setTree(built);
       } else {
-        console.log('[workflow-load] no nodes, initializing empty tree');
         initTree(wf.trigger_type);
       }
     } else {
-      console.log('[workflow-load] no versions found, initializing empty tree');
       initTree(wf.trigger_type);
     }
 
@@ -505,7 +500,6 @@ export default function WorkflowBuilderPage() {
     setSaving(true);
     setSaveSuccess(false);
     const definition = buildDefinition();
-    console.log('[workflow-save] saving definition:', JSON.stringify(definition));
 
     await supabase
       .from('automation_workflows')

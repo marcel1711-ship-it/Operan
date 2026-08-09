@@ -214,51 +214,46 @@ export function flatToTree(
     }
   }
 
-  // Recursively build children with branches
-  function buildChildren(parentId: string): BuilderNode[] {
-    const direct = childrenOf[parentId] || [];
-    return direct.map((child) => {
+  function collectChain(startId: string): BuilderNode[] {
+    const result: BuilderNode[] = [];
+    let currentId = startId;
+
+    while (childrenOf[currentId] && childrenOf[currentId].length > 0) {
+      const child = childrenOf[currentId][0];
+
       if (child.actionType === 'if_else' || child.actionType === 'condition') {
         child.branches = {
-          true: buildBranchChildren(child.id, 'true'),
-          false: buildBranchChildren(child.id, 'false'),
+          true: collectBranch(child.id, 'true'),
+          false: collectBranch(child.id, 'false'),
         };
       }
-      // Recursively attach children of this node
-      const subChildren = childrenOf[child.id];
-      if (subChildren && subChildren.length > 0) {
-        // For non-branch nodes, children are sequential
-        // We nest them as a linear chain
-        return attachSequentialChildren(child, child.id);
-      }
-      return child;
-    });
+
+      result.push(child);
+      currentId = child.id;
+    }
+
+    return result;
   }
 
-  function buildBranchChildren(parentId: string, branch: 'true' | 'false'): BuilderNode[] {
+  function collectBranch(parentId: string, branch: 'true' | 'false'): BuilderNode[] {
     const list = branch === 'true' ? trueBranchOf[parentId] || [] : falseBranchOf[parentId] || [];
-    return list.map((node) => attachSequentialChildren(node, node.id));
-  }
-
-  function attachSequentialChildren(node: BuilderNode, nodeId: string): BuilderNode {
-    const subs = childrenOf[nodeId];
-    if (subs && subs.length > 0) {
-      // For simplicity in the tree, we only support one level of sequential nesting
-      // via the branches structure. If a non-branch node has children, we attach
-      // them as the "true" branch (sequential continuation).
+    const result: BuilderNode[] = [];
+    for (const node of list) {
       if (node.actionType === 'if_else' || node.actionType === 'condition') {
         node.branches = {
-          true: buildBranchChildren(nodeId, 'true'),
-          false: buildBranchChildren(nodeId, 'false'),
+          true: collectBranch(node.id, 'true'),
+          false: collectBranch(node.id, 'false'),
         };
       }
+      result.push(node);
+      result.push(...collectChain(node.id));
     }
-    return node;
+    return result;
   }
 
   return {
     trigger: triggerNode,
-    children: buildChildren('trigger'),
+    children: collectChain('trigger'),
   };
 }
 
