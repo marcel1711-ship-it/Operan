@@ -91,10 +91,15 @@ export async function POST(req: NextRequest) {
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error('Anthropic API error:', err);
+      const errText = await response.text();
+      console.error('Anthropic API error:', response.status, errText);
+      let detail = 'AI conversion failed.';
+      try {
+        const errJson = JSON.parse(errText);
+        detail = errJson?.error?.message || detail;
+      } catch { /* ignore */ }
       return NextResponse.json(
-        { error: 'AI conversion failed. Please try again.' },
+        { error: detail },
         { status: 502 }
       );
     }

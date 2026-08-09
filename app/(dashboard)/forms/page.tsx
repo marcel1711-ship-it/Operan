@@ -194,9 +194,10 @@ export default function FormsPage() {
         const { html } = await res.json();
         setHtmlContent(html);
       } else {
+        const errData = await res.json().catch(() => ({}));
         const fallbackHtml = textToHtml(rawText);
         setHtmlContent(fallbackHtml);
-        setError('AI conversion unavailable — used basic formatting. You can edit the HTML below.');
+        setError(`AI conversion failed: ${errData.error || res.statusText}. Used basic formatting instead.`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to extract PDF content');
