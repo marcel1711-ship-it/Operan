@@ -171,36 +171,45 @@ export default function FormsPage() {
     setShowCreate(true);
   }
 
-  async function handlePdfUpload(file: File) {
+  async function handleFileUpload(file: File) {
     setPdfExtracting(true);
     setError(null);
     try {
-      const { extractTextFromPdf, textToHtml } = await import('@/lib/pdf-extract');
-      const rawText = await extractTextFromPdf(file);
+      const isHtml = file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm');
 
       if (!title.trim()) {
-        const name = file.name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
+        const name = file.name.replace(/\.(pdf|html?)$/i, '').replace(/[-_]/g, ' ');
         setTitle(name);
         if (!editing) setSlug(slugify(name));
       }
 
-      const res = await fetch('/api/convert-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: rawText, documentType }),
-      });
-
-      if (res.ok) {
-        const { html } = await res.json();
-        setHtmlContent(html);
+      if (isHtml) {
+        const text = await file.text();
+        const bodyMatch = text.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        const htmlBody = bodyMatch ? bodyMatch[1].trim() : text;
+        setHtmlContent(htmlBody);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        const fallbackHtml = textToHtml(rawText);
-        setHtmlContent(fallbackHtml);
-        setError(`AI conversion failed: ${errData.error || res.statusText}. Used basic formatting instead.`);
+        const { extractTextFromPdf, textToHtml } = await import('@/lib/pdf-extract');
+        const rawText = await extractTextFromPdf(file);
+
+        const res = await fetch('/api/convert-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: rawText, documentType }),
+        });
+
+        if (res.ok) {
+          const { html } = await res.json();
+          setHtmlContent(html);
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          const fallbackHtml = textToHtml(rawText);
+          setHtmlContent(fallbackHtml);
+          setError(`AI conversion failed: ${errData.error || res.statusText}. Used basic formatting instead.`);
+        }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to extract PDF content');
+      setError(err instanceof Error ? err.message : 'Failed to process file');
     }
     setPdfExtracting(false);
   }
@@ -661,18 +670,18 @@ export default function FormsPage() {
                 ) : (
                   <>
                     <Upload className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-xs font-medium text-foreground">Drop a PDF here or click to upload</span>
-                    <span className="text-[10px] text-muted-foreground">We&apos;ll extract the text and convert it to a digital document</span>
+                    <span className="text-xs font-medium text-foreground">Drop a PDF or HTML file here or click to upload</span>
+                    <span className="text-[10px] text-muted-foreground">PDF files are converted with AI. HTML files are loaded directly.</span>
                   </>
                 )}
                 <input
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.html,.htm"
                   className="hidden"
                   disabled={pdfExtracting}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handlePdfUpload(file);
+                    if (file) handleFileUpload(file);
                     e.target.value = '';
                   }}
                 />
