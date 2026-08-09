@@ -1021,7 +1021,8 @@ async function processMessage(supabase: any, msg: any) {
 
   // Resend provider
   if (msg.provider === 'resend') {
-    // Resolve Resend API key from tenant integration credentials
+    // Resolve Resend API key: tenant-level override first, then platform-level env var
+    let apiKey = '';
     const { data: integration } = await supabase
       .from('tenant_integrations')
       .select('credentials')
@@ -1030,26 +1031,37 @@ async function processMessage(supabase: any, msg: any) {
       .eq('enabled', true)
       .maybeSingle();
 
-    const apiKey = integration?.credentials?.api_key || integration?.credentials?.resend_api_key;
+    apiKey = integration?.credentials?.api_key || integration?.credentials?.resend_api_key || '';
+    if (!apiKey) {
+      apiKey = Deno.env.get('RESEND_API_KEY') || '';
+    }
+
     if (!apiKey) {
       await supabase.rpc('update_communication_message_status', {
         p_message_id: msg.id,
         p_status: 'failed',
         p_failure_code: 'NO_API_KEY',
-        p_failure_reason: 'Resend API key not found in tenant integration',
+        p_failure_reason: 'Resend API key not found (no tenant key or RESEND_API_KEY env var)',
       });
       return;
     }
 
-    // Resolve from_email from tenant communication settings
+    // Resolve from_email: tenant settings first, then platform defaults
     const { data: settings } = await supabase
       .from('tenant_communication_settings')
       .select('from_email, sender_name, reply_to_email')
       .eq('tenant_id', msg.tenant_id)
       .maybeSingle();
 
-    const fromEmail = settings?.from_email || 'noreply@operan.app';
-    const senderName = settings?.sender_name || '';
+    // Resolve tenant name for sender
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('name')
+      .eq('id', msg.tenant_id)
+      .maybeSingle();
+
+    const fromEmail = settings?.from_email || Deno.env.get('RESEND_FROM_EMAIL') || 'bookings@operan.io';
+    const senderName = settings?.sender_name || tenant?.name || '';
     const from = senderName ? `${senderName} <${fromEmail}>` : fromEmail;
     const replyTo = settings?.reply_to_email || undefined;
 
