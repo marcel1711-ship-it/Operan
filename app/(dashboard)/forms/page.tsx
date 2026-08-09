@@ -176,13 +176,27 @@ export default function FormsPage() {
     setError(null);
     try {
       const { extractTextFromPdf, textToHtml } = await import('@/lib/pdf-extract');
-      const text = await extractTextFromPdf(file);
-      const html = textToHtml(text);
-      setHtmlContent(html);
+      const rawText = await extractTextFromPdf(file);
+
       if (!title.trim()) {
         const name = file.name.replace(/\.pdf$/i, '').replace(/[-_]/g, ' ');
         setTitle(name);
         if (!editing) setSlug(slugify(name));
+      }
+
+      const res = await fetch('/api/convert-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: rawText, documentType }),
+      });
+
+      if (res.ok) {
+        const { html } = await res.json();
+        setHtmlContent(html);
+      } else {
+        const fallbackHtml = textToHtml(rawText);
+        setHtmlContent(fallbackHtml);
+        setError('AI conversion unavailable — used basic formatting. You can edit the HTML below.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to extract PDF content');
@@ -641,7 +655,7 @@ export default function FormsPage() {
                 {pdfExtracting ? (
                   <>
                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    <span className="text-xs font-medium text-primary">Extracting content from PDF...</span>
+                    <span className="text-xs font-medium text-primary">Extracting and converting PDF with AI...</span>
                   </>
                 ) : (
                   <>
