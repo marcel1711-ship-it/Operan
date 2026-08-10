@@ -121,7 +121,9 @@ export default function WorkflowBuilderPage() {
       const latestDraft = vers.find((v: any) => v.published_at === null);
       const latest = latestDraft || vers[0];
       if (latest.definition?.nodes?.length > 0) {
+        console.log('[WF-DEBUG] Loading v' + latest.version_number, 'flat nodes:', latest.definition.nodes.map((n: any) => ({ id: n.node_id, action_type: n.action_type })));
         const built = flatToTree(latest.definition.nodes, latest.definition.edges, wf.trigger_type);
+        console.log('[WF-DEBUG] flatToTree result:', built.children.map(c => ({ id: c.id, actionType: c.actionType, label: c.label })));
         setTree(built);
       } else {
         initTree(wf.trigger_type);
