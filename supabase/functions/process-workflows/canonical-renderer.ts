@@ -139,18 +139,21 @@ export async function buildTemplateContext(
   supabase: any,
   tenantId: string,
   reservationId?: string,
-  customerId?: string
+  customerId?: string,
+  baseUrl?: string
 ): Promise<TemplateVariableContext> {
   const context: TemplateVariableContext = {};
+  let tenantSlug = '';
 
   if (tenantId) {
     const { data: tenant } = await supabase
       .from('tenants')
-      .select('name, slug')
+      .select('name, slug, phone, email, logo_url')
       .eq('id', tenantId)
       .maybeSingle();
     if (tenant) {
-      context.tenant = { name: tenant.name };
+      context.tenant = { name: tenant.name, phone: tenant.phone, email: tenant.email, logo_url: tenant.logo_url };
+      tenantSlug = tenant.slug || '';
     }
   }
 
@@ -220,6 +223,27 @@ export async function buildTemplateContext(
         };
       }
     }
+  }
+
+  if (reservationId && tenantSlug) {
+    const siteUrl = baseUrl || '';
+    if (siteUrl) {
+      context.waiver = {
+        ...context.waiver,
+        signing_url: `${siteUrl}/w/${tenantSlug}/register?reservation_id=${reservationId}`,
+      };
+    }
+
+    const { count } = await supabase
+      .from('signed_waivers')
+      .select('id', { count: 'exact', head: true })
+      .eq('reservation_id', reservationId);
+
+    context.waiver = {
+      ...context.waiver,
+      signed_count: count || 0,
+      required_count: context.reservation?.guest_count || 0,
+    };
   }
 
   return context;

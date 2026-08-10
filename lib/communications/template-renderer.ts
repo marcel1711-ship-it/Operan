@@ -42,9 +42,12 @@ export type TemplateVariableContext = {
     signed_count?: number;
     required_count?: number;
   };
+  captain?: {
+    url?: string;
+  };
 };
 
-const ALLOWED_PREFIXES = ['customer', 'reservation', 'listing', 'tenant', 'payment', 'waiver'];
+const ALLOWED_PREFIXES = ['customer', 'reservation', 'listing', 'tenant', 'payment', 'waiver', 'captain'];
 
 const SENSITIVE_KEYS = ['token', 'secret', 'password', 'api_key', 'access_token', 'provider_secret', 'metadata'];
 
@@ -117,18 +120,21 @@ export function validateTemplateVariables(template: string): { valid: boolean; u
 export async function buildTemplateContext(
   tenantId: string,
   reservationId?: string,
-  customerId?: string
+  customerId?: string,
+  baseUrl?: string
 ): Promise<TemplateVariableContext> {
   const context: TemplateVariableContext = {};
+  let tenantSlug = '';
 
   if (tenantId) {
     const { data: tenant } = await supabaseAdmin
       .from('tenants')
-      .select('name, slug')
+      .select('name, slug, phone, email, logo_url')
       .eq('id', tenantId)
       .maybeSingle();
     if (tenant) {
-      context.tenant = { name: tenant.name };
+      context.tenant = { name: tenant.name, phone: tenant.phone, email: tenant.email, logo_url: tenant.logo_url };
+      tenantSlug = tenant.slug || '';
     }
   }
 
@@ -198,6 +204,27 @@ export async function buildTemplateContext(
         };
       }
     }
+  }
+
+  if (reservationId && tenantSlug) {
+    const siteUrl = baseUrl || process.env.NEXT_PUBLIC_SITE_URL || '';
+    if (siteUrl) {
+      context.waiver = {
+        ...context.waiver,
+        signing_url: `${siteUrl}/w/${tenantSlug}/register?reservation_id=${reservationId}`,
+      };
+    }
+
+    const { count } = await supabaseAdmin
+      .from('signed_waivers')
+      .select('id', { count: 'exact', head: true })
+      .eq('reservation_id', reservationId);
+
+    context.waiver = {
+      ...context.waiver,
+      signed_count: count || 0,
+      required_count: context.reservation?.guest_count || 0,
+    };
   }
 
   return context;

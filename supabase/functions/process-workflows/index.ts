@@ -263,6 +263,7 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
   try {
     const input = typeof step.input === 'string' ? JSON.parse(step.input) : step.input;
     const config = input?.config || {};
+    const siteUrl = Deno.env.get('SITE_URL') || Deno.env.get('NEXT_PUBLIC_SITE_URL') || '';
     const ctx = {
       run_id: step.automation_run_id,
       tenant_id: input?.tenant_id,
@@ -583,7 +584,7 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
       }
 
       // Build context using canonical builder
-      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id);
+      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id, siteUrl);
 
       // Inject captain URL if available from a prior create_captain_session step
       if (input?.captain_url) {
@@ -670,7 +671,7 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
 
     // Handle in-app notification
     if (step.action_type === 'create_in_app_notification') {
-      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id);
+      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id, siteUrl);
       const title = config.title ? renderTemplate(config.title, tplContext) : 'Notification';
       const message = config.message ? renderTemplate(config.message, tplContext) : '';
       await supabase.from('notifications').insert({
@@ -710,7 +711,7 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
 
     // Handle add_reservation_note
     if (step.action_type === 'add_reservation_note' && ctx.reservation_id) {
-      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id);
+      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id, siteUrl);
       const noteBody = config.body ? renderTemplate(config.body, tplContext) : '';
       await supabase.from('activity_log').insert({
         tenant_id: ctx.tenant_id,
@@ -797,13 +798,13 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         return { failed: true, deadLetter: false };
       }
 
-      const { data: tenant } = await supabase
+      const { data: tenantForCaptain } = await supabase
         .from('tenants').select('custom_domain, slug').eq('id', ctx.tenant_id).maybeSingle();
 
-      const baseUrl = tenant?.custom_domain
-        ? `https://${tenant.custom_domain}`
-        : Deno.env.get('SITE_URL') || Deno.env.get('NEXT_PUBLIC_SITE_URL') || '';
-      const captainUrl = `${baseUrl}/captain/${sessionResult.token}`;
+      const captainBaseUrl = tenantForCaptain?.custom_domain
+        ? `https://${tenantForCaptain.custom_domain}`
+        : siteUrl;
+      const captainUrl = `${captainBaseUrl}/captain/${sessionResult.token}`;
 
       await supabase.rpc('update_step_run_status', {
         p_step_run_id: step.id, p_status: 'completed',
@@ -869,7 +870,7 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
 
     // Handle create_task
     if (step.action_type === 'create_task') {
-      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id);
+      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id, siteUrl);
       const title = config.title ? renderTemplate(String(config.title), tplContext) : 'Task';
       const description = config.description ? renderTemplate(String(config.description), tplContext) : '';
 
