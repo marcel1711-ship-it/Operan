@@ -118,8 +118,7 @@ export default function WorkflowBuilderPage() {
     if (vers) setVersions(vers as Version[]);
 
     if (vers && vers.length > 0) {
-      const latestDraft = vers.find((v: any) => v.published_at === null);
-      const latest = latestDraft || vers[0];
+      const latest = vers[0];
       if (latest.definition?.nodes?.length > 0) {
         const built = flatToTree(latest.definition.nodes, latest.definition.edges, wf.trigger_type);
 
@@ -537,26 +536,34 @@ export default function WorkflowBuilderPage() {
       })
       .eq('id', workflowId);
 
-    const { data: existingDraft } = await supabase
+    const maxVersion = versions.length > 0 ? Math.max(...versions.map((v) => v.version_number)) : 0;
+
+    const { data: latestVer } = await supabase
       .from('automation_workflow_versions')
-      .select('id, version_number')
+      .select('id, version_number, published_at')
       .eq('workflow_id', workflowId)
-      .is('published_at', null)
       .order('version_number', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (existingDraft) {
+    const newestIsDraft = latestVer && latestVer.published_at === null;
+
+    await supabase
+      .from('automation_workflow_versions')
+      .delete()
+      .eq('workflow_id', workflowId)
+      .is('published_at', null)
+      .neq('id', newestIsDraft ? latestVer.id : '00000000-0000-0000-0000-000000000000');
+
+    if (newestIsDraft) {
       await supabase
         .from('automation_workflow_versions')
         .update({
           definition,
           trigger_type: workflow.trigger_type,
-          updated_at: new Date().toISOString(),
         })
-        .eq('id', existingDraft.id);
+        .eq('id', latestVer.id);
     } else {
-      const maxVersion = versions.length > 0 ? Math.max(...versions.map((v) => v.version_number)) : 0;
       await supabase
         .from('automation_workflow_versions')
         .insert({
