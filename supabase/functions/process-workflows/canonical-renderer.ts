@@ -92,17 +92,19 @@ export function renderTemplate(template: string, context: TemplateVariableContex
     }
 
     if (value == null || value === undefined) return '';
-    if (typeof value === 'number') return String(value);
     if (typeof value === 'boolean') return String(value);
+
+    const isCurrencyField = (parts[0] === 'reservation' && (parts[1] === 'total_amount' || parts[1] === 'amount_paid' || parts[1] === 'balance_due'))
+      || (parts[0] === 'payment' && parts[1] === 'amount');
+
+    if (typeof value === 'number') {
+      if (isCurrencyField) return formatCurrency(value);
+      return String(value);
+    }
     if (typeof value === 'string') {
-      if (parts[0] === 'reservation' && (parts[1] === 'total_amount' || parts[1] === 'amount_paid' || parts[1] === 'balance_due')) {
-        return formatCurrency(parseFloat(value));
-      }
+      if (isCurrencyField) return formatCurrency(parseFloat(value));
       if (parts[0] === 'reservation' && (parts[1] === 'start_at' || parts[1] === 'end_at')) {
         return formatDate(value);
-      }
-      if (parts[0] === 'payment' && parts[1] === 'amount') {
-        return formatCurrency(parseFloat(value));
       }
       return value;
     }
