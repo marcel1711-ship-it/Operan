@@ -445,7 +445,7 @@ function StripeCredentialsPanel({
           </Button>
         </div>
 
-        <WebhookConfigSection tenantId={tenantId} integration={integration} loading={loading} setLoading={setLoading} onMessage={onMessage} />
+        <WebhookConfigSection tenantId={tenantId} integration={integration} loading={loading} setLoading={setLoading} onMessage={onMessage} onChanged={onChanged} />
       </div>
     );
   }
@@ -521,13 +521,14 @@ function StripeCredentialsPanel({
 }
 
 function WebhookConfigSection({
-  tenantId, integration, loading, setLoading, onMessage,
+  tenantId, integration, loading, setLoading, onMessage, onChanged,
 }: {
   tenantId: string;
   integration: DrawerIntegration | null;
   loading: boolean;
   setLoading: (v: boolean) => void;
   onMessage: (msg: { type: 'success' | 'error' | 'info'; text: string } | null) => void;
+  onChanged?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [whSecret, setWhSecret] = useState('');
@@ -563,6 +564,7 @@ function WebhookConfigSection({
         onMessage({ type: 'success', text: 'Webhook secret saved successfully.' });
         setWhSecret('');
         setExpanded(false);
+        onChanged?.();
       }
     } catch {
       onMessage({ type: 'error', text: 'Failed to save webhook secret.' });
