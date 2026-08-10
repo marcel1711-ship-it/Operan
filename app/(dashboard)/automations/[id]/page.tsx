@@ -583,7 +583,7 @@ export default function WorkflowBuilderPage() {
         i.enabled && i.connection_status === 'connected' &&
         ((i as any).capabilities?.[channel] === true || providerNames.includes(i.provider))
       );
-      if (!hasIntegration && !workflow?.test_mode) {
+      if (!hasIntegration && !workflow?.test_mode && channel !== 'email') {
         warnings.push(`No connected ${channel} provider. Actions will be queued as action_required until a provider is connected.`);
       }
     });

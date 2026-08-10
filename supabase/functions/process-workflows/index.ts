@@ -476,7 +476,12 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         p_tenant_id: ctx.tenant_id,
         p_channel: channel,
       });
-      const readiness = readinessResult as { ready?: boolean; reason?: string; integration_id?: string; provider?: string } | null;
+      let readiness = readinessResult as { ready?: boolean; reason?: string; integration_id?: string; provider?: string } | null;
+
+      // Platform-level fallback: if no tenant integration but RESEND_API_KEY exists, use platform email
+      if (!readiness?.ready && channel === 'email' && Deno.env.get('RESEND_API_KEY')) {
+        readiness = { ready: true, provider: 'resend', integration_id: undefined, reason: undefined };
+      }
 
       if (!readiness?.ready) {
         // Provider not ready — record action_required, notify tenant, do NOT use mock

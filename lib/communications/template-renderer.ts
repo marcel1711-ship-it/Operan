@@ -133,13 +133,14 @@ export async function buildTemplateContext(
   if (customerId) {
     const { data: customer } = await supabaseAdmin
       .from('customers')
-      .select('first_name, last_name, full_name, email, phone')
+      .select('full_name, email, phone')
       .eq('id', customerId)
       .maybeSingle();
     if (customer) {
+      const nameParts = (customer.full_name || '').trim().split(/\s+/);
       context.customer = {
-        first_name: customer.first_name,
-        last_name: customer.last_name,
+        first_name: nameParts[0] || '',
+        last_name: nameParts.slice(1).join(' ') || '',
         full_name: customer.full_name,
         email: customer.email,
         phone: customer.phone,
@@ -154,7 +155,7 @@ export async function buildTemplateContext(
         booking_reference, start_at, end_at, guest_count,
         total_amount, amount_paid, balance_due,
         booking_status, payment_status,
-        customer:customer_id (first_name, last_name, full_name, email, phone),
+        customer:customer_id (full_name, email, phone),
         listing:listing_id (name, location, meeting_point, customer_instructions)
       `)
       .eq('id', reservationId)
@@ -175,9 +176,10 @@ export async function buildTemplateContext(
 
       if (reservation.customer) {
         const cust = Array.isArray(reservation.customer) ? reservation.customer[0] : reservation.customer;
+        const nameParts = (cust.full_name || '').trim().split(/\s+/);
         context.customer = {
-          first_name: cust.first_name,
-          last_name: cust.last_name,
+          first_name: nameParts[0] || '',
+          last_name: nameParts.slice(1).join(' ') || '',
           full_name: cust.full_name,
           email: cust.email,
           phone: cust.phone,
