@@ -1096,6 +1096,12 @@ async function processMessage(supabase: any, msg: any) {
     const from = senderName ? `${senderName} <${fromEmail}>` : fromEmail;
     const replyTo = settings?.reply_to_email || undefined;
 
+    // Store from_email for debugging
+    await supabase
+      .from('communication_messages')
+      .update({ from_email: fromEmail })
+      .eq('id', msg.id);
+
     try {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
