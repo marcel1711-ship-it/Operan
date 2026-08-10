@@ -121,10 +121,32 @@ export default function WorkflowBuilderPage() {
       const latestDraft = vers.find((v: any) => v.published_at === null);
       const latest = latestDraft || vers[0];
       if (latest.definition?.nodes?.length > 0) {
-        console.log('[WF-DEBUG] Loading v' + latest.version_number + ' | flat nodes: ' + JSON.stringify(latest.definition.nodes.map((n: any) => n.node_id + ':' + n.action_type)));
         const built = flatToTree(latest.definition.nodes, latest.definition.edges, wf.trigger_type);
-        console.log('[WF-DEBUG] flatToTree children: ' + JSON.stringify(built.children.map(c => c.id + ':' + c.actionType)));
-        console.log('[WF-DEBUG] tree set with ' + built.children.length + ' children at ' + new Date().toISOString());
+
+        const rawById = new Map<string, any>(
+          latest.definition.nodes
+            .filter((n: any) => (n.action_type || n.type) !== 'trigger')
+            .map((n: any) => [n.node_id || n.id, n])
+        );
+        const repairNodes = (nodes: BuilderNode[]) => {
+          for (const node of nodes) {
+            const raw = rawById.get(node.id);
+            if (raw && raw.action_type && node.actionType !== raw.action_type) {
+              console.warn('[WF-REPAIR] ' + node.id + ': was "' + node.actionType + '", DB has "' + raw.action_type + '". Fixing.');
+              (node as any).actionType = raw.action_type;
+              const def = getActionDef(raw.action_type);
+              node.label = raw.label || def?.label || raw.action_type || 'Action';
+              node.configuration = raw.configuration || {};
+              node.disabled = raw.disabled || false;
+            }
+            if (node.branches) {
+              repairNodes(node.branches.true);
+              repairNodes(node.branches.false);
+            }
+          }
+        };
+        repairNodes(built.children);
+
         setTree(built);
       } else {
         initTree(wf.trigger_type);
