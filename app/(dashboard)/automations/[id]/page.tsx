@@ -485,13 +485,18 @@ export default function WorkflowBuilderPage() {
     }
     validateNodes(tree.children);
 
-    // Communication nodes need templates
+    // Communication nodes need templates OR inline content
     function checkTemplates(nodes: BuilderNode[]) {
       for (const node of nodes) {
         const at = node.actionType;
         if (at === 'send_email' || at === 'send_sms' || at === 'send_whatsapp') {
           const tplId = node.configuration?.template_id;
-          if (!tplId) errors.push(`"${node.label}": Template is required`);
+          const hasInline = at === 'send_email'
+            ? !!(node.configuration?.subject && node.configuration?.body)
+            : !!node.configuration?.body;
+          if (!tplId && !hasInline) {
+            errors.push(`"${node.label}": Template or inline content is required`);
+          }
           if (tplId) {
             const tpl = templates.find((t) => t.id === tplId);
             const expectedChannel = at.replace('send_', '');

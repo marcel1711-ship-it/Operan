@@ -18,32 +18,45 @@ export const triggerConfigSchema = z.object({
 });
 
 export const sendEmailConfigSchema = z.object({
-  template_id: z.string().uuid(),
+  template_id: z.string().uuid().optional(),
+  subject: z.string().optional(),
+  body: z.string().optional(),
   recipient_type: z.enum(['customer', 'custom']).default('customer'),
   recipient_override: z.string().optional(),
   message_classification: z.enum(['transactional', 'marketing']).default('transactional'),
   integration_id: z.string().uuid().optional(),
   test_recipient: z.string().optional(),
-});
+}).refine(
+  (d) => !!d.template_id || (!!d.subject && !!d.body),
+  { message: 'Template or inline content (subject + body) is required', path: ['template_id'] },
+);
 
 export const sendSmsConfigSchema = z.object({
-  template_id: z.string().uuid(),
+  template_id: z.string().uuid().optional(),
+  body: z.string().optional(),
   recipient_type: z.enum(['customer', 'custom']).default('customer'),
   recipient_override: z.string().optional(),
   message_classification: z.enum(['transactional', 'marketing']).default('transactional'),
   integration_id: z.string().uuid().optional(),
   test_recipient: z.string().optional(),
-});
+}).refine(
+  (d) => !!d.template_id || !!d.body,
+  { message: 'Template or inline message is required', path: ['template_id'] },
+);
 
 export const sendWhatsAppConfigSchema = z.object({
-  template_id: z.string().uuid(),
+  template_id: z.string().uuid().optional(),
+  body: z.string().optional(),
   recipient_type: z.enum(['customer', 'custom']).default('customer'),
   recipient_override: z.string().optional(),
   message_classification: z.enum(['transactional', 'marketing']).default('transactional'),
   integration_id: z.string().uuid().optional(),
   approved_template_reference: z.string().optional(),
   test_recipient: z.string().optional(),
-});
+}).refine(
+  (d) => !!d.template_id || !!d.body,
+  { message: 'Template or inline message is required', path: ['template_id'] },
+);
 
 export const createInAppNotificationConfigSchema = z.object({
   title: z.string().min(1),

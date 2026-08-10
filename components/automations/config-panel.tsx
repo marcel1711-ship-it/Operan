@@ -210,7 +210,7 @@ export default function ConfigPanel({
                     onChange={(e) => onUpdateConfig('body', e.target.value)}
                     placeholder="Hi {{customer_name}}, your reservation on {{vessel_name}} for {{rental_date}} is confirmed..."
                   />
-                  <p className="mt-1 text-[10px] text-[#94A3B8]/60">Use {'{{customer_name}}'}, {'{{vessel_name}}'}, {'{{rental_date}}'}, {'{{start_time}}'}, {'{{company_name}}'} as placeholders.</p>
+                  <p className="mt-1 text-[10px] text-[#94A3B8]/60">Use {'{{customer.name}}'}, {'{{listing.name}}'}, {'{{reservation.date}}'}, {'{{reservation.start_time}}'}, {'{{tenant.name}}'}, {'{{waiver.signing_url}}'}, {'{{captain.url}}'} as placeholders.</p>
                 </div>
               </>
             )}
@@ -222,9 +222,9 @@ export default function ConfigPanel({
                   rows={4}
                   value={(config.body as string) || ''}
                   onChange={(e) => onUpdateConfig('body', e.target.value)}
-                  placeholder="Hi {{customer_name}}, your reservation is confirmed for {{rental_date}}..."
+                  placeholder="Hi {{customer.name}}, your reservation is confirmed for {{reservation.date}}..."
                 />
-                <p className="mt-1 text-[10px] text-[#94A3B8]/60">Use {'{{customer_name}}'}, {'{{vessel_name}}'}, {'{{rental_date}}'} as placeholders.</p>
+                <p className="mt-1 text-[10px] text-[#94A3B8]/60">Use {'{{customer.name}}'}, {'{{listing.name}}'}, {'{{reservation.date}}'}, {'{{waiver.signing_url}}'} as placeholders.</p>
               </div>
             )}
             <div>
