@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
@@ -23,6 +24,8 @@ export async function GET(req: Request) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY || '',
           'x-cron-secret': CRON_SECRET || '',
         },
         signal: AbortSignal.timeout(55000),
