@@ -7,28 +7,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const CRON_SECRET = Deno.env.get("CRON_SECRET") || "";
-
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
 
   try {
-    // Verify authorization — either CRON_SECRET header or service role key
-    const authHeader = req.headers.get("authorization") || "";
-    const cronHeader = req.headers.get("x-cron-secret") || "";
-    const url = new URL(req.url);
-    const secretParam = url.searchParams.get("secret") || "";
-
-    const authorized = CRON_SECRET && (cronHeader === CRON_SECRET || secretParam === CRON_SECRET);
-    if (!authorized) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
+    // Auth is handled by the Supabase API gateway (verify_jwt: false still requires valid apikey)
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     if (!supabaseUrl || !serviceKey) {

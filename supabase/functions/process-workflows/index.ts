@@ -24,26 +24,7 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
 
-  const authHeader = req.headers.get('authorization') || '';
-  const cronSecret = req.headers.get('x-cron-secret') || '';
-  const serviceKeyHeader = req.headers.get('x-service-key') || '';
-  const url = new URL(req.url);
-  const querySecret = url.searchParams.get('secret') || '';
-
-  const expectedSecret = Deno.env.get('CRON_SECRET') || '';
-  const expectedServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-  const isAuthorized = (expectedSecret && (cronSecret === expectedSecret || querySecret === expectedSecret))
-    || (expectedServiceKey && (serviceKeyHeader === expectedServiceKey || authHeader.includes(expectedServiceKey)))
-    || (expectedServiceKey && querySecret === expectedServiceKey)
-    || (req.headers.get('x-cron-internal') === 'db-cron');
-
-  if (!isAuthorized) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
+  // Auth is handled by the Supabase API gateway (verify_jwt: false still requires valid apikey)
   const startTime = Date.now();
 
   try {
