@@ -343,7 +343,7 @@ export default function ListingsPage() {
 
   async function deletePricingOption(idx: number) {
     const opt = pricingOptions[idx];
-    if (!confirm(`Delete pricing option "${opt.label || 'Untitled'}"?`)) return;
+    if (!confirm(`Delete pricing option "${opt.name || 'Untitled'}"?`)) return;
     if (opt.id) {
       const { error: delErr } = await supabase.from('listing_pricing_options').delete().eq('id', opt.id);
       if (delErr) { setError(`Failed to delete: ${delErr.message}`); return; }
