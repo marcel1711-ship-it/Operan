@@ -198,8 +198,9 @@ export function flatToTree(
       id: targetNode.node_id || targetNode.id,
       type: 'action',
       actionType: targetNode.action_type,
-      label: actionDef?.label || targetNode.action_type || 'Action',
+      label: targetNode.label || actionDef?.label || targetNode.action_type || 'Action',
       configuration: targetNode.configuration || {},
+      disabled: targetNode.disabled || false,
     };
 
     if (handle === 'true') {
@@ -285,7 +286,9 @@ export function treeToFlat(tree: BuilderDefinition): { nodes: any[]; edges: any[
         node_id: node.id,
         type: 'action',
         action_type: node.actionType,
+        label: node.label,
         configuration: node.configuration,
+        disabled: node.disabled || false,
         position_x: 0,
         position_y: 0,
       });
