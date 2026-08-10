@@ -74,11 +74,12 @@ Deno.serve(async (req: Request) => {
       .eq('status', 'running')
       .lt('started_at', stuckCutoff);
 
-    // Step 2: Process pending runs (find runs that need their first step)
+    // Step 2: Process pending runs (find runs still at the trigger stage)
     const { data: pendingRuns } = await supabase
       .from('automation_runs')
       .select('id, tenant_id, workflow_id, workflow_version_id, reservation_id, customer_id, opportunity_id, entity_type, entity_id, context')
       .eq('status', 'running')
+      .eq('current_node_id', 'trigger')
       .order('created_at', { ascending: true })
       .limit(BATCH_SIZE);
 
@@ -229,6 +230,14 @@ async function processRun(supabase: any, run: any) {
   }
 
   const nextEdges = edges.filter((e: any) => e.source === triggerNode.node_id);
+  if (nextEdges.length === 0) {
+    await supabase.rpc('update_workflow_run_status', {
+      p_run_id: run.id,
+      p_status: 'completed',
+    });
+    return;
+  }
+
   for (const edge of nextEdges) {
     const nextNode = nodes.find((n: any) => n.node_id === edge.target);
     if (nextNode) {
@@ -253,6 +262,11 @@ async function processRun(supabase: any, run: any) {
       });
     }
   }
+
+  await supabase
+    .from('automation_runs')
+    .update({ current_node_id: 'steps_queued' })
+    .eq('id', run.id);
 }
 
 // ============================================================
@@ -333,6 +347,11 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
           p_status: 'completed',
           p_output: { scheduled_for: scheduledFor.toISOString() },
         });
+        if (nextEdges.length === 0) {
+          await supabase.rpc('update_workflow_run_status', {
+            p_run_id: step.automation_run_id, p_status: 'completed',
+          });
+        }
         return { failed: false, deadLetter: false };
       }
     }
@@ -374,12 +393,19 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
           p_step_run_id: step.id, p_status: 'completed',
           p_output: { scheduled_for: scheduledFor.toISOString() },
         });
+        if (nextEdges.length === 0) {
+          await supabase.rpc('update_workflow_run_status', {
+            p_run_id: step.automation_run_id, p_status: 'completed',
+          });
+        }
         return { failed: false, deadLetter: false };
       } else if (scheduledFor && scheduledFor <= new Date()) {
         await supabase.rpc('update_step_run_status', {
           p_step_run_id: step.id, p_status: 'completed',
           p_output: { scheduled_for: scheduledFor.toISOString(), note: 'already_past' },
         });
+        await proceedToNext(supabase, step, nodes, edges, ctx);
+        return { failed: false, deadLetter: false };
       } else {
         throw new Error('Could not determine wait_until target time');
       }
