@@ -37,6 +37,10 @@ export function buildWaiverUrl(tenantSlug: string, waiverSlug: string): string {
   return `${getAppUrl()}/w/${tenantSlug}/${waiverSlug}`;
 }
 
+export function buildRegistrationUrl(tenantSlug: string): string {
+  return `${getAppUrl()}/w/${tenantSlug}/register`;
+}
+
 /**
  * Builds a direct booking URL: /booking/{tenantSlug}/{listingSlug}
  */

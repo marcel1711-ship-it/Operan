@@ -21,7 +21,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { cn, buildWaiverUrl } from '@/lib/utils';
+import { cn, buildWaiverUrl, buildRegistrationUrl } from '@/lib/utils';
 import DOMPurify from 'dompurify';
 
 type FormField = {
@@ -313,6 +313,8 @@ export default function FormsPage() {
     await loadTemplates(tenant.id);
   }
 
+  const [copiedRegId, setCopiedRegId] = useState<string | null>(null);
+
   function copyLink(t: WaiverTemplate) {
     if (!tenant) return;
     const url = buildWaiverUrl(tenant.slug, t.slug);
@@ -321,9 +323,22 @@ export default function FormsPage() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
+  function copyRegLink(t: WaiverTemplate) {
+    if (!tenant) return;
+    const url = buildRegistrationUrl(tenant.slug);
+    navigator.clipboard.writeText(url);
+    setCopiedRegId(t.id);
+    setTimeout(() => setCopiedRegId(null), 2000);
+  }
+
   function getWaiverUrl(t: WaiverTemplate): string {
     if (!tenant) return '';
     return buildWaiverUrl(tenant.slug, t.slug);
+  }
+
+  function getRegUrl(): string {
+    if (!tenant) return '';
+    return buildRegistrationUrl(tenant.slug);
   }
 
   function getListingName(id: string | null): string | null {
@@ -452,24 +467,51 @@ export default function FormsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
-                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-[var(--brand-primary)]" />
-                    <a
-                      href={getWaiverUrl(t)} target="_blank" rel="noopener noreferrer"
-                      className="flex-1 truncate text-xs font-medium text-[var(--brand-primary)] hover:underline"
-                    >
-                      {getWaiverUrl(t)}
-                    </a>
-                    <Button
-                      size="sm" variant="ghost" onClick={() => copyLink(t)}
-                      className="h-7 w-7 p-0" title="Copy link"
-                    >
-                      {copiedId === t.id ? (
-                        <Check className="h-3.5 w-3.5 text-[#86EFAC]" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0 text-[var(--brand-primary)]" />
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-[10px] font-medium text-muted-foreground">Direct signing link</span>
+                        <a
+                          href={getWaiverUrl(t)} target="_blank" rel="noopener noreferrer"
+                          className="block truncate text-xs font-medium text-[var(--brand-primary)] hover:underline"
+                        >
+                          {getWaiverUrl(t)}
+                        </a>
+                      </div>
+                      <Button
+                        size="sm" variant="ghost" onClick={() => copyLink(t)}
+                        className="h-7 w-7 p-0" title="Copy link"
+                      >
+                        {copiedId === t.id ? (
+                          <Check className="h-3.5 w-3.5 text-[#86EFAC]" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2.5">
+                      <FileSignature className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-[10px] font-medium text-muted-foreground">Registration form (used in emails &amp; workflows)</span>
+                        <a
+                          href={getRegUrl()} target="_blank" rel="noopener noreferrer"
+                          className="block truncate text-xs font-medium text-amber-600 hover:underline"
+                        >
+                          {getRegUrl()}
+                        </a>
+                      </div>
+                      <Button
+                        size="sm" variant="ghost" onClick={() => copyRegLink(t)}
+                        className="h-7 w-7 p-0" title="Copy registration link"
+                      >
+                        {copiedRegId === t.id ? (
+                          <Check className="h-3.5 w-3.5 text-[#86EFAC]" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
