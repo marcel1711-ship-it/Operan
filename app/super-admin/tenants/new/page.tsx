@@ -359,8 +359,8 @@ export default function CreateEditTenantPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="starter">Starter — ${planPrices.starter}/mo (up to 3 vessels)</SelectItem>
-                  <SelectItem value="growth">Growth — ${planPrices.growth}/mo (up to 10 vessels)</SelectItem>
+                  <SelectItem value="starter">Starter — ${planPrices.starter}/mo (up to 3 listings)</SelectItem>
+                  <SelectItem value="growth">Growth — ${planPrices.growth}/mo (up to 10 listings)</SelectItem>
                   <SelectItem value="enterprise">Enterprise — Custom (unlimited)</SelectItem>
                 </SelectContent>
               </Select>

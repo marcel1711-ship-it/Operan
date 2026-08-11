@@ -8,9 +8,9 @@ const plans = [
     name: 'Starter',
     price: '$149',
     period: '/month',
-    desc: 'For operators with 1–3 vessels.',
+    desc: 'For operators with 1–3 listings.',
     features: [
-      'Up to 3 vessels',
+      'Up to 3 listings',
       'Unlimited bookings',
       'Unlimited customers',
       'Stripe payments',
@@ -26,9 +26,9 @@ const plans = [
     name: 'Growth',
     price: '$299',
     period: '/month',
-    desc: 'For growing fleets with up to 10 vessels.',
+    desc: 'For growing fleets with up to 10 listings.',
     features: [
-      'Up to 10 vessels',
+      'Up to 10 listings',
       'Everything in Starter',
       'SMS & WhatsApp automations',
       'Pipeline CRM',
@@ -46,7 +46,7 @@ const plans = [
     period: '',
     desc: 'For large fleets and multi-location operations.',
     features: [
-      'Unlimited vessels',
+      'Unlimited listings',
       'Everything in Growth',
       'Multiple locations',
       'Custom workflows',
