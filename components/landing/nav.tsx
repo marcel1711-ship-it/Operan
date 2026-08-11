@@ -75,13 +75,21 @@ export default function OperanNav() {
           </Link>
         </div>
 
-        <button
-          className="text-white md:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-3 md:hidden">
+          <Link
+            href="/login"
+            className="text-sm text-[#94A3B8] transition-colors hover:text-white"
+          >
+            Log in
+          </Link>
+          <button
+            className="text-white"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </nav>
 
       {mobileOpen && (
