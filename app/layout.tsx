@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: APP_URL,
   },
+  icons: {
+    icon: '/Logo.png',
+    apple: '/Logo.png',
+  },
   openGraph: {
     title: 'OPERAN — Business Operations Platform for Marine Experience Businesses',
     description:
@@ -22,21 +26,12 @@ export const metadata: Metadata = {
     url: APP_URL,
     siteName: 'OPERAN',
     type: 'website',
-    images: [
-      {
-        url: `${APP_URL}/Logo.png`,
-        width: 1024,
-        height: 1024,
-        alt: 'OPERAN',
-      },
-    ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'OPERAN — Business Operations Platform for Marine Experience Businesses',
     description:
       'Manage bookings, customers, payments, communications, workflows and daily operations from one connected platform built for marine experience businesses.',
-    images: [`${APP_URL}/Logo.png`],
   },
 };
 

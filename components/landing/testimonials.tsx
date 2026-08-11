@@ -5,29 +5,26 @@ import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 const testimonials = [
   {
     quote:
-      'We replaced six different tools with OPERAN. Our staff went from spending 3 hours a day on admin to maybe 20 minutes. The automations handle everything.',
-    author: 'Marcus Chen',
-    role: 'Owner',
-    company: 'Pacific Yacht Charters',
-    location: 'San Diego, CA',
+      'We replaced six different tools with one platform. Our team went from spending hours on admin to minutes. The automations handle everything from confirmation to follow-up.',
+    author: 'Charter Operator',
+    role: 'Fleet Owner',
+    company: '3-vessel operation',
     metric: { value: '85%', label: 'less admin time' },
   },
   {
     quote:
       'The automation engine alone is worth it. A booking comes in and the customer gets a confirmation, the captain gets notified, the waiver goes out, and the calendar updates — all without anyone touching anything.',
-    author: 'Sarah Williams',
-    role: 'Operations Director',
-    company: 'Island Hopper Co.',
-    location: 'Miami, FL',
+    author: 'Operations Manager',
+    role: 'Day Charter Company',
+    company: '7 vessels',
     metric: { value: '3x', label: 'more bookings managed' },
   },
   {
     quote:
-      'Before OPERAN we were losing customers because things fell through the cracks. Now nothing gets missed. The platform runs the business for us.',
-    author: 'James Okafor',
-    role: 'Founder',
-    company: 'Bayline Charters',
-    location: 'Seattle, WA',
+      'Before this we were losing customers because things fell through the cracks. Now nothing gets missed. One booking triggers the entire operation automatically.',
+    author: 'Business Owner',
+    role: 'Yacht Charter',
+    company: '5-vessel fleet',
     metric: { value: '0', label: 'missed follow-ups' },
   },
 ];
@@ -36,12 +33,12 @@ export default function OperanTestimonials() {
   const { ref, isVisible } = useScrollReveal();
 
   return (
-    <section ref={ref} className="relative py-24 lg:py-32">
+    <section ref={ref} className="relative py-16 lg:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              Trusted by operators{' '}
+              Built for operators{' '}
               <span className="operan-accent-gradient">who run real fleets.</span>
             </h2>
           </div>
@@ -73,12 +70,12 @@ export default function OperanTestimonials() {
               {/* Author */}
               <div className="mt-4 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#6377FF]/20 to-[#6377FF]/5 text-xs font-medium text-[#6377FF]">
-                  {t.author.split(' ').map((n) => n[0]).join('')}
+                  {t.author.charAt(0)}
                 </div>
                 <div>
                   <div className="text-sm font-medium text-white">{t.author}</div>
                   <div className="text-xs text-[#94A3B8]">
-                    {t.role}, {t.company}
+                    {t.role} · {t.company}
                   </div>
                 </div>
               </div>

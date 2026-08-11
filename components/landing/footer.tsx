@@ -4,23 +4,19 @@ import Link from 'next/link';
 import { OperanLogoIcon } from './operan-logo';
 
 const footerLinks = {
-  Company: [
-    { label: 'About', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Contact', href: '#' },
+  Product: [
+    { label: 'Platform', href: '#platform' },
+    { label: 'Automations', href: '#automations' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'Contact', href: 'mailto:hello@operan.io' },
   ],
   Resources: [
-    { label: 'Documentation', href: '#' },
-    { label: 'API Reference', href: '#' },
-    { label: 'Help Center', href: '#' },
-    { label: 'Status', href: '#' },
+    { label: 'Help Center', href: 'mailto:hello@operan.io' },
+    { label: 'FAQ', href: '#faq' },
   ],
   Legal: [
     { label: 'Privacy', href: '#' },
     { label: 'Terms', href: '#' },
-    { label: 'Security', href: '#' },
-    { label: 'DPA', href: '#' },
   ],
 };
 

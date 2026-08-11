@@ -15,6 +15,9 @@ type TenantInfo = {
   secondary_color: string;
   logo_url: string | null;
   template: string;
+  plan: string;
+  status: string;
+  trial_ends_at: string | null;
 };
 
 type AuthContextValue = {
@@ -88,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: tenantData } = await supabase
       .from('tenants')
-      .select('id, name, slug, primary_color, secondary_color, logo_url, template')
+      .select('id, name, slug, primary_color, secondary_color, logo_url, template, plan, status, trial_ends_at')
       .eq('id', membership.tenant_id)
       .maybeSingle();
 

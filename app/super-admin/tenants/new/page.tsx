@@ -31,10 +31,9 @@ type FormData = {
 };
 
 const defaultPlanPrices: Record<string, number> = {
-  free: 0,
-  starter: 79,
-  pro: 149,
-  enterprise: 499,
+  starter: 149,
+  growth: 299,
+  enterprise: 0,
 };
 
 function generateTempPassword() {
@@ -353,10 +352,9 @@ export default function CreateEditTenantPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="free">Free — $0/mo</SelectItem>
-                  <SelectItem value="starter">Starter — ${planPrices.starter}/mo</SelectItem>
-                  <SelectItem value="pro">Pro — ${planPrices.pro}/mo</SelectItem>
-                  <SelectItem value="enterprise">Enterprise — ${planPrices.enterprise}/mo</SelectItem>
+                  <SelectItem value="starter">Starter — ${planPrices.starter}/mo (up to 3 vessels)</SelectItem>
+                  <SelectItem value="growth">Growth — ${planPrices.growth}/mo (up to 10 vessels)</SelectItem>
+                  <SelectItem value="enterprise">Enterprise — Custom (unlimited)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

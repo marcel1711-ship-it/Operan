@@ -16,7 +16,7 @@ export default function OperanHero() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28">
+    <section className="relative overflow-hidden pt-24 pb-12 lg:pt-40 lg:pb-28">
       <div className="absolute inset-0 operan-grid-bg opacity-40" />
       <div className="absolute inset-0 operan-radial-fade" />
 
@@ -58,7 +58,7 @@ export default function OperanHero() {
                 href="/login"
                 className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-6 py-3.5 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
               >
-                Request Early Access
+                Start Free Trial
                 <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -75,7 +75,7 @@ export default function OperanHero() {
           </div>
 
           {/* Right: Product demo */}
-          <div className={`relative scale-105 ${mounted ? 'animate-operan-scale-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
+          <div className={`relative lg:scale-105 ${mounted ? 'animate-operan-scale-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
             <HeroProductDemo />
           </div>
         </div>
@@ -155,7 +155,7 @@ function HeroProductDemo() {
         </div>
 
         {/* App body */}
-        <div className="flex" style={{ minHeight: '400px' }}>
+        <div className="flex min-h-[280px] lg:min-h-[400px]">
           {/* Mini sidebar */}
           <div
             className="flex flex-col items-center gap-3 border-r border-white/[0.06] py-4"

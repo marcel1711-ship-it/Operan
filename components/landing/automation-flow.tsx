@@ -43,7 +43,7 @@ export default function OperanAutomationFlow() {
   }, [isVisible]);
 
   return (
-    <section ref={ref} id="automations" className="relative overflow-hidden py-24 lg:py-32">
+    <section ref={ref} id="automations" className="relative overflow-hidden py-16 lg:py-32">
       <div className="absolute inset-0 operan-grid-bg opacity-20" />
       <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-[#6377FF]/5 blur-3xl" />
 

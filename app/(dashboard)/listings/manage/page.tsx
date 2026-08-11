@@ -24,6 +24,7 @@ import { formatCurrency } from '@/lib/format';
 import { useAuth } from '@/lib/auth';
 import { cn, buildListingUrl, buildBookingUrl, buildEmbedBookingUrl } from '@/lib/utils';
 import { EmbedLinksSection } from '@/components/listings/embed-links-section';
+import { getPlanConfig } from '@/lib/plans';
 
 type PricingOption = {
   id: string;
@@ -214,7 +215,14 @@ export default function ListingsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const planConfig = getPlanConfig(tenant?.plan ?? 'starter');
+  const listingLimitReached = listings.length >= planConfig.maxListings;
+
   function openCreate() {
+    if (listingLimitReached) {
+      setError(`Your ${planConfig.name} plan allows up to ${planConfig.maxListings} listings. Upgrade your plan to add more.`);
+      return;
+    }
     setEditing(null);
     setForm(defaultForm());
     setPricingOptions([]);
@@ -463,7 +471,12 @@ export default function ListingsPage() {
                 <ExternalLink className="h-4 w-4" /> View Public Page
               </a>
             )}
-            <Button onClick={openCreate} className="bg-[var(--brand-primary)] text-primary-foreground hover:bg-primary/90">
+            {planConfig.maxListings < Infinity && (
+              <span className="text-xs text-muted-foreground">
+                {listings.length}/{planConfig.maxListings} listings
+              </span>
+            )}
+            <Button onClick={openCreate} disabled={listingLimitReached} className="bg-[var(--brand-primary)] text-primary-foreground hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" /> New Listing
             </Button>
           </div>

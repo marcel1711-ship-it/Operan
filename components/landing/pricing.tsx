@@ -6,37 +6,47 @@ import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 const plans = [
   {
     name: 'Starter',
-    desc: 'Perfect for small operators.',
+    price: '$149',
+    period: '/month',
+    desc: 'For operators with 1–3 vessels.',
     features: [
-      'Up to 100 bookings / month',
+      'Up to 3 vessels',
+      'Unlimited bookings',
       'Unlimited customers',
       'Stripe payments',
       'Email automations',
       'Digital waivers',
       'Public booking page',
     ],
-    cta: 'Request Early Access',
+    cta: 'Start Free Trial',
+    href: '/login',
     highlighted: false,
   },
   {
     name: 'Growth',
-    desc: 'For growing marine businesses.',
+    price: '$299',
+    period: '/month',
+    desc: 'For growing fleets with up to 10 vessels.',
     features: [
-      'Unlimited bookings',
-      'Multi-vessel calendar',
+      'Up to 10 vessels',
+      'Everything in Starter',
       'SMS & WhatsApp automations',
       'Pipeline CRM',
       'Captain operations panel',
       'Custom integrations',
       'Priority support',
     ],
-    cta: 'Contact Sales',
+    cta: 'Start Free Trial',
+    href: '/login',
     highlighted: true,
   },
   {
     name: 'Enterprise',
-    desc: 'Custom solutions for large operations.',
+    price: 'Custom',
+    period: '',
+    desc: 'For large fleets and multi-location operations.',
     features: [
+      'Unlimited vessels',
       'Everything in Growth',
       'Multiple locations',
       'Custom workflows',
@@ -46,6 +56,7 @@ const plans = [
       'SLA & onboarding',
     ],
     cta: 'Talk to Sales',
+    href: 'mailto:hello@operan.io',
     highlighted: false,
   },
 ];
@@ -54,7 +65,7 @@ export default function OperanPricing() {
   const { ref, isVisible } = useScrollReveal();
 
   return (
-    <section ref={ref} id="pricing" className="relative py-24 lg:py-32">
+    <section ref={ref} id="pricing" className="relative py-16 lg:py-32">
       {/* Background */}
       <div className="absolute inset-0 operan-grid-bg opacity-20" />
 
@@ -66,7 +77,7 @@ export default function OperanPricing() {
               <span className="operan-accent-gradient">with your business.</span>
             </h2>
             <p className="mt-4 text-lg text-[#94A3B8]">
-              Explore plans and request early access. Cancel anytime.
+              Start free for 14 days. No credit card required.
             </p>
           </div>
         </div>
@@ -95,12 +106,18 @@ export default function OperanPricing() {
               {/* Plan name */}
               <div className="text-sm font-medium text-[#94A3B8]">{plan.name}</div>
 
+              {/* Price */}
+              <div className="mt-4 flex items-baseline gap-1">
+                <span className="text-4xl font-bold tracking-tight text-white">{plan.price}</span>
+                {plan.period && <span className="text-sm text-[#94A3B8]">{plan.period}</span>}
+              </div>
+
               {/* Description */}
               <p className="mt-3 text-sm text-[#94A3B8]">{plan.desc}</p>
 
               {/* CTA */}
               <Link
-                href="/login"
+                href={plan.href}
                 className={`mt-6 flex items-center justify-center rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                   plan.highlighted
                     ? 'bg-[#6377FF] text-white hover:bg-[#5063E8]'

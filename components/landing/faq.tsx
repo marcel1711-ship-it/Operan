@@ -56,7 +56,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I try OPERAN before subscribing?',
-    a: 'OPERAN will offer a guided trial or onboarding experience so businesses can configure listings, explore workflows and test the booking process before committing to a paid plan. Final trial terms will be confirmed before the commercial launch.',
+    a: 'Yes. Every plan includes a 14-day free trial with full access to all features. No credit card is required to start. You can configure listings, set up workflows and test the booking process before choosing a paid plan.',
   },
 ];
 
@@ -65,7 +65,7 @@ export default function OperanFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section ref={ref} id="faq" className="relative overflow-hidden py-24 lg:py-32">
+    <section ref={ref} id="faq" className="relative overflow-hidden py-16 lg:py-32">
       <div className="absolute inset-0 operan-grid-bg opacity-20" />
       <div className="absolute left-1/2 top-1/2 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6377FF]/[0.03] blur-3xl" />
 

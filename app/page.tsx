@@ -13,7 +13,7 @@ import OperanFooter from '@/components/landing/footer';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0F172A]">
+    <main className="min-h-screen overflow-x-hidden bg-[#0F172A]">
       <OperanNav />
       <OperanHero />
       <OperanProblemSolution />

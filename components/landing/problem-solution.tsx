@@ -118,7 +118,7 @@ export default function OperanProblemSolution() {
   const iconColor = (connected: boolean): string => (connected ? '#4F6BFF' : '#A9B2C5');
 
   return (
-    <section ref={ref} className="relative overflow-hidden py-24 lg:py-32" style={{ backgroundColor: '#070B14' }}>
+    <section ref={ref} className="relative overflow-hidden py-16 lg:py-32" style={{ backgroundColor: '#070B14' }}>
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         {/* Heading */}
         <div className={`operan-reveal ${isVisible ? 'is-visible' : ''}`}>
