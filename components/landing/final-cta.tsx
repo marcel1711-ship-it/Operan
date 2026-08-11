@@ -33,7 +33,7 @@ export default function OperanFinalCTA() {
           {/* CTAs */}
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/login"
+              href="/register"
               className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-7 py-4 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
             >
               Start Free Trial

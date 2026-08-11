@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Loader2, ArrowLeft, Save, Building2, Mail, Globe,
-  Palette, Shield, KeyRound, CheckCircle2, Link2, Layout,
+  Palette, Shield, KeyRound, CheckCircle2, Link2, Layout, Clock,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,8 @@ type FormData = {
   tempPassword: string;
   integration_type: string;
   existing_website_url: string;
+  status: string;
+  trial_ends_at: string;
 };
 
 const defaultPlanPrices: Record<string, number> = {
@@ -54,6 +56,7 @@ export default function CreateEditTenantPage() {
     name: '', slug: '', email: '', plan: 'starter', template: 'default',
     domain: '', primary_color: '#0d9488', secondary_color: '#0f766e',
     tempPassword: '', integration_type: 'new_web', existing_website_url: '',
+    status: 'trial', trial_ends_at: '',
   });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editId);
@@ -93,6 +96,8 @@ export default function CreateEditTenantPage() {
         tempPassword: '',
         integration_type: data.integration_type || 'new_web',
         existing_website_url: data.landing_page_url || '',
+        status: data.status || 'trial',
+        trial_ends_at: data.trial_ends_at ? data.trial_ends_at.split('T')[0] : '',
       });
     }
     setLoading(false);
@@ -121,8 +126,10 @@ export default function CreateEditTenantPage() {
       integration_type: form.integration_type,
       landing_page_url: form.integration_type === 'link_only' ? form.existing_website_url.trim() || null : null,
       monthly_amount: planPrices[form.plan] ?? 0,
-      status: editId ? undefined : 'trial',
-      trial_ends_at: editId ? undefined : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      status: editId ? form.status : 'trial',
+      trial_ends_at: editId
+        ? (form.trial_ends_at ? new Date(form.trial_ends_at + 'T23:59:59Z').toISOString() : undefined)
+        : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       next_renewal_at: editId ? undefined : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     };
 
@@ -378,6 +385,44 @@ export default function CreateEditTenantPage() {
             </Badge>
           </div>
         </div>
+
+        {/* Trial Management (edit only) */}
+        {editId && (
+          <div className="rounded-[18px] border border-[var(--border-default)] bg-[var(--card-bg)] p-5 shadow-sm">
+            <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+              <Clock className="h-4 w-4 text-[var(--brand-primary)]" />
+              Trial &amp; Subscription
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-[var(--text-secondary)]">Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                  <SelectTrigger className="border-[var(--border-default)] bg-[var(--card-bg)] text-[var(--text-primary)]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="trial">Trial</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-[var(--text-secondary)]">Trial Ends At</Label>
+                <Input
+                  type="date"
+                  value={form.trial_ends_at}
+                  onChange={(e) => setForm({ ...form, trial_ends_at: e.target.value })}
+                  className="border-[var(--border-default)] bg-[var(--card-bg)] text-[var(--text-primary)]"
+                />
+                <p className="text-[11px] text-[var(--text-muted)]">
+                  Change this date to extend or shorten the trial period
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Branding */}
         <div className="rounded-[18px] border border-[var(--border-default)] bg-[var(--card-bg)] p-5 shadow-sm">

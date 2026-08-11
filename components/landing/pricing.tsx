@@ -19,7 +19,7 @@ const plans = [
       'Public booking page',
     ],
     cta: 'Start Free Trial',
-    href: '/login',
+    href: '/register',
     highlighted: false,
   },
   {
@@ -37,7 +37,7 @@ const plans = [
       'Priority support',
     ],
     cta: 'Start Free Trial',
-    href: '/login',
+    href: '/register',
     highlighted: true,
   },
   {

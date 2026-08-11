@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Loader2, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
@@ -249,7 +250,10 @@ export default function LoginPage() {
         )}
 
         <p className="mt-6 text-center text-xs text-[#52525B]">
-          Contact your administrator for account access.
+          Don&apos;t have an account?{' '}
+          <Link href="/register" className="text-[#6377FF] hover:underline">
+            Start Free Trial
+          </Link>
         </p>
       </div>
     </div>

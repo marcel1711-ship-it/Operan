@@ -68,7 +68,7 @@ export default function OperanNav() {
             Log in
           </Link>
           <Link
-            href="/login"
+            href="/register"
             className="rounded-lg bg-[#6377FF] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#5063E8]"
           >
             Start Free Trial
@@ -110,7 +110,7 @@ export default function OperanNav() {
                 Sign in
               </Link>
               <Link
-                href="/login"
+                href="/register"
                 className="rounded-lg bg-[#6377FF] px-4 py-2 text-center text-sm font-medium text-white"
               >
                 Start Free Trial
