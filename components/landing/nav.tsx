@@ -65,7 +65,7 @@ export default function OperanNav() {
             href="/login"
             className="text-sm text-[#94A3B8] transition-colors hover:text-white"
           >
-            Sign in
+            Log in
           </Link>
           <Link
             href="/login"
