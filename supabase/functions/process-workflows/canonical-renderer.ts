@@ -51,6 +51,8 @@ export type TemplateVariableContext = {
   };
   captain?: {
     url?: string;
+    email?: string;
+    phone?: string;
   };
 };
 

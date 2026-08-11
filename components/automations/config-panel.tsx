@@ -636,6 +636,26 @@ export default function ConfigPanel({
               />
             </div>
             <div>
+              <Label className="text-xs text-[#94A3B8]">Captain Email</Label>
+              <Input
+                type="email"
+                className="mt-1.5 operan-config-input border-white/[0.08] bg-[#202A40] text-sm text-white"
+                placeholder="captain@example.com"
+                value={(config.captain_email as string) || ''}
+                onChange={(e) => onUpdateConfig('captain_email', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-[#94A3B8]">Captain Phone (optional)</Label>
+              <Input
+                type="tel"
+                className="mt-1.5 operan-config-input border-white/[0.08] bg-[#202A40] text-sm text-white"
+                placeholder="+1 555 123 4567"
+                value={(config.captain_phone as string) || ''}
+                onChange={(e) => onUpdateConfig('captain_phone', e.target.value)}
+              />
+            </div>
+            <div>
               <Label className="text-xs text-[#94A3B8]">Link Expiry (hours)</Label>
               <Input
                 type="number"
@@ -646,7 +666,8 @@ export default function ConfigPanel({
             </div>
             <div className="rounded-xl border border-white/[0.06] bg-[#202A40] p-3">
               <p className="text-xs text-[#94A3B8]">
-                Generates a unique captain ops link. Use <span className="font-mono text-[#06B6D4]">{'{{captain.url}}'}</span> in a subsequent email step to send it.
+                Use <span className="font-mono text-[#06B6D4]">{'{{ captain.url }}'}</span> in the next email/SMS body.
+                Set recipient to <span className="font-mono text-[#06B6D4]">{'{{ captain.email }}'}</span> or <span className="font-mono text-[#06B6D4]">{'{{ captain.phone }}'}</span> so it goes directly to the captain.
               </p>
             </div>
           </div>

@@ -532,10 +532,23 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         return { failed: false, deadLetter: false };
       }
 
-      // Provider is ready — resolve recipient
+      // Build context using canonical builder (before recipient resolution so template vars work)
+      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id, siteUrl);
+
+      // Inject captain context if available from a prior create_captain_session step
+      if (input?.captain_url || input?.captain_email || input?.captain_phone) {
+        tplContext.captain = {
+          url: input.captain_url || '',
+          email: input.captain_email || '',
+          phone: input.captain_phone || '',
+        };
+      }
+
+      // Resolve recipient (supports template vars like {{ captain.email }})
       let recipient = '';
       if (config.recipient_type === 'custom' && config.recipient_override) {
-        recipient = config.recipient_override as string;
+        const raw = config.recipient_override as string;
+        recipient = renderTemplate(raw, tplContext);
       } else if (ctx.customer_id) {
         const { data: customer } = await supabase
           .from('customers')
@@ -581,14 +594,6 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
           await proceedToNext(supabase, step, nodes, edges, ctx);
           return { failed: false, deadLetter: false };
         }
-      }
-
-      // Build context using canonical builder
-      const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id, siteUrl);
-
-      // Inject captain URL if available from a prior create_captain_session step
-      if (input?.captain_url) {
-        tplContext.captain = { url: input.captain_url };
       }
 
       let renderedBody = '';
@@ -811,8 +816,10 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         p_output: { captain_url: captainUrl, token: sessionResult.token, reused: sessionResult.reused },
       });
 
-      // Inject captain_url into context for subsequent template rendering
-      const enrichedInput = { ...step.input, captain_url: captainUrl };
+      // Inject captain_url, captain_email, captain_phone into context for subsequent steps
+      const captainEmail = config.captain_email as string || '';
+      const captainPhone = config.captain_phone as string || '';
+      const enrichedInput = { ...step.input, captain_url: captainUrl, captain_email: captainEmail, captain_phone: captainPhone };
       const nextEdges = edges.filter((e: any) => e.source === step.node_id && !e.source_handle);
       for (const edge of nextEdges) {
         const nextNode = nodes.find((n: any) => n.node_id === edge.target);

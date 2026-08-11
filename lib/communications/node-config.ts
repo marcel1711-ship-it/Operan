@@ -181,7 +181,7 @@ export function getDefaultConfig(actionType: string): Record<string, unknown> {
     call_webhook: { method: 'POST', timeout_seconds: 10, retry_count: 0, headers: {} },
     stop_workflow: {},
     add_customer_tag: {},
-    create_captain_session: { expires_hours: 48 },
+    create_captain_session: { expires_hours: 48, captain_email: '', captain_phone: '' },
   };
   return defaults[actionType] || {};
 }
