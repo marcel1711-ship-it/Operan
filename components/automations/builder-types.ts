@@ -17,7 +17,8 @@ export type ActionType =
   | 'call_webhook'
   | 'stop_workflow'
   | 'create_task'
-  | 'update_opportunity_stage';
+  | 'update_opportunity_stage'
+  | 'create_captain_session';
 
 export type ExecutionState = 'idle' | 'running' | 'waiting' | 'completed' | 'failed' | 'skipped';
 
@@ -140,6 +141,12 @@ export const ACTION_CATEGORIES = [
     actions: [
       { type: 'create_task', label: 'Task', icon: 'CheckSquare', color: '#6377FF', desc: 'Create an internal task' },
       { type: 'update_opportunity_stage', label: 'Move Pipeline Stage', icon: 'GitBranch', color: '#6377FF', desc: 'Move an opportunity to a new pipeline stage' },
+    ],
+  },
+  {
+    name: 'Operations',
+    actions: [
+      { type: 'create_captain_session', label: 'Captain Session', icon: 'Ship', color: '#06B6D4', desc: 'Generate a captain ops link for the reservation' },
     ],
   },
 ] as const;
@@ -380,6 +387,8 @@ export function getSummary(node: BuilderNode): string {
       return (config.title as string) || 'New task';
     case 'update_opportunity_stage':
       return 'Move to stage';
+    case 'create_captain_session':
+      return `Expires ${(config.expires_hours as number) || 48}h`;
     default:
       return '';
   }

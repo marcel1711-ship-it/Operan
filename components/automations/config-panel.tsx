@@ -623,6 +623,35 @@ export default function ConfigPanel({
           </div>
         )}
 
+        {/* Create Captain Session */}
+        {!isTrigger && node.actionType === 'create_captain_session' && (
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs text-[#94A3B8]">Captain Name (optional)</Label>
+              <Input
+                className="mt-1.5 operan-config-input border-white/[0.08] bg-[#202A40] text-sm text-white"
+                placeholder="Auto-assigned if empty"
+                value={(config.captain_name as string) || ''}
+                onChange={(e) => onUpdateConfig('captain_name', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-[#94A3B8]">Link Expiry (hours)</Label>
+              <Input
+                type="number"
+                className="mt-1.5 operan-config-input border-white/[0.08] bg-[#202A40] text-sm text-white"
+                value={(config.expires_hours as number) || 48}
+                onChange={(e) => onUpdateConfig('expires_hours', parseInt(e.target.value) || 48)}
+              />
+            </div>
+            <div className="rounded-xl border border-white/[0.06] bg-[#202A40] p-3">
+              <p className="text-xs text-[#94A3B8]">
+                Generates a unique captain ops link. Use <span className="font-mono text-[#06B6D4]">{'{{captain.url}}'}</span> in a subsequent email step to send it.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Update Opportunity Stage */}
         {!isTrigger && node.actionType === 'update_opportunity_stage' && (
           <div className="space-y-4">

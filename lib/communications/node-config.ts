@@ -181,6 +181,7 @@ export function getDefaultConfig(actionType: string): Record<string, unknown> {
     call_webhook: { method: 'POST', timeout_seconds: 10, retry_count: 0, headers: {} },
     stop_workflow: {},
     add_customer_tag: {},
+    create_captain_session: { expires_hours: 48 },
   };
   return defaults[actionType] || {};
 }
@@ -222,6 +223,9 @@ export function getNodeSummary(actionType: string, config: Record<string, unknow
     }
     case 'stop_workflow': {
       return 'Stop';
+    }
+    case 'create_captain_session': {
+      return `Captain link · ${config.expires_hours || 48}h`;
     }
     default:
       return '';

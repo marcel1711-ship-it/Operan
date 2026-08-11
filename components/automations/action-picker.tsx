@@ -3,14 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Mail, Smartphone, MessageSquare, Bell, Clock, Split, GitBranch,
-  Tag, FileText, Square, Webhook, CheckSquare, Search, X,
+  Tag, FileText, Square, Webhook, CheckSquare, Search, X, Ship,
   type LucideIcon,
 } from 'lucide-react';
 import { ACTION_CATEGORIES, type ActionCatalogEntry } from './builder-types';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Mail, Smartphone, MessageSquare, Bell, Clock, Split, GitBranch,
-  Tag, FileText, Square, Webhook, CheckSquare,
+  Tag, FileText, Square, Webhook, CheckSquare, Ship,
 };
 
 interface ActionPickerProps {

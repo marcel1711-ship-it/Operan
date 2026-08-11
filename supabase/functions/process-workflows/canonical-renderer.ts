@@ -226,13 +226,11 @@ export async function buildTemplateContext(
   }
 
   if (reservationId && tenantSlug) {
-    const siteUrl = baseUrl || '';
-    if (siteUrl) {
-      context.waiver = {
-        ...context.waiver,
-        signing_url: `${siteUrl}/w/${tenantSlug}/register?reservation_id=${reservationId}`,
-      };
-    }
+    const siteUrl = baseUrl || 'https://www.operan.io';
+    context.waiver = {
+      ...context.waiver,
+      signing_url: `${siteUrl}/w/${tenantSlug}/register?reservation_id=${reservationId}`,
+    };
 
     const { count } = await supabase
       .from('signed_waivers')
