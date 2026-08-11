@@ -15,10 +15,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: APP_URL,
   },
-  icons: {
-    icon: '/Logo.png',
-    apple: '/Logo.png',
-  },
   openGraph: {
     title: 'OPERAN — Business Operations Platform for Marine Experience Businesses',
     description:
