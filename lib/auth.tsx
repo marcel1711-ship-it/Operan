@@ -60,11 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Not super_admin — check tenant membership
-    let { data: membership, error: memError } = await supabase
+    let { data: memberships, error: memError } = await supabase
       .from('tenant_users')
       .select('role, tenant_id')
-      .eq('user_id', uid)
-      .maybeSingle();
+      .eq('user_id', uid);
+
+    let membership = memberships?.[0] ?? null;
 
     if ((memError || !membership)) {
       const { data: regResult, error: regError } = await supabase.rpc('auto_register_tenant');
@@ -73,9 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const refetch = await supabase
           .from('tenant_users')
           .select('role, tenant_id')
-          .eq('user_id', uid)
-          .maybeSingle();
-        membership = refetch.data;
+          .eq('user_id', uid);
+        membership = refetch.data?.[0] ?? null;
         memError = refetch.error;
       }
 
