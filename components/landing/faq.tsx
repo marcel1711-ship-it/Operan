@@ -8,7 +8,7 @@ import { Plus, Minus } from 'lucide-react';
 const FAQ_ITEMS = [
   {
     q: 'Can I integrate OPERAN with my existing website?',
-    a: 'Yes. OPERAN can be connected to your existing website using direct booking links, booking buttons, embedded experiences or future API integrations. You do not need to rebuild your website to start accepting bookings through OPERAN.',
+    a: 'Yes. OPERAN can be connected to your existing website using direct booking links, booking buttons, embedded booking widgets or API integrations. You do not need to rebuild your website to start accepting bookings through OPERAN.',
   },
   {
     q: 'Do I need to create a new website?',
@@ -40,7 +40,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How does OPERAN connect to my website?',
-    a: 'Each published listing receives a public booking URL and embeddable button code. You can place that link or button on your current website, social media, advertisements, email campaigns or messaging channels. A full embedded booking widget can be offered as the platform evolves.',
+    a: 'Each published listing receives a public booking URL and an embeddable booking widget. You can embed the full booking experience directly into your website, or share the link through social media, advertisements, email campaigns or messaging channels. Customers book and pay without leaving your site.',
   },
   {
     q: 'What happens when a customer makes a booking?',
@@ -56,7 +56,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I try OPERAN before subscribing?',
-    a: 'Yes. Every plan includes a 14-day free trial with full access to all features. No credit card is required to start. You can configure listings, set up workflows and test the booking process before choosing a paid plan.',
+    a: 'Yes. Every plan includes a 14-day free trial with access to all features included in your selected plan. No credit card is required to start. You can configure listings, set up workflows and test the booking process before committing.',
   },
 ];
 

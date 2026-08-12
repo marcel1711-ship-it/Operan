@@ -146,7 +146,7 @@ export default function OperanPricing() {
 
         <div className={`mt-10 text-center operan-reveal operan-reveal-delay-3 ${isVisible ? 'is-visible' : ''}`}>
           <p className="text-sm text-[#94A3B8]">
-            All plans include unlimited users, SSL, and daily backups.
+            All plans include SSL, daily backups, and 14-day free trial.
           </p>
         </div>
       </div>
