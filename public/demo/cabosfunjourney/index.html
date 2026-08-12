@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabos Fun Journey — The Ultimate Experience in Los Cabos</title>
+<meta name="description" content="Tours, luxury yachts, adventures, whale watching, parasailing and transportation in Cabo San Lucas, Mexico.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --sun:#F59E0B;
+  --sun-dark:#D97706;
+  --ocean:#0EA5E9;
+  --ocean-dark:#0284C7;
+  --sand:#FEF3C7;
+  --desert:#92400E;
+  --bg:#0C1220;
+  --card:#111827;
+  --text:#E2E8F0;
+  --muted:#94A3B8;
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(12,18,32,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700}
+.nav-brand span{background:linear-gradient(135deg,var(--sun),var(--ocean));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{font-size:14px;color:var(--muted);transition:color .2s}
+.nav-links a:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:600;transition:all .2s;border:none;cursor:pointer}
+.btn-sun{background:var(--sun);color:#000}
+.btn-sun:hover{background:var(--sun-dark)}
+.btn-ocean{background:var(--ocean);color:#fff}
+.btn-ocean:hover{background:var(--ocean-dark)}
+.btn-outline{border:1px solid rgba(255,255,255,.15);color:#fff;background:transparent}
+.btn-outline:hover{background:rgba(255,255,255,.05)}
+
+/* HERO */
+.hero{padding:140px 24px 80px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(245,158,11,.12) 0%,rgba(14,165,233,.08) 40%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:100px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);font-size:13px;color:var(--sun);margin-bottom:24px}
+.hero h1{font-size:clamp(36px,6vw,64px);font-weight:800;line-height:1.1;max-width:800px;margin:0 auto 20px}
+.hero h1 .gradient{background:linear-gradient(135deg,var(--sun),var(--ocean));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:18px;color:var(--muted);max-width:560px;margin:0 auto 36px;line-height:1.6}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* PROMO BAR */
+.promo{background:linear-gradient(135deg,var(--sun),var(--ocean));padding:16px 24px;text-align:center}
+.promo p{font-size:15px;font-weight:600;color:#000;max-width:700px;margin:0 auto}
+
+/* EXPERIENCES */
+.experiences{padding:80px 24px;max-width:1200px;margin:0 auto}
+.section-title{text-align:center;margin-bottom:48px}
+.section-title h2{font-size:36px;font-weight:800;margin-bottom:12px}
+.section-title h2 .gradient{background:linear-gradient(135deg,var(--sun),var(--ocean));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.section-title p{color:var(--muted);font-size:16px}
+
+.embed-container{border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:var(--card)}
+.embed-container iframe{width:100%;height:800px;border:none;display:block}
+
+/* FEATURES */
+.features{padding:80px 24px;max-width:1200px;margin:0 auto}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.feature-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:28px;transition:border-color .2s}
+.feature-card:hover{border-color:rgba(245,158,11,.3)}
+.feature-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:20px}
+.feature-icon.sun{background:rgba(245,158,11,.12)}
+.feature-icon.ocean{background:rgba(14,165,233,.12)}
+.feature-icon.green{background:rgba(16,185,129,.12)}
+.feature-card h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--muted);line-height:1.5}
+
+/* GALLERY */
+.gallery{padding:80px 24px;max-width:1200px;margin:0 auto}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.gallery-item{border-radius:16px;overflow:hidden;aspect-ratio:4/3;position:relative}
+.gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.gallery-item:hover img{transform:scale(1.05)}
+.gallery-overlay{position:absolute;bottom:0;left:0;right:0;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,.7));font-size:14px;font-weight:600}
+
+/* CONTACT */
+.contact{padding:80px 24px;max-width:600px;margin:0 auto}
+.contact-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:40px;text-align:center}
+.contact-card h2{font-size:28px;font-weight:800;margin-bottom:8px}
+.contact-card p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.contact-info{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.contact-row{display:flex;align-items:center;gap:12px;justify-content:center;font-size:15px}
+.contact-row .icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(245,158,11,.1);font-size:16px}
+
+/* FOOTER */
+.footer{padding:40px 24px;border-top:1px solid rgba(255,255,255,.06);text-align:center}
+.footer p{font-size:13px;color:var(--muted)}
+.footer a{color:var(--ocean)}
+
+/* MOBILE */
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px}
+.hamburger svg{width:24px;height:24px;stroke:#fff;stroke-width:2;fill:none}
+@media(max-width:768px){
+  .nav-links{display:none;position:absolute;top:64px;left:0;right:0;background:rgba(12,18,32,.98);padding:20px 24px;flex-direction:column;gap:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .nav-links.open{display:flex}
+  .hamburger{display:block}
+  .embed-container iframe{height:600px}
+  .hero h1{font-size:32px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">
+      <span>Cabos Fun Journey</span>
+    </a>
+    <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+    </button>
+    <div class="nav-links">
+      <a href="#experiences">Experiences</a>
+      <a href="#why">Why Us</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#contact">Contact</a>
+      <a href="https://wa.me/526242631087" class="btn btn-sun">WhatsApp Us</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">&#9728;&#65039; All-in-1 Adventure Agency in Los Cabos</div>
+  <h1>Your <span class="gradient">Ultimate Experience</span> in Cabo San Lucas</h1>
+  <p>Luxury yachts, eco tours, desert adventures, whale watching, parasailing, and transportation. We customize your perfect Baja California Sur experience.</p>
+  <div class="hero-btns">
+    <a href="#experiences" class="btn btn-sun">Explore Experiences</a>
+    <a href="https://wa.me/526242631087" class="btn btn-outline">&#128172; WhatsApp Us</a>
+  </div>
+</section>
+
+<!-- PROMO -->
+<div class="promo">
+  <p>&#127774; Book online and save up to 30% — Limited time offer on all tours and adventures!</p>
+</div>
+
+<!-- EXPERIENCES -->
+<section class="experiences" id="experiences">
+  <div class="section-title">
+    <h2>Our <span class="gradient">Experiences</span></h2>
+    <p>Choose your adventure and book instantly — no fees, no hassle.</p>
+  </div>
+  <div class="embed-container">
+    <iframe src="https://operan.io/r/cabosfunjourney?embed=1" title="Book Cabos Fun Journey Experiences"></iframe>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="why">
+  <div class="section-title">
+    <h2>Why Choose <span class="gradient">Cabos Fun Journey</span></h2>
+    <p>The only all-in-one adventure agency you need in Los Cabos.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon sun">&#127758;</div>
+      <h3>All-in-One Agency</h3>
+      <p>Yachts, eco tours, desert adventures, water sports, and airport transportation — all from one trusted team.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon ocean">&#128674;</div>
+      <h3>Luxury Yacht Fleet</h3>
+      <p>Private 33ft and 40ft luxury yachts with captain, crew, snorkeling gear, and premium amenities included.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">&#127796;</div>
+      <h3>Local Experts Since Day One</h3>
+      <p>Bilingual guides, certified CPR instructors, and a team that knows every hidden gem of Baja California Sur.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon sun">&#128166;</div>
+      <h3>Water Adventures</h3>
+      <p>Parasailing, wave runners, whale watching, and snorkeling — adrenaline-packed experiences on the Sea of Cortez.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon ocean">&#128003;</div>
+      <h3>Desert & Beach Combos</h3>
+      <p>ATVs, off-road razors, camel rides, horseback riding, and ziplines at Playa Migriño — pick your own combo.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">&#128690;</div>
+      <h3>Door-to-Door Transport</h3>
+      <p>Air-conditioned vans with WiFi for airport transfers, hotel pickups, and all tour transportation included.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery" id="gallery">
+  <div class="section-title">
+    <h2>Adventure <span class="gradient">Awaits</span></h2>
+    <p>Real moments from real adventures in Los Cabos.</p>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&h=450&fit=crop" alt="Luxury yacht in Cabo" loading="lazy">
+      <div class="gallery-overlay">Luxury Yacht Experience</div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1596436889106-be35e843f974?w=600&h=450&fit=crop" alt="Cabo San Lucas Arch" loading="lazy">
+      <div class="gallery-overlay">The Iconic Arch</div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1568430462989-44163eb1752f?w=600&h=450&fit=crop" alt="Whale watching" loading="lazy">
+      <div class="gallery-overlay">Whale Watching Season</div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=600&h=450&fit=crop" alt="Desert adventure" loading="lazy">
+      <div class="gallery-overlay">Desert Adventures</div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=450&fit=crop" alt="Balandra Beach" loading="lazy">
+      <div class="gallery-overlay">Balandra Beach</div>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1530870110042-98b2cb110834?w=600&h=450&fit=crop" alt="Parasailing" loading="lazy">
+      <div class="gallery-overlay">Parasailing Over Cabo</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-card">
+    <h2>Ready for Your Adventure?</h2>
+    <p>Get in touch and we'll customize the perfect Cabo experience for you.</p>
+    <div class="contact-info">
+      <div class="contact-row">
+        <div class="icon">&#128241;</div>
+        <a href="https://wa.me/526242631087">+52 624-263-1087</a>
+      </div>
+      <div class="contact-row">
+        <div class="icon">&#128231;</div>
+        <a href="mailto:cabosfunjourney@gmail.com">cabosfunjourney@gmail.com</a>
+      </div>
+      <div class="contact-row">
+        <div class="icon">&#128205;</div>
+        <span>Cabo San Lucas, BCS, Mexico</span>
+      </div>
+    </div>
+    <a href="https://wa.me/526242631087?text=Hi!%20I%27d%20like%20to%20book%20an%20experience" class="btn btn-sun" style="width:100%">&#128172; Book via WhatsApp</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2026 Cabos Fun Journey. All rights reserved. Powered by <a href="https://operan.io">OPERAN</a></p>
+</footer>
+
+</body>
+</html>
