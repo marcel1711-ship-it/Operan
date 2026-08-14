@@ -34,6 +34,7 @@ export type BookingListing = {
   id: string; name: string; slug: string;
   short_description: string | null; full_description: string | null;
   photos: string[]; capacity: number; minimum_guests: number;
+  booking_mode: string;
   currency: string; timezone: string; location: string | null;
   boat_type: string | null; year: number | null; amenities: string[];
   payment_mode: string; deposit_type: string; deposit_percentage: number;
@@ -55,7 +56,7 @@ export type BookingPricingOption = {
   start_time_restriction: string | null;
 };
 
-type Slot = { start: string; start_utc: string; end: string; end_utc: string };
+type Slot = { start: string; start_utc: string; end: string; end_utc: string; remaining_seats?: number; total_capacity?: number };
 
 type PriceBreakdown = {
   base_amount: number; guest_adjustment: number; subtotal_amount: number;
@@ -156,7 +157,8 @@ export function BookingFlow({
         p_pricing_option_id: selectedOption.id,
         p_date: selectedDate,
       }).then(({ data }) => {
-        setSlots(data?.slots || []);
+        const slotsData = data?.slots || [];
+        setSlots(slotsData);
         setLoadingSlots(false);
       });
     });
@@ -409,12 +411,24 @@ export function BookingFlow({
             <>
               <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-muted-foreground">Guests</Label>
-                <div className="flex items-center gap-3">
-                  <Button size="sm" variant="outline" onClick={() => setGuestCount(Math.max(selectedOption.minimum_guests || listing.minimum_guests, guestCount - 1))} className="border-border bg-card">-</Button>
-                  <span className="text-lg font-bold text-foreground w-8 text-center">{guestCount}</span>
-                  <Button size="sm" variant="outline" onClick={() => setGuestCount(Math.min(listing.capacity, guestCount + 1))} className="border-border bg-card">+</Button>
-                  <span className="text-xs text-muted-foreground ml-1">Max {listing.capacity}</span>
-                </div>
+                {(() => {
+                  const isShared = listing.booking_mode === 'shared';
+                  const maxGuests = isShared && selectedSlot?.remaining_seats != null
+                    ? Math.min(listing.capacity, selectedSlot.remaining_seats)
+                    : listing.capacity;
+                  return (
+                    <div className="flex items-center gap-3">
+                      <Button size="sm" variant="outline" onClick={() => setGuestCount(Math.max(selectedOption.minimum_guests || listing.minimum_guests, guestCount - 1))} className="border-border bg-card">-</Button>
+                      <span className="text-lg font-bold text-foreground w-8 text-center">{guestCount}</span>
+                      <Button size="sm" variant="outline" onClick={() => setGuestCount(Math.min(maxGuests, guestCount + 1))} className="border-border bg-card">+</Button>
+                      <span className="text-xs text-muted-foreground ml-1">
+                        {isShared && selectedSlot?.remaining_seats != null
+                          ? `${selectedSlot.remaining_seats} seats left`
+                          : `Max ${listing.capacity}`}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
               {price && !loadingPrice && (
                 <div className="rounded-lg bg-secondary/50 p-3 space-y-1 text-xs">
@@ -485,14 +499,26 @@ export function BookingFlow({
                 <p className="text-xs text-muted-foreground py-4 text-center">No available times for this date.</p>
               ) : (
                 <div className="grid grid-cols-3 gap-2">
-                  {slots.map((slot, i) => (
-                    <button key={i} onClick={() => setSelectedSlot(slot)}
-                      className={cn('rounded-lg border-2 py-2 text-sm font-medium transition-all',
-                        selectedSlot?.start === slot.start ? 'bg-opacity-5' : 'border-border text-foreground hover:border-opacity-40')}
-                      style={selectedSlot?.start === slot.start ? { borderColor: primary, color: primary, backgroundColor: `${primary}0D` } : {}}>
-                      {slot.start}
-                    </button>
-                  ))}
+                  {slots.map((slot, i) => {
+                    const isShared = listing.booking_mode === 'shared';
+                    const seatsLeft = slot.remaining_seats;
+                    const tooFew = isShared && seatsLeft != null && seatsLeft < guestCount;
+                    return (
+                      <button key={i} onClick={() => { if (!tooFew) setSelectedSlot(slot); }}
+                        className={cn('rounded-lg border-2 py-2 text-sm font-medium transition-all',
+                          tooFew ? 'border-border text-muted-foreground opacity-50 cursor-not-allowed' :
+                          selectedSlot?.start === slot.start ? 'bg-opacity-5' : 'border-border text-foreground hover:border-opacity-40')}
+                        style={selectedSlot?.start === slot.start && !tooFew ? { borderColor: primary, color: primary, backgroundColor: `${primary}0D` } : {}}
+                        disabled={tooFew}>
+                        <span>{slot.start}</span>
+                        {isShared && seatsLeft != null && (
+                          <span className={cn('block text-[10px]', seatsLeft <= 3 ? 'text-orange-500' : 'text-muted-foreground')}>
+                            {seatsLeft} {seatsLeft === 1 ? 'seat' : 'seats'}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

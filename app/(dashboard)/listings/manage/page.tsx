@@ -98,6 +98,7 @@ type Listing = {
   buffer_after_minutes: number;
   minimum_notice_hours: number;
   maximum_advance_days: number;
+  booking_mode: string;
   instant_booking: boolean;
   requires_approval: boolean;
   payment_mode: string;
@@ -120,6 +121,7 @@ type Listing = {
   cancellation_policy_text: string | null;
   terms_summary: string | null;
   updated_at: string | null;
+  external_calendar_url: string | null;
 };
 
 type Tab = 'basic' | 'pricing' | 'deposit' | 'availability' | 'rules' | 'website';
@@ -158,7 +160,7 @@ function defaultForm(): Partial<Listing> {
     name: '', slug: '', description: '', short_description: '', full_description: '',
     photos: [], capacity: 1, minimum_guests: 1,
     length_ft: null, boat_type: '', year: null, location: '',
-    amenities: [], is_active: true, listing_type: 'boat',
+    amenities: [], is_active: true, listing_type: 'boat', booking_mode: 'private',
     meeting_point: '', currency: 'USD', timezone: 'America/New_York',
     buffer_before_minutes: 0, buffer_after_minutes: 0,
     minimum_notice_hours: 24, maximum_advance_days: 365,
@@ -173,6 +175,7 @@ function defaultForm(): Partial<Listing> {
     request_expiration_hours: 48,
     meeting_instructions: '', customer_instructions: '',
     cancellation_policy_text: '', terms_summary: '',
+    external_calendar_url: null,
     price_per_hour: 0, price_half_day: 0, price_full_day: 0,
     deposit_amount: 0, booking_durations: [], sort_order: 0,
   };
@@ -599,6 +602,28 @@ export default function ListingsPage() {
                 </div>
               </div>
               <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Booking Mode</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button"
+                    onClick={() => setForm({ ...form, booking_mode: 'private' })}
+                    className={`rounded-lg border-2 p-3 text-left transition-all ${form.booking_mode === 'shared' ? 'border-[var(--border-color)] opacity-60' : 'border-[var(--accent-color)]'}`}>
+                    <div className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Private Charter</div>
+                    <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>One booking blocks the entire slot</div>
+                  </button>
+                  <button type="button"
+                    onClick={() => setForm({ ...form, booking_mode: 'shared' })}
+                    className={`rounded-lg border-2 p-3 text-left transition-all ${form.booking_mode === 'shared' ? 'border-[var(--accent-color)]' : 'border-[var(--border-color)] opacity-60'}`}>
+                    <div className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Shared Experience</div>
+                    <div className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>Multiple bookings per slot up to capacity</div>
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">External Calendar (TimeTree)</Label>
+                <Input value={form.external_calendar_url || ''} onChange={(e) => setForm({ ...form, external_calendar_url: e.target.value || null })} placeholder="https://timetreeapp.com/calendars/..." className="bg-[var(--card-bg)]" />
+                {form.external_calendar_url && <p className="text-[10px] text-muted-foreground">Events from this calendar will automatically block availability via the Chrome extension.</p>}
+              </div>
+              <div className="space-y-1.5">
                 <Label className="text-xs font-medium text-muted-foreground">Short Description</Label>
                 <Input value={form.short_description || ''} onChange={(e) => setForm({ ...form, short_description: e.target.value })} placeholder="One-line summary for cards" className="bg-[var(--card-bg)]" />
               </div>
@@ -608,7 +633,7 @@ export default function ListingsPage() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-muted-foreground">Capacity *</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">{form.booking_mode === 'shared' ? 'Seats per Departure *' : 'Capacity *'}</Label>
                   <Input type="number" value={form.capacity ?? ''} onChange={(e) => setForm({ ...form, capacity: e.target.value === '' ? undefined : parseInt(e.target.value) })} className="bg-[var(--card-bg)]" />
                 </div>
                 <div className="space-y-1.5">

@@ -96,11 +96,16 @@ export function UpcomingCharters({ reservations }: UpcomingChartersProps) {
                 const end = endIso
                   ? new Date(endIso)
                   : new Date(date.getTime() + 4 * 60 * 60 * 1000);
+                const isTT = r.source === 'timetree';
+                const durationH = Math.round((end.getTime() - date.getTime()) / 3600000);
 
                 return (
                   <tr
                     key={r.id}
-                    className="border-b border-border/50 transition-colors last:border-0 hover:bg-secondary/30"
+                    className={cn(
+                      'border-b border-border/50 transition-colors last:border-0 hover:bg-secondary/30',
+                      isTT && 'border-l-[3px] border-l-purple-500 bg-purple-500/5'
+                    )}
                   >
                     <td className="py-3 pr-4 text-xs text-muted-foreground align-top whitespace-nowrap">
                       <span className="font-medium text-foreground">
@@ -114,12 +119,21 @@ export function UpcomingCharters({ reservations }: UpcomingChartersProps) {
                       </span>
                     </td>
                     <td className="py-3 pr-4 text-xs font-medium text-foreground align-top">
-                      {r.client_name}
+                      {isTT ? (
+                        <div>
+                          <span>{r.client_name}</span>
+                          <span className="ml-1.5 inline-flex items-center rounded-full bg-purple-500/15 px-1.5 py-0.5 text-[9px] font-semibold text-purple-400">External</span>
+                        </div>
+                      ) : r.client_name}
                     </td>
                     <td className="py-3 pr-4 align-top">
-                      <span className="text-xs font-medium text-[var(--brand-primary)]">
-                        {getReservationVessel(r) || '—'}
-                      </span>
+                      {isTT ? (
+                        <span className="text-xs font-medium text-purple-400">{durationH}H — {r.client_name}</span>
+                      ) : (
+                        <span className="text-xs font-medium text-[var(--brand-primary)]">
+                          {getReservationVessel(r) || '—'}
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 text-right align-top">
                       {statusBadge(r.booking_status)}

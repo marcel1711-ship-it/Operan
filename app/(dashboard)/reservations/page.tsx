@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  CalendarDays, Search, Loader2, Filter,
+  CalendarDays, Search, Loader2, Filter, Users,
   Phone, Mail, Anchor, DollarSign,
   ChevronLeft, ChevronRight, Check, X, Clock, Globe, Trash2,
 } from 'lucide-react';
@@ -21,8 +21,8 @@ import { getReservationStartDate, getReservationVessel } from '@/lib/reservation
 import type { BookingStatus } from '@/lib/types';
 import type { NormalizedReservation } from '@/lib/reservation-utils';
 
-type ViewMode = 'list' | 'calendar';
-type SourceFilter = 'all' | 'public_booking' | 'public_request' | 'manual' | 'imported_ghl';
+type ViewMode = 'list' | 'calendar' | 'departures';
+type SourceFilter = 'all' | 'public_booking' | 'public_request' | 'manual' | 'imported_ghl' | 'timetree';
 
 const PAGE_SIZE = 50;
 
@@ -146,6 +146,7 @@ export default function ReservationsPage() {
     if (sourceFilter === 'public_request') return r.source === 'public_request';
     if (sourceFilter === 'manual') return r.source === 'manual';
     if (sourceFilter === 'imported_ghl') return r.source === 'imported_ghl';
+    if (sourceFilter === 'timetree') return r.source === 'timetree';
     return true;
   });
 
@@ -166,6 +167,7 @@ export default function ReservationsPage() {
             <div className="flex items-center gap-1 rounded-lg border border-border bg-secondary/30 p-1">
               <button onClick={() => setView('list')} className={cn('rounded-md px-3 py-1.5 text-xs font-medium transition-colors', view === 'list' ? 'bg-[var(--card-bg)] text-foreground shadow-sm' : 'text-muted-foreground')}>List</button>
               <button onClick={() => setView('calendar')} className={cn('rounded-md px-3 py-1.5 text-xs font-medium transition-colors', view === 'calendar' ? 'bg-[var(--card-bg)] text-foreground shadow-sm' : 'text-muted-foreground')}>Calendar</button>
+              <button onClick={() => setView('departures')} className={cn('rounded-md px-3 py-1.5 text-xs font-medium transition-colors', view === 'departures' ? 'bg-[var(--card-bg)] text-foreground shadow-sm' : 'text-muted-foreground')}>Departures</button>
             </div>
           </div>
         </div>
@@ -204,6 +206,7 @@ export default function ReservationsPage() {
                     <SelectItem value="public_request">Public Request</SelectItem>
                     <SelectItem value="manual">Manual</SelectItem>
                     <SelectItem value="imported_ghl">Imported</SelectItem>
+                    <SelectItem value="timetree">TimeTree</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -240,9 +243,10 @@ export default function ReservationsPage() {
                       const isAwaitingPayment = r.booking_status === 'awaiting_payment';
                       const isExpired = r.booking_status === 'expired';
                       const isPublicBooking = r.source === 'public_booking' || r.source === 'public_request';
+                      const isTimeTree = r.source === 'timetree';
                       const holdExpiringSoon = isAwaitingPayment && r.expires_at && new Date(r.expires_at).getTime() - Date.now() < 10 * 60 * 1000;
                       return (
-                        <tr key={r.id} className={cn('border-b border-border transition-colors hover:bg-secondary/30 last:border-0', isExpired && 'opacity-50')}>
+                        <tr key={r.id} className={cn('border-b border-border transition-colors hover:bg-secondary/30 last:border-0', isExpired && 'opacity-50', isTimeTree && 'border-l-[3px] border-l-purple-500 bg-purple-500/5')}>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <div>
@@ -250,6 +254,7 @@ export default function ReservationsPage() {
                                 {r.booking_reference && <p className="text-xs text-muted-foreground">{r.booking_reference}</p>}
                               </div>
                               {isPublicBooking && <Globe className="h-3 w-3 text-[var(--brand-primary)]" />}
+                              {isTimeTree && <span className="inline-flex items-center gap-0.5 rounded-full bg-purple-100 px-1.5 py-0.5 text-[9px] font-semibold text-purple-700">External</span>}
                             </div>
                             {r.client_email && <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1"><Mail className="h-3 w-3" />{r.client_email}</p>}
                           </td>
@@ -262,9 +267,17 @@ export default function ReservationsPage() {
                           </td>
                           <td className="px-4 py-3 hidden sm:table-cell text-xs text-muted-foreground">{r.guest_count || '—'}</td>
                           <td className="px-4 py-3 text-right">
-                            <span className="font-medium text-foreground">{formatCurrency(r.total_amount || 0)}</span>
-                            {r.deposit_amount > 0 && r.deposit_amount < r.total_amount && (
-                              <p className="text-[10px] text-muted-foreground">Dep: {formatCurrency(r.deposit_amount)}</p>
+                            {isTimeTree ? (
+                              <span className="text-xs text-purple-600">
+                                {r.start_at && r.end_at ? `${Math.round((new Date(r.end_at).getTime() - new Date(r.start_at).getTime()) / 3600000)}h` : '—'}
+                              </span>
+                            ) : (
+                              <>
+                                <span className="font-medium text-foreground">{formatCurrency(r.total_amount || 0)}</span>
+                                {r.deposit_amount > 0 && r.deposit_amount < r.total_amount && (
+                                  <p className="text-[10px] text-muted-foreground">Dep: {formatCurrency(r.deposit_amount)}</p>
+                                )}
+                              </>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -334,7 +347,231 @@ export default function ReservationsPage() {
         )}
 
         {view === 'calendar' && <ReservationCalendar reservations={reservations} />}
+
+        {view === 'departures' && <DeparturesView tenantId={tenant?.id} />}
       </main>
+    </div>
+  );
+}
+
+type DepartureSlot = {
+  listing_id: string;
+  listing_name: string;
+  capacity: number;
+  start_at: string;
+  end_at: string;
+  total_guests: number;
+  booking_count: number;
+  reservations: {
+    id: string;
+    booking_reference: string;
+    client_name: string;
+    client_email: string;
+    client_phone: string;
+    guest_count: number;
+    booking_status: string;
+    payment_status: string;
+    total_amount: number;
+    currency: string;
+  }[];
+};
+
+function DeparturesView({ tenantId }: { tenantId?: string }) {
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [departures, setDepartures] = useState<DepartureSlot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedSlot, setExpandedSlot] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    setLoading(true);
+    (async () => {
+      const dayStart = `${date}T00:00:00Z`;
+      const dayEnd = `${date}T23:59:59Z`;
+
+      const { data: sharedListings } = await supabase
+        .from('listings')
+        .select('id, name, capacity, booking_mode')
+        .eq('tenant_id', tenantId)
+        .eq('booking_mode', 'shared')
+        .eq('is_active', true);
+
+      if (!sharedListings || sharedListings.length === 0) {
+        setDepartures([]);
+        setLoading(false);
+        return;
+      }
+
+      const listingIds = sharedListings.map(l => l.id);
+
+      const { data: reservations } = await supabase
+        .from('reservations')
+        .select('id, listing_id, booking_reference, client_name, client_email, client_phone, guest_count, booking_status, payment_status, total_amount, currency, start_at, end_at')
+        .eq('tenant_id', tenantId)
+        .in('listing_id', listingIds)
+        .gte('start_at', dayStart)
+        .lte('start_at', dayEnd)
+        .not('booking_status', 'in', '("cancelled","expired","no_show")')
+        .order('start_at');
+
+      const slotMap = new Map<string, DepartureSlot>();
+
+      for (const r of reservations || []) {
+        const key = `${r.listing_id}|${r.start_at}|${r.end_at}`;
+        const listing = sharedListings.find(l => l.id === r.listing_id);
+        if (!slotMap.has(key)) {
+          slotMap.set(key, {
+            listing_id: r.listing_id,
+            listing_name: listing?.name || 'Unknown',
+            capacity: listing?.capacity || 0,
+            start_at: r.start_at,
+            end_at: r.end_at,
+            total_guests: 0,
+            booking_count: 0,
+            reservations: [],
+          });
+        }
+        const slot = slotMap.get(key)!;
+        slot.total_guests += r.guest_count || 1;
+        slot.booking_count += 1;
+        slot.reservations.push({
+          id: r.id,
+          booking_reference: r.booking_reference,
+          client_name: r.client_name,
+          client_email: r.client_email,
+          client_phone: r.client_phone,
+          guest_count: r.guest_count || 1,
+          booking_status: r.booking_status,
+          payment_status: r.payment_status,
+          total_amount: r.total_amount,
+          currency: r.currency,
+        });
+      }
+
+      setDepartures(Array.from(slotMap.values()).sort((a, b) => a.start_at.localeCompare(b.start_at)));
+      setLoading(false);
+    })();
+  }, [tenantId, date]);
+
+  const changeDate = (delta: number) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + delta);
+    setDate(d.toISOString().split('T')[0]);
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="sm" onClick={() => changeDate(-1)} className="border-border bg-[var(--card-bg)]"><ChevronLeft className="h-4 w-4" /></Button>
+        <input type="date" value={date} onChange={e => setDate(e.target.value)} className="rounded-lg border border-border bg-[var(--card-bg)] px-3 py-1.5 text-sm text-foreground" />
+        <Button variant="outline" size="sm" onClick={() => changeDate(1)} className="border-border bg-[var(--card-bg)]"><ChevronRight className="h-4 w-4" /></Button>
+        <Button variant="outline" size="sm" onClick={() => setDate(new Date().toISOString().split('T')[0])} className="border-border bg-[var(--card-bg)] text-xs">Today</Button>
+      </div>
+
+      {departures.length === 0 ? (
+        <div className="rounded-xl border border-border bg-[var(--card-bg)] p-8 text-center">
+          <Users className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+          <p className="text-sm text-muted-foreground">No shared departures scheduled for this date.</p>
+          <p className="text-xs text-muted-foreground mt-1">Only listings with Shared Experience booking mode appear here.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {departures.map((slot) => {
+            const key = `${slot.listing_id}|${slot.start_at}`;
+            const isExpanded = expandedSlot === key;
+            const occupancy = slot.capacity > 0 ? Math.round((slot.total_guests / slot.capacity) * 100) : 0;
+            const startTime = new Date(slot.start_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            const endTime = new Date(slot.end_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            return (
+              <div key={key} className="rounded-xl border border-border bg-[var(--card-bg)] overflow-hidden">
+                <button
+                  onClick={() => setExpandedSlot(isExpanded ? null : key)}
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary/20 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <div className="text-sm font-bold text-foreground">{startTime}</div>
+                      <div className="text-[10px] text-muted-foreground">{endTime}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">{slot.listing_name}</div>
+                      <div className="text-xs text-muted-foreground">{slot.booking_count} booking{slot.booking_count !== 1 ? 's' : ''}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-foreground">{slot.total_guests}/{slot.capacity}</div>
+                      <div className="text-[10px] text-muted-foreground">guests</div>
+                    </div>
+                    <div className="w-16 h-2 rounded-full bg-secondary/30 overflow-hidden">
+                      <div
+                        className={cn('h-full rounded-full transition-all', occupancy >= 90 ? 'bg-red-500' : occupancy >= 60 ? 'bg-amber-500' : 'bg-[var(--brand-primary)]')}
+                        style={{ width: `${Math.min(occupancy, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="border-t border-border">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border text-xs text-muted-foreground">
+                          <th className="px-4 py-2 text-left font-medium">Guest</th>
+                          <th className="px-4 py-2 text-left font-medium">Contact</th>
+                          <th className="px-4 py-2 text-center font-medium">Pax</th>
+                          <th className="px-4 py-2 text-center font-medium">Status</th>
+                          <th className="px-4 py-2 text-right font-medium">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {slot.reservations.map((r) => (
+                          <tr key={r.id} className="border-b border-border/50 last:border-0">
+                            <td className="px-4 py-2.5">
+                              <div className="font-medium text-foreground">{r.client_name}</div>
+                              <div className="text-[10px] text-muted-foreground">{r.booking_reference}</div>
+                            </td>
+                            <td className="px-4 py-2.5">
+                              <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                                {r.client_email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{r.client_email}</span>}
+                                {r.client_phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{r.client_phone}</span>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 text-center font-semibold text-foreground">{r.guest_count}</td>
+                            <td className="px-4 py-2.5 text-center">
+                              <span className={cn('inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium border', STATUS_COLORS[r.booking_status as BookingStatus] || 'bg-secondary text-muted-foreground')}>
+                                {r.booking_status.replace(/_/g, ' ')}
+                              </span>
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-medium text-foreground">
+                              {formatCurrency(r.total_amount, r.currency)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="bg-secondary/20">
+                          <td className="px-4 py-2 font-semibold text-foreground" colSpan={2}>Total</td>
+                          <td className="px-4 py-2 text-center font-bold text-foreground">{slot.total_guests}</td>
+                          <td className="px-4 py-2 text-center text-xs text-muted-foreground">{slot.capacity - slot.total_guests} seats left</td>
+                          <td className="px-4 py-2 text-right font-bold text-foreground">
+                            {formatCurrency(slot.reservations.reduce((s, r) => s + (r.total_amount || 0), 0), slot.reservations[0]?.currency || 'USD')}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

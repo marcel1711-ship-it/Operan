@@ -146,17 +146,25 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
                 {cell.day}
               </span>
               <div className="mt-0.5 space-y-0.5">
-                {res.slice(0, 3).map((r) => (
-                  <div
-                    key={r.id}
-                    className="flex items-center gap-1 rounded bg-[var(--brand-primary)]/10 px-1 py-0.5 text-[9px] font-medium text-[var(--brand-primary)] truncate"
-                  >
-                    <span className="shrink-0">🚢</span>
-                    <span className="truncate">
-                      {r.client_name} · {getReservationVessel(r) || 'N/A'}
-                    </span>
-                  </div>
-                ))}
+                {res.slice(0, 3).map((r) => {
+                  const isTT = r.source === 'timetree';
+                  return (
+                    <div
+                      key={r.id}
+                      className={cn(
+                        'flex items-center gap-1 rounded px-1 py-0.5 text-[9px] font-medium truncate',
+                        isTT
+                          ? 'bg-purple-500/15 text-purple-400'
+                          : 'bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]'
+                      )}
+                    >
+                      <span className="shrink-0">{isTT ? '📅' : '🚢'}</span>
+                      <span className="truncate">
+                        {r.client_name}{isTT ? '' : ` · ${getReservationVessel(r) || 'N/A'}`}
+                      </span>
+                    </div>
+                  );
+                })}
                 {res.length > 3 && (
                   <div className="text-[9px] text-muted-foreground pl-1">
                     +{res.length - 3} more
