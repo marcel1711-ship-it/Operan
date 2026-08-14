@@ -804,20 +804,62 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
       }
 
       const { data: tenantForCaptain } = await supabase
-        .from('tenants').select('custom_domain, slug').eq('id', ctx.tenant_id).maybeSingle();
+        .from('tenants').select('domain, slug').eq('id', ctx.tenant_id).maybeSingle();
 
-      const captainBaseUrl = tenantForCaptain?.custom_domain
-        ? `https://${tenantForCaptain.custom_domain}`
-        : siteUrl;
+      const tenantDomain = tenantForCaptain?.domain
+        ? tenantForCaptain.domain.replace(/\/+$/, '')
+        : '';
+      const captainBaseUrl = tenantDomain || siteUrl || 'https://www.operan.io';
       const captainUrl = `${captainBaseUrl}/captain/${sessionResult.token}`;
+
+      // Send email notification to captain if captain_email is configured
+      const captainEmail = config.captain_email as string || '';
+      if (captainEmail) {
+        try {
+          const tplContext = await buildTemplateContext(supabase, ctx.tenant_id, ctx.reservation_id, ctx.customer_id, siteUrl);
+          const emailSubject = `New Trip Assignment — ${tplContext.listing?.name || 'Upcoming Trip'}`;
+          const emailBody = [
+            `<p>Hi ${captainName || 'Captain'},</p>`,
+            `<p>You have been assigned a new trip:</p>`,
+            `<ul>`,
+            `<li><strong>Experience:</strong> ${tplContext.listing?.name || 'N/A'}</li>`,
+            `<li><strong>Date:</strong> ${tplContext.reservation?.start_at || 'N/A'}</li>`,
+            `<li><strong>Customer:</strong> ${tplContext.customer?.first_name || ''} ${tplContext.customer?.last_name || ''}</li>`,
+            `<li><strong>Guests:</strong> ${tplContext.reservation?.guest_count || 'N/A'}</li>`,
+            `</ul>`,
+            `<p>Access your captain dashboard to view full details, check-in guests, and manage the trip:</p>`,
+            `<p><a href="${captainUrl}" style="display:inline-block;padding:12px 24px;background-color:#6377FF;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">Open Captain Dashboard</a></p>`,
+            `<p>This link expires in ${expiresHours} hours.</p>`,
+            `<p>— ${tplContext.tenant?.name || 'OPERAN'}</p>`,
+          ].join('\n');
+
+          await supabase.rpc('queue_communication_message', {
+            p_tenant_id: ctx.tenant_id,
+            p_channel: 'email',
+            p_recipient: captainEmail,
+            p_rendered_subject: emailSubject,
+            p_rendered_body: emailBody,
+            p_provider: 'resend',
+            p_template_id: null,
+            p_customer_id: null,
+            p_reservation_id: ctx.reservation_id || null,
+            p_workflow_id: ctx.workflow_id || null,
+            p_workflow_run_id: ctx.run_id || null,
+            p_workflow_step_run_id: step.id,
+            p_idempotency_key: `captain-${step.id}`,
+            p_metadata: { captain_notification: true, captain_name: captainName },
+          });
+        } catch (emailErr: any) {
+          console.error('Failed to queue captain email:', emailErr.message);
+        }
+      }
 
       await supabase.rpc('update_step_run_status', {
         p_step_run_id: step.id, p_status: 'completed',
-        p_output: { captain_url: captainUrl, token: sessionResult.token, reused: sessionResult.reused },
+        p_output: { captain_url: captainUrl, token: sessionResult.token, reused: sessionResult.reused, email_sent: !!captainEmail },
       });
 
       // Inject captain_url, captain_email, captain_phone into context for subsequent steps
-      const captainEmail = config.captain_email as string || '';
       const captainPhone = config.captain_phone as string || '';
       const enrichedInput = { ...step.input, captain_url: captainUrl, captain_email: captainEmail, captain_phone: captainPhone };
       const nextEdges = edges.filter((e: any) => e.source === step.node_id && !e.source_handle);

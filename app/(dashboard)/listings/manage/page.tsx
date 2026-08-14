@@ -181,6 +181,17 @@ function defaultForm(): Partial<Listing> {
   };
 }
 
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 export default function ListingsPage() {
   const { tenant } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
@@ -196,6 +207,7 @@ export default function ListingsPage() {
   const [fixedStartTimes, setFixedStartTimes] = useState<FixedStartTime[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [ttSyncMap, setTtSyncMap] = useState<Record<string, { last_sync: string; count: number }>>({});
   const [showDialog, setShowDialog] = useState(false);
   const [newBlock, setNewBlock] = useState({ start_at: '', end_at: '', block_type: 'manual', reason: '', notes: '' });
   const [showBlockForm, setShowBlockForm] = useState(false);
@@ -213,6 +225,28 @@ export default function ListingsPage() {
       .order('created_at', { ascending: false });
     if (error) setError(error.message);
     setListings((data as Listing[]) || []);
+
+    // Fetch TimeTree sync status per listing
+    const { data: syncData } = await supabase
+      .from('reservations')
+      .select('listing_id, updated_at')
+      .eq('tenant_id', tenant.id)
+      .eq('source', 'timetree');
+    if (syncData && syncData.length > 0) {
+      const map: Record<string, { last_sync: string; count: number }> = {};
+      for (const row of syncData) {
+        if (!row.listing_id) continue;
+        const prev = map[row.listing_id];
+        if (!prev) {
+          map[row.listing_id] = { last_sync: row.updated_at, count: 1 };
+        } else {
+          prev.count++;
+          if (row.updated_at > prev.last_sync) prev.last_sync = row.updated_at;
+        }
+      }
+      setTtSyncMap(map);
+    }
+
     setLoading(false);
   }, [tenant?.id]);
 
@@ -537,6 +571,25 @@ export default function ListingsPage() {
                       )}
                       {l.online_booking_enabled && <Badge className="bg-[rgba(99,119,255,0.10)] text-xs text-[var(--brand-primary)]">Online Booking</Badge>}
                     </div>
+                    {l.external_calendar_url && (
+                      <div className="flex items-center gap-1.5 text-[10px]">
+                        <Calendar className="h-3 w-3 text-purple-400" />
+                        <span className="font-medium text-purple-400">TimeTree</span>
+                        {ttSyncMap[l.id] ? (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                            <span className="text-muted-foreground">
+                              {ttSyncMap[l.id].count} events · {timeAgo(ttSyncMap[l.id].last_sync)}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                            <span className="text-muted-foreground">Pending sync</span>
+                          </>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center justify-between border-t border-border pt-3">
                       <div className="flex items-center gap-2">
                         <Switch checked={l.is_active} onCheckedChange={() => toggleActive(l)} />
