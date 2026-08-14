@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getReservationStartDate, getReservationVessel } from '@/lib/reservation-utils';
@@ -24,11 +24,51 @@ function isSameDay(a: Date, b: Date) {
   );
 }
 
+type TooltipState = {
+  r: NormalizedReservation;
+  x: number;
+  y: number;
+} | null;
+
+function formatTime(iso: string | null): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function statusLabel(s: string | undefined): { text: string; color: string } {
+  switch (s) {
+    case 'confirmed': return { text: 'Confirmed', color: 'text-emerald-400' };
+    case 'pending': return { text: 'Pending', color: 'text-amber-400' };
+    case 'in_progress': return { text: 'In Progress', color: 'text-blue-400' };
+    case 'completed': return { text: 'Completed', color: 'text-sky-400' };
+    case 'cancelled': case 'no_show': return { text: 'Cancelled', color: 'text-red-400' };
+    case 'awaiting_payment': return { text: 'Awaiting Payment', color: 'text-amber-400' };
+    default: return { text: s || 'Unknown', color: 'text-muted-foreground' };
+  }
+}
+
 export function ReservationCalendar({ reservations }: ReservationCalendarProps) {
   const today = new Date();
   const [viewDate, setViewDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1),
   );
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
+  const tooltipTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const showTooltip = useCallback((r: NormalizedReservation, e: React.MouseEvent) => {
+    clearTimeout(tooltipTimeout.current);
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setTooltip({ r, x, y });
+  }, []);
+
+  const hideTooltip = useCallback(() => {
+    tooltipTimeout.current = setTimeout(() => setTooltip(null), 150);
+  }, []);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -68,7 +108,7 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-[var(--card-bg)] shadow-card p-5">
+    <div ref={containerRef} className="relative rounded-2xl border border-border bg-[var(--card-bg)] shadow-card p-5">
       <div className="mb-4 flex items-start justify-between">
         <div>
           <h2 className="text-base font-semibold text-foreground">
@@ -152,11 +192,13 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
                     <div
                       key={r.id}
                       className={cn(
-                        'flex items-center gap-1 rounded px-1 py-0.5 text-[9px] font-medium truncate',
+                        'flex items-center gap-1 rounded px-1 py-0.5 text-[9px] font-medium truncate cursor-default',
                         isTT
                           ? 'bg-purple-500/15 text-purple-400'
                           : 'bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]'
                       )}
+                      onMouseEnter={(e) => showTooltip(r, e)}
+                      onMouseLeave={hideTooltip}
                     >
                       <span className="shrink-0">{isTT ? '📅' : '🚢'}</span>
                       <span className="truncate">
@@ -175,6 +217,43 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
           );
         })}
       </div>
+
+      {tooltip && (
+        <div
+          className="pointer-events-none absolute z-50 w-52 rounded-lg border border-border bg-[var(--card-bg)] p-3 shadow-xl"
+          style={{
+            left: Math.min(tooltip.x, (containerRef.current?.offsetWidth || 300) - 220),
+            top: tooltip.y + 12,
+          }}
+        >
+          {tooltip.r.source === 'timetree' ? (
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-purple-400">External</span>
+              </div>
+              <p className="text-xs font-semibold text-foreground">{tooltip.r.client_name}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {formatTime(tooltip.r.start_at)} – {formatTime(tooltip.r.end_at)}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">{tooltip.r.client_name}</p>
+                <span className={cn('text-[9px] font-semibold', statusLabel(tooltip.r.booking_status).color)}>
+                  {statusLabel(tooltip.r.booking_status).text}
+                </span>
+              </div>
+              <div className="space-y-0.5 text-[10px] text-muted-foreground">
+                <p>{formatTime(tooltip.r.start_at)} – {formatTime(tooltip.r.end_at)}</p>
+                {getReservationVessel(tooltip.r) && <p>Vessel: <span className="text-foreground">{getReservationVessel(tooltip.r)}</span></p>}
+                {tooltip.r.guest_count && <p>Guests: <span className="text-foreground">{tooltip.r.guest_count}</span></p>}
+                {tooltip.r.total_amount > 0 && <p>Total: <span className="text-foreground">${tooltip.r.total_amount.toLocaleString()}</span></p>}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
