@@ -2,6 +2,7 @@
 
 import OperanNav from '@/components/landing/nav';
 import OperanHero from '@/components/landing/hero';
+import OperanGettingStarted from '@/components/landing/getting-started';
 import OperanProblemSolution from '@/components/landing/problem-solution';
 import OperanAutomationFlow from '@/components/landing/automation-flow';
 import OperanPlatform from '@/components/landing/platform-overview';
@@ -16,6 +17,7 @@ export default function Home() {
     <main className="min-h-screen overflow-x-hidden bg-[#0F172A]">
       <OperanNav />
       <OperanHero />
+      <OperanGettingStarted />
       <OperanProblemSolution />
       <OperanAutomationFlow />
       <OperanPlatform />
