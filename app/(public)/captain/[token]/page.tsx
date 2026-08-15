@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { generateQR } from '@/lib/qr-code';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 
 type SessionData = {
   session: {
@@ -474,11 +475,8 @@ export default function CaptainOperationsPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-8 border-t border-slate-200 bg-white py-4">
-        <div className="mx-auto max-w-[1180px] px-4 text-center text-xs text-slate-400 sm:px-6">
-          Powered by OPERAN · Captain Operations Dashboard
-        </div>
+      <footer className="mt-8 border-t border-slate-200 bg-white">
+        <PoweredByOperan />
       </footer>
     </div>
   );

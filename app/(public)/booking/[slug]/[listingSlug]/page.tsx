@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Anchor, ArrowLeft, Loader2, Ship, Users, MapPin, MessageCircle } from 'lucide-react';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { useEmbedPostMessage } from '@/hooks/use-embed-postmessage';
@@ -234,6 +235,7 @@ function DirectBookingInner() {
           </div>
         </div>
       </main>
+      <PoweredByOperan />
       <WhatsAppButton />
     </div>
   );

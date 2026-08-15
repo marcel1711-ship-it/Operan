@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle2, Calendar, Loader2 } from 'lucide-react';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 
 export default function PaymentSuccessPage() {
   const params = useParams();
@@ -120,6 +121,7 @@ export default function PaymentSuccessPage() {
           </p>
         </div>
       </div>
+      <PoweredByOperan />
     </div>
   );
 }

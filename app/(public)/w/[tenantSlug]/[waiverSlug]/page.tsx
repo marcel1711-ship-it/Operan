@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { Loader2, AlertCircle, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import DOMPurify from 'dompurify';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 
 type FormField = {
   key: string;
@@ -520,6 +521,7 @@ function WaiverSigningInner() {
             </div>
           )}
         </main>
+        <PoweredByOperan />
       </div>
     </div>
   );

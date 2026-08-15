@@ -6,6 +6,7 @@ import {
   Anchor, Users, MapPin, Ship, Loader2, ArrowLeft, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 import { supabase } from '@/lib/supabase';
 import {
   BookingFlow,
@@ -233,6 +234,7 @@ export default function ListingDetailPage() {
           </svg>
         </a>
       )}
+      <PoweredByOperan />
     </div>
   );
 }

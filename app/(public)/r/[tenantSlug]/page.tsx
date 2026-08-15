@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 import { formatCurrency } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useTenantFavicon } from '@/hooks/use-tenant-favicon';
@@ -345,6 +346,7 @@ function TenantLandingPageInner() {
           </svg>
         </a>
       )}
+      <PoweredByOperan />
     </div>
   );
 }

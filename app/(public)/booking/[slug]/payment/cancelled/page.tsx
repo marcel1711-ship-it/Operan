@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { XCircle, Clock, RefreshCw, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 
 export default function PaymentCancelledPage() {
   const params = useParams();
@@ -147,6 +148,7 @@ export default function PaymentCancelledPage() {
           )}
         </div>
       </div>
+      <PoweredByOperan />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Plus, Ship, Trash2, Pencil, X, Loader2, Anchor, DollarSign,
   Users, MapPin, Upload, GripVertical, ImageIcon, ExternalLink, Globe,
-  Clock, Calendar, Settings, CheckCircle2, AlertCircle, Copy,
+  Clock, Calendar, Settings, CheckCircle2, AlertCircle, Copy, Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -208,6 +208,7 @@ export default function ListingsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [ttSyncMap, setTtSyncMap] = useState<Record<string, { last_sync: string; count: number }>>({});
+  const [workerHealth, setWorkerHealth] = useState<{ last_check: string; success: boolean } | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [newBlock, setNewBlock] = useState({ start_at: '', end_at: '', block_type: 'manual', reason: '', notes: '' });
   const [showBlockForm, setShowBlockForm] = useState(false);
@@ -245,6 +246,17 @@ export default function ListingsPage() {
         }
       }
       setTtSyncMap(map);
+    }
+
+    const { data: healthRow } = await supabase
+      .from('worker_health_log')
+      .select('invoked_at, success')
+      .eq('worker_name', 'process-workflows')
+      .order('invoked_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (healthRow) {
+      setWorkerHealth({ last_check: healthRow.invoked_at, success: healthRow.success });
     }
 
     setLoading(false);
@@ -588,6 +600,25 @@ export default function ListingsPage() {
                             <span className="text-muted-foreground">Pending sync</span>
                           </>
                         )}
+                      </div>
+                    )}
+                    {workerHealth && (
+                      <div className="flex items-center gap-1.5 text-[10px]">
+                        <Zap className="h-3 w-3 text-[var(--brand-primary)]" />
+                        <span className="font-medium text-[var(--brand-primary)]">Automations</span>
+                        {(() => {
+                          const minAgo = Math.round((Date.now() - new Date(workerHealth.last_check).getTime()) / 60000);
+                          const healthy = workerHealth.success && minAgo < 10;
+                          const warning = minAgo >= 10 && minAgo < 30;
+                          return (
+                            <>
+                              <span className={`h-1.5 w-1.5 rounded-full ${healthy ? 'bg-emerald-400' : warning ? 'bg-amber-400' : 'bg-red-400'}`} />
+                              <span className="text-muted-foreground">
+                                {healthy ? 'Active' : warning ? 'Delayed' : 'Down'} · {timeAgo(workerHealth.last_check)}
+                              </span>
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
                     <div className="flex items-center justify-between border-t border-border pt-3">

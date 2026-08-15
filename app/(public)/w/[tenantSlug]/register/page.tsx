@@ -7,6 +7,7 @@ import {
   ChevronRight, ShieldCheck, FileSignature,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { PoweredByOperan } from '@/components/powered-by-operan';
 
 type RegistrationInfo = {
   tenant: {
@@ -340,9 +341,7 @@ function GuestRegisterInner() {
               </button>
             </form>
 
-            <p className="mt-5 text-center text-[11px] text-slate-400">
-              {info.tenant.name} · Guest verification
-            </p>
+            <PoweredByOperan className="mt-5" />
           </div>
         </div>
       </div>
