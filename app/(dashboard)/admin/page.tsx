@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
   RefreshCw, AlertCircle, KanbanSquare, LayoutDashboard, Users,
   CalendarDays, Anchor, DollarSign, Loader2, Zap, ChevronRight,
-  CheckCircle2, Clock, CreditCard, FileSignature, Mail, TrendingUp,
+  CheckCircle2, Clock, CreditCard, FileSignature, Mail, TrendingUp, BarChart3,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
@@ -18,6 +18,7 @@ import { NotesDrawer } from '@/components/dashboard/notes-drawer';
 import { OpportunityDetailDrawer } from '@/components/dashboard/opportunity-detail-drawer';
 import { ReservationCalendar } from '@/components/dashboard/reservation-calendar';
 import { UpcomingCharters } from '@/components/dashboard/upcoming-charters';
+import { AnalyticsView } from '@/components/dashboard/analytics-view';
 import { fetchOpportunitiesByPipeline } from '@/lib/services/opportunity-service';
 import { fetchPipelinesByTenant, fetchStagesByTenant, fetchStagesByPipeline } from '@/lib/services/pipeline-service';
 import { fetchReservationsByTenant, fetchUpcomingReservations } from '@/lib/services/reservation-service';
@@ -31,7 +32,7 @@ import { formatCompactCurrency } from '@/lib/format';
 import type { Opportunity, PipelineStage, Customer, Pipeline } from '@/lib/types';
 import type { NormalizedReservation } from '@/lib/reservation-utils';
 
-type Tab = 'overview' | 'pipeline' | 'contacts';
+type Tab = 'overview' | 'pipeline' | 'contacts' | 'analytics';
 
 type DashboardMetrics = {
   charters_this_week: number;
@@ -404,6 +405,9 @@ export default function AdminPage() {
             <button onClick={() => setTab('contacts')} className={cn('flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all', tab === 'contacts' ? 'bg-[var(--brand-primary)] text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-secondary')}>
               <Users className="h-4 w-4" /> Customers
             </button>
+            <button onClick={() => setTab('analytics')} className={cn('flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all', tab === 'analytics' ? 'bg-[var(--brand-primary)] text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-secondary')}>
+              <BarChart3 className="h-4 w-4" /> Analytics
+            </button>
           </div>
 
           {loading && (
@@ -458,6 +462,10 @@ export default function AdminPage() {
               </h2>
               <ContactsTable contacts={customers} />
             </div>
+          )}
+
+          {!loading && tab === 'analytics' && (
+            <AnalyticsView reservations={reservations} customers={customers} />
           )}
         </main>
       </div>
