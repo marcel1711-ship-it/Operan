@@ -803,13 +803,8 @@ async function processStep(supabase: any, step: any): Promise<{ failed: boolean;
         return { failed: true, deadLetter: false };
       }
 
-      const { data: tenantForCaptain } = await supabase
-        .from('tenants').select('domain, slug').eq('id', ctx.tenant_id).maybeSingle();
-
-      const tenantDomain = tenantForCaptain?.domain
-        ? tenantForCaptain.domain.replace(/\/+$/, '')
-        : '';
-      const captainBaseUrl = tenantDomain || siteUrl || 'https://www.operan.io';
+      // Captain page lives on the OPERAN app, not on tenant domains
+      const captainBaseUrl = siteUrl || 'https://www.operan.io';
       const captainUrl = `${captainBaseUrl}/captain/${sessionResult.token}`;
 
       // Send email notification to captain if captain_email is configured
