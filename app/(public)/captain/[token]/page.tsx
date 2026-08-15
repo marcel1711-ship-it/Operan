@@ -6,6 +6,7 @@ import {
   Loader2, Anchor, Ship, Users, MapPin, Clock, Calendar, Hash,
   CheckCircle2, AlertCircle, XCircle, RefreshCw, Copy, ExternalLink,
   Shield, Play, Square, Ban, ChevronDown, ChevronUp, User,
+  FileText, Download, Mail,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { generateQR } from '@/lib/qr-code';
@@ -64,6 +65,19 @@ type ChecklistItem = {
   checked: boolean;
 };
 
+type ManifestData = {
+  manifest_id: string;
+  vessel_name: string;
+  captain_name: string | null;
+  departure_time: string;
+  return_time: string;
+  departure_location: string;
+  passenger_count: number;
+  passengers: { name: string; email: string; signed_at: string }[];
+  manifest_html: string;
+  generated_at: string;
+};
+
 const DEFAULT_CHECKLIST: ChecklistItem[] = [
   { key: 'passenger_count_verified', label: 'Passenger count verified', description: 'People present match the expected guest count.', checked: false },
   { key: 'all_waivers_verified', label: 'All waivers verified', description: 'Every person boarding appears in the signed waivers list.', checked: false },
@@ -99,6 +113,16 @@ export default function CaptainOperationsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [showWaivers, setShowWaivers] = useState(true);
+  const [manifest, setManifest] = useState<ManifestData | null>(null);
+  const [manifestLoading, setManifestLoading] = useState(false);
+  const [showManifest, setShowManifest] = useState(true);
+
+  const loadManifest = useCallback(async () => {
+    const { data: result } = await supabase.rpc('get_departure_manifest', { p_token: token });
+    if (result?.exists) {
+      setManifest(result as ManifestData);
+    }
+  }, [token]);
 
   const loadSession = useCallback(async () => {
     const { data: result, error: err } = await supabase.rpc('get_captain_session', { p_token: token });
@@ -111,7 +135,8 @@ export default function CaptainOperationsPage() {
     const saved = (result as SessionData).session.checklist;
     setChecklist(Array.isArray(saved) && saved.length > 0 ? saved : DEFAULT_CHECKLIST);
     setLoading(false);
-  }, [token]);
+    await loadManifest();
+  }, [token, loadManifest]);
 
   useEffect(() => { loadSession(); }, [loadSession]);
 
@@ -151,8 +176,17 @@ export default function CaptainOperationsPage() {
       return;
     }
 
+    if (action === 'START_CHARTER') {
+      setManifestLoading(true);
+      const { data: mResult } = await supabase.rpc('generate_departure_manifest', { p_token: token });
+      if (mResult?.success) {
+        setManifest(mResult as ManifestData);
+      }
+      setManifestLoading(false);
+    }
+
     const labels: Record<string, string> = {
-      START_CHARTER: 'Charter started successfully.',
+      START_CHARTER: 'Charter started — departure manifest generated.',
       END_CHARTER: 'Charter completed successfully.',
       CANCEL_CHARTER: 'Charter cancelled.',
     };
@@ -174,6 +208,29 @@ export default function CaptainOperationsPage() {
     await navigator.clipboard.writeText(waiverPageUrl);
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2000);
+  }
+
+  function downloadManifest() {
+    if (!manifest?.manifest_html) return;
+    const blob = new Blob([manifest.manifest_html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `manifest-${data?.reservation.booking_reference || 'departure'}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function printManifest() {
+    if (!manifest?.manifest_html) return;
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(manifest.manifest_html);
+    win.document.close();
+    win.focus();
+    win.print();
   }
 
   const primary = data?.tenant?.primary_color || '#0d9488';
@@ -361,6 +418,101 @@ export default function CaptainOperationsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Departure Manifest */}
+            {(manifest || manifestLoading) && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-extrabold text-slate-900">Departure Manifest</h2>
+                    <p className="mt-1 text-xs text-slate-500">Coast Guard compliant passenger manifest for this charter.</p>
+                  </div>
+                  {manifest && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide text-emerald-600">
+                      <CheckCircle2 className="h-3 w-3" /> Generated
+                    </span>
+                  )}
+                </div>
+
+                {manifestLoading && !manifest && (
+                  <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-slate-50 py-8 text-sm text-slate-400">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Generating manifest...
+                  </div>
+                )}
+
+                {manifest && (
+                  <>
+                    <button onClick={() => setShowManifest(!showManifest)} className="mt-3 flex w-full items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 hover:bg-slate-100">
+                      <span>{showManifest ? 'Hide details' : 'Show details'}</span>
+                      {showManifest ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                    </button>
+
+                    {showManifest && (
+                      <div className="mt-3 space-y-2">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-3 space-y-1.5">
+                          <div className="flex items-center gap-2 text-xs">
+                            <Ship className="h-3.5 w-3.5 text-slate-400" />
+                            <span className="font-semibold text-slate-700">{manifest.vessel_name}</span>
+                          </div>
+                          {manifest.captain_name && (
+                            <div className="flex items-center gap-2 text-xs">
+                              <User className="h-3.5 w-3.5 text-slate-400" />
+                              <span className="text-slate-600">Capt. {manifest.captain_name}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-xs">
+                            <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                            <span className="text-slate-600">{manifest.departure_location || '—'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <Users className="h-3.5 w-3.5 text-slate-400" />
+                            <span className="text-slate-600">{manifest.passenger_count} passenger{manifest.passenger_count !== 1 ? 's' : ''}</span>
+                          </div>
+                        </div>
+
+                        {manifest.passengers && manifest.passengers.length > 0 && (
+                          <div className="space-y-1.5">
+                            {manifest.passengers.map((p, i) => (
+                              <div key={i} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5">
+                                <div className="flex items-center gap-2.5">
+                                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-500">
+                                    {i + 1}
+                                  </span>
+                                  <div>
+                                    <p className="text-sm font-semibold text-slate-900">{p.name}</p>
+                                    <p className="text-[11px] text-slate-400">{p.email}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <p className="text-[10px] text-slate-400 text-center pt-1">
+                          Generated {formatDateTime(manifest.generated_at)}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        onClick={printManifest}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[11px] font-bold uppercase tracking-wide text-white"
+                        style={{ background: primary }}
+                      >
+                        <FileText className="h-3 w-3" /> Print / Save PDF
+                      </button>
+                      <button
+                        onClick={downloadManifest}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-600 hover:bg-slate-50"
+                      >
+                        <Download className="h-3 w-3" /> Download
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
