@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sidebar, SidebarProvider, useSidebar } from '@/components/sidebar';
+import { ProductTour } from '@/components/dashboard/product-tour';
 import { useAuth } from '@/lib/auth';
 import { Loader2, Clock, Zap } from 'lucide-react';
 import { trialDaysRemaining, isTrialActive, getPlanConfig } from '@/lib/plans';
@@ -111,6 +112,7 @@ export default function DashboardLayout({
         <TrialBanner />
         {children}
       </DashboardContent>
+      <ProductTour />
     </SidebarProvider>
   );
 }

@@ -161,6 +161,7 @@ export function Sidebar() {
                     <Link
                       key={item.href + item.label}
                       href={item.href}
+                      data-tour={item.href.replace(/^\//, '').replace(/\//g, '-') || 'admin'}
                       title={collapsed ? item.label : undefined}
                       className={cn(
                         'group relative flex items-center border border-transparent nav-item-transition',
