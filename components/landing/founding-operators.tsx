@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Shield, Users, Lightbulb, ArrowRight } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
@@ -79,13 +80,13 @@ export default function OperanFoundingOperators() {
 
         {/* CTA */}
         <div className={`mt-12 operan-reveal operan-reveal-delay-2 ${isVisible ? 'is-visible' : ''}`}>
-          <a
-            href="mailto:hello@operan.io?subject=Founding%20Operator"
+          <Link
+            href="/demo?source=founding-operator"
             className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#14B8A6] px-7 py-4 text-sm font-medium text-white transition-all hover:bg-[#0D9488]"
           >
             Become a Founding Operator
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>

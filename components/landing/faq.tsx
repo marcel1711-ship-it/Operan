@@ -88,7 +88,7 @@ export default function OperanFAQ() {
                   Book a demo and we&apos;ll walk you through the platform.
                 </p>
                 <Link
-                  href="mailto:hello@operan.io"
+                  href="/demo"
                   className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-5 py-3 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
                 >
                   Book a Demo

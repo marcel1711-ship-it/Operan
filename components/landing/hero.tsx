@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
   Anchor, CalendarDays, Users, Zap, Plug, CreditCard, Mail,
   FileSignature, Bell, CheckCircle2, Star, Ship,
@@ -57,15 +58,15 @@ export default function OperanHero() {
             </p>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a
-                href="mailto:hello@operan.io"
+              <Link
+                href="/demo"
                 className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-6 py-3.5 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
               >
                 See OPERAN in Action
                 <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </a>
+              </Link>
               <a
                 href="#how-it-works"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-6 py-3.5 text-sm font-medium text-white transition-all hover:border-white/[0.15] hover:bg-white/[0.04]"

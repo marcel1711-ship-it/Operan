@@ -37,7 +37,7 @@ export default function OperanFinalCTA() {
           {/* CTAs */}
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="mailto:hello@operan.io"
+              href="/demo"
               className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-7 py-4 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
             >
               See OPERAN in Action
@@ -46,7 +46,7 @@ export default function OperanFinalCTA() {
               </svg>
             </Link>
             <Link
-              href="mailto:hello@operan.io?subject=Founding%20Operator"
+              href="/demo?source=founding-operator"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-7 py-4 text-sm font-medium text-white transition-all hover:border-white/[0.15] hover:bg-white/[0.04]"
             >
               Become a Founding Operator

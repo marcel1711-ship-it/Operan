@@ -19,7 +19,7 @@ const plans = [
       'Public booking page',
     ],
     cta: 'See OPERAN in Action',
-    href: 'mailto:hello@operan.io',
+    href: '/demo',
     highlighted: false,
   },
   {
@@ -37,7 +37,7 @@ const plans = [
       'Priority support',
     ],
     cta: 'See OPERAN in Action',
-    href: 'mailto:hello@operan.io',
+    href: '/demo',
     highlighted: true,
   },
   {
@@ -56,7 +56,7 @@ const plans = [
       'Priority support',
     ],
     cta: 'Talk to Sales',
-    href: 'mailto:hello@operan.io',
+    href: '/demo',
     highlighted: false,
   },
 ];
