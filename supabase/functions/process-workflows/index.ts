@@ -1171,6 +1171,143 @@ async function processMessage(supabase: any, msg: any) {
     return;
   }
 
+  // Twilio SMS provider
+  if (msg.provider === 'twilio' || msg.provider === 'twilio_sms') {
+    const { data: integration } = await supabase
+      .from('tenant_integrations')
+      .select('credentials')
+      .eq('tenant_id', msg.tenant_id)
+      .in('provider', ['twilio', 'twilio_sms'])
+      .eq('enabled', true)
+      .maybeSingle();
+
+    const creds = integration?.credentials as Record<string, string> | null;
+    const accountSid = creds?.twilio_account_sid || Deno.env.get('TWILIO_ACCOUNT_SID') || '';
+    const authToken = creds?.twilio_auth_token || Deno.env.get('TWILIO_AUTH_TOKEN') || '';
+    const fromNumber = creds?.twilio_phone_number || Deno.env.get('TWILIO_PHONE_NUMBER') || '';
+
+    if (!accountSid || !authToken || !fromNumber) {
+      await supabase.rpc('update_communication_message_status', {
+        p_message_id: msg.id,
+        p_status: 'failed',
+        p_failure_code: 'NO_CREDENTIALS',
+        p_failure_reason: 'Twilio credentials not found (no tenant integration or environment variables)',
+      });
+      return;
+    }
+
+    try {
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+      const auth = btoa(`${accountSid}:${authToken}`);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          To: msg.recipient,
+          From: fromNumber,
+          Body: msg.rendered_body || msg.rendered_subject || '',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        await supabase.rpc('update_communication_message_status', {
+          p_message_id: msg.id,
+          p_status: 'sent',
+          p_provider_message_id: data.sid || null,
+        });
+      } else {
+        await supabase.rpc('update_communication_message_status', {
+          p_message_id: msg.id,
+          p_status: 'failed',
+          p_failure_code: 'TWILIO_ERROR',
+          p_failure_reason: data.message || `Twilio API returned ${res.status}`,
+        });
+      }
+    } catch (err) {
+      await supabase.rpc('update_communication_message_status', {
+        p_message_id: msg.id,
+        p_status: 'failed',
+        p_failure_code: 'SEND_EXCEPTION',
+        p_failure_reason: err instanceof Error ? err.message : 'Failed to call Twilio API',
+      });
+    }
+    return;
+  }
+
+  // Twilio WhatsApp provider
+  if (msg.provider === 'twilio_whatsapp') {
+    const { data: integration } = await supabase
+      .from('tenant_integrations')
+      .select('credentials')
+      .eq('tenant_id', msg.tenant_id)
+      .in('provider', ['twilio_whatsapp', 'twilio'])
+      .eq('enabled', true)
+      .maybeSingle();
+
+    const creds = integration?.credentials as Record<string, string> | null;
+    const accountSid = creds?.twilio_account_sid || Deno.env.get('TWILIO_ACCOUNT_SID') || '';
+    const authToken = creds?.twilio_auth_token || Deno.env.get('TWILIO_AUTH_TOKEN') || '';
+    const fromNumber = creds?.twilio_whatsapp_number || creds?.twilio_phone_number || Deno.env.get('TWILIO_PHONE_NUMBER') || '';
+
+    if (!accountSid || !authToken || !fromNumber) {
+      await supabase.rpc('update_communication_message_status', {
+        p_message_id: msg.id,
+        p_status: 'failed',
+        p_failure_code: 'NO_CREDENTIALS',
+        p_failure_reason: 'Twilio WhatsApp credentials not found (no tenant integration or environment variables)',
+      });
+      return;
+    }
+
+    const whatsappTo = msg.recipient.startsWith('whatsapp:') ? msg.recipient : `whatsapp:${msg.recipient}`;
+    const whatsappFrom = `whatsapp:${fromNumber}`;
+
+    try {
+      const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+      const auth = btoa(`${accountSid}:${authToken}`);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          To: whatsappTo,
+          From: whatsappFrom,
+          Body: msg.rendered_body || msg.rendered_subject || '',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        await supabase.rpc('update_communication_message_status', {
+          p_message_id: msg.id,
+          p_status: 'sent',
+          p_provider_message_id: data.sid || null,
+        });
+      } else {
+        await supabase.rpc('update_communication_message_status', {
+          p_message_id: msg.id,
+          p_status: 'failed',
+          p_failure_code: 'TWILIO_WHATSAPP_ERROR',
+          p_failure_reason: data.message || `Twilio WhatsApp API returned ${res.status}`,
+        });
+      }
+    } catch (err) {
+      await supabase.rpc('update_communication_message_status', {
+        p_message_id: msg.id,
+        p_status: 'failed',
+        p_failure_code: 'SEND_EXCEPTION',
+        p_failure_reason: err instanceof Error ? err.message : 'Failed to call Twilio WhatsApp API',
+      });
+    }
+    return;
+  }
+
   // Unknown provider — fail
   await supabase.rpc('update_communication_message_status', {
     p_message_id: msg.id,
