@@ -62,7 +62,7 @@ const SOLUTIONS: Solution[] = [
       'Multi-owner fleet coordination',
       'Centralized availability across owners',
       'Booking and payment management per vessel',
-      'Owner reporting and transparency',
+      'Real-time booking visibility',
       'Scalable operational workflows',
     ],
     prominent: true,

@@ -5,7 +5,7 @@ import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 const flowSteps = [
   { label: 'Booking', desc: 'Customer books through any channel' },
-  { label: 'Availability', desc: 'Fleet availability updates instantly' },
+  { label: 'Availability', desc: 'Fleet availability updates automatically' },
   { label: 'Payment', desc: 'Deposit collected and tracked' },
   { label: 'Customer', desc: 'Customer record created automatically' },
   { label: 'Documents', desc: 'Waivers and agreements sent' },

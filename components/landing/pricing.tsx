@@ -50,10 +50,10 @@ const plans = [
       'Everything in Growth',
       'Multiple locations',
       'Custom workflows',
-      'API access',
-      'SSO & advanced security',
+      'Webhook integrations',
+      'Role-based access control',
       'Dedicated account manager',
-      'SLA & onboarding',
+      'Priority support',
     ],
     cta: 'Talk to Sales',
     href: 'mailto:hello@operan.io',
@@ -146,7 +146,7 @@ export default function OperanPricing() {
 
         <div className={`mt-10 text-center operan-reveal operan-reveal-delay-3 ${isVisible ? 'is-visible' : ''}`}>
           <p className="text-sm text-[#94A3B8]">
-            All plans include SSL, daily backups, and 14-day free trial. Plans scale with your operation.
+            All plans include SSL and 14-day free trial. Plans scale with your operation.
           </p>
         </div>
       </div>
