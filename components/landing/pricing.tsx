@@ -18,8 +18,8 @@ const plans = [
       'Digital waivers',
       'Public booking page',
     ],
-    cta: 'Start Free Trial',
-    href: '/register',
+    cta: 'See OPERAN in Action',
+    href: 'mailto:hello@operan.io',
     highlighted: false,
   },
   {
@@ -36,8 +36,8 @@ const plans = [
       'Custom integrations',
       'Priority support',
     ],
-    cta: 'Start Free Trial',
-    href: '/register',
+    cta: 'See OPERAN in Action',
+    href: 'mailto:hello@operan.io',
     highlighted: true,
   },
   {
@@ -146,7 +146,7 @@ export default function OperanPricing() {
 
         <div className={`mt-10 text-center operan-reveal operan-reveal-delay-3 ${isVisible ? 'is-visible' : ''}`}>
           <p className="text-sm text-[#94A3B8]">
-            All plans include SSL, daily backups, and 14-day free trial.
+            All plans include SSL, daily backups, and 14-day free trial. Plans scale with your operation.
           </p>
         </div>
       </div>

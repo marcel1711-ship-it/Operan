@@ -5,14 +5,14 @@ import { OperanLogoIcon } from './operan-logo';
 
 const footerLinks = {
   Product: [
-    { label: 'Platform', href: '#platform' },
-    { label: 'Automations', href: '#automations' },
+    { label: 'Platform', href: '#how-it-works' },
+    { label: 'Solutions', href: '#solutions' },
     { label: 'Pricing', href: '#pricing' },
     { label: 'Contact', href: 'mailto:hello@operan.io' },
   ],
   Resources: [
-    { label: 'Help Center', href: 'mailto:hello@operan.io' },
     { label: 'FAQ', href: '#faq' },
+    { label: 'Founding Operators', href: '#founding-operators' },
   ],
   Legal: [
     { label: 'Privacy', href: '#' },
@@ -59,7 +59,7 @@ export default function OperanFooter() {
               <span className="text-lg font-bold tracking-tight text-white">OPERAN</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#94A3B8]">
-              The operating system for marine experience businesses. Configure once. Operate automatically.
+              The operating system for charter businesses. One booking. Every operation.
             </p>
 
             {/* Social */}

@@ -2,11 +2,13 @@
 
 import OperanNav from '@/components/landing/nav';
 import OperanHero from '@/components/landing/hero';
-import OperanGettingStarted from '@/components/landing/getting-started';
 import OperanProblemSolution from '@/components/landing/problem-solution';
 import OperanAutomationFlow from '@/components/landing/automation-flow';
-import OperanPlatform from '@/components/landing/platform-overview';
-import OperanTestimonials from '@/components/landing/testimonials';
+import OperanAvailability from '@/components/landing/availability-section';
+import OperanKeepWhatsApp from '@/components/landing/keep-whatsapp';
+import OperanSolutions from '@/components/landing/solutions-section';
+import OperanAutomations from '@/components/landing/automations-section';
+import OperanFoundingOperators from '@/components/landing/founding-operators';
 import OperanPricing from '@/components/landing/pricing';
 import OperanFAQ from '@/components/landing/faq';
 import OperanFinalCTA from '@/components/landing/final-cta';
@@ -17,11 +19,13 @@ export default function Home() {
     <main className="min-h-screen overflow-x-hidden bg-[#0F172A]">
       <OperanNav />
       <OperanHero />
-      <OperanGettingStarted />
       <OperanProblemSolution />
       <OperanAutomationFlow />
-      <OperanPlatform />
-      <OperanTestimonials />
+      <OperanAvailability />
+      <OperanKeepWhatsApp />
+      <OperanSolutions />
+      <OperanAutomations />
+      <OperanFoundingOperators />
       <OperanPricing />
       <OperanFAQ />
       <OperanFinalCTA />

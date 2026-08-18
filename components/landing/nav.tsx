@@ -27,8 +27,8 @@ export default function OperanNav() {
   }, []);
 
   const navLinks = [
-    { label: 'Platform', href: '#platform' },
-    { label: 'Automations', href: '#automations' },
+    { label: 'Product', href: '#how-it-works' },
+    { label: 'Solutions', href: '#solutions' },
     { label: 'Pricing', href: '#pricing' },
   ];
 
@@ -67,12 +67,12 @@ export default function OperanNav() {
           >
             Log in
           </Link>
-          <Link
-            href="/register"
-            className="rounded-lg bg-[#6377FF] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#5063E8]"
+          <a
+            href="mailto:hello@operan.io"
+            className="rounded-lg bg-[#6377FF] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
           >
-            Start Free Trial
-          </Link>
+            See OPERAN in Action
+          </a>
         </div>
 
         <div className="flex items-center gap-3 md:hidden">
@@ -107,14 +107,14 @@ export default function OperanNav() {
             ))}
             <div className="flex flex-col gap-2 pt-2">
               <Link href="/login" className="text-sm text-[#94A3B8] hover:text-white">
-                Sign in
+                Log in
               </Link>
-              <Link
-                href="/register"
+              <a
+                href="mailto:hello@operan.io"
                 className="rounded-lg bg-[#6377FF] px-4 py-2 text-center text-sm font-medium text-white"
               >
-                Start Free Trial
-              </Link>
+                See OPERAN in Action
+              </a>
             </div>
           </div>
         </div>

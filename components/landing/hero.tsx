@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
   Anchor, CalendarDays, Users, Zap, Plug, CreditCard, Mail,
@@ -41,34 +40,38 @@ export default function OperanHero() {
           <div className={`flex flex-col ${mounted ? 'animate-operan-fade-up' : 'opacity-0'}`}>
             <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5">
               <span className="flex h-2 w-2 rounded-full bg-[#14B8A6] animate-operan-pulse-glow" />
-              <span className="text-xs font-medium text-[#94A3B8]">The Business Operating System for Marine Experiences</span>
+              <span className="text-xs font-medium text-[#94A3B8]">THE OPERATING SYSTEM FOR CHARTER BUSINESSES</span>
             </div>
 
             <h1 className="text-balance text-5xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
-              My business{' '}
-              <span className="operan-accent-gradient">runs itself.</span>
+              One booking.{' '}
+              <span className="operan-accent-gradient">Every operation.</span>
             </h1>
 
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-[#94A3B8]">
-              The Operating System for Marine Experience Businesses. Manage bookings, customers, payments, automations, communications and daily operations from one intelligent platform.
+              From availability and payments to customer communication, waivers and captain coordination — OPERAN keeps your charter operation connected from booking to completion.
+            </p>
+
+            <p className="mt-3 max-w-lg text-sm leading-relaxed text-[#94A3B8]/70">
+              Keep selling through your website, Instagram or WhatsApp. OPERAN runs what happens next.
             </p>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/register"
+              <a
+                href="mailto:hello@operan.io"
                 className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-6 py-3.5 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
               >
-                Start Free Trial
+                See OPERAN in Action
                 <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </Link>
-              <Link
-                href="/login"
+              </a>
+              <a
+                href="#how-it-works"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-6 py-3.5 text-sm font-medium text-white transition-all hover:border-white/[0.15] hover:bg-white/[0.04]"
               >
-                Book a Demo
-              </Link>
+                See How It Works
+              </a>
             </div>
 
 

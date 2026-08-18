@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react';
 import { useScrollReveal } from '@/hooks/use-scroll-reveal';
 
 const flowSteps = [
-  { label: 'Reservation Created', desc: 'Customer books online' },
-  { label: 'Payment Collected', desc: 'Deposit processed instantly' },
-  { label: 'Customer Created', desc: 'CRM record added automatically' },
-  { label: 'Email Delivered', desc: 'Confirmation sent to customer' },
-  { label: 'Captain Assigned', desc: 'Crew notified with trip details' },
-  { label: 'Calendar Updated', desc: 'Availability synced across all channels' },
-  { label: 'Review Requested', desc: 'Post-trip feedback automated' },
+  { label: 'Booking', desc: 'Customer books through any channel' },
+  { label: 'Availability', desc: 'Fleet availability updates instantly' },
+  { label: 'Payment', desc: 'Deposit collected and tracked' },
+  { label: 'Customer', desc: 'Customer record created automatically' },
+  { label: 'Documents', desc: 'Waivers and agreements sent' },
+  { label: 'Captain', desc: 'Captain notified with trip details' },
+  { label: 'Trip', desc: 'Charter completed, follow-up triggered' },
 ];
 
 export default function OperanAutomationFlow() {
@@ -43,7 +43,7 @@ export default function OperanAutomationFlow() {
   }, [isVisible]);
 
   return (
-    <section ref={ref} id="automations" className="relative overflow-hidden py-16 lg:py-32">
+    <section ref={ref} id="how-it-works" className="relative overflow-hidden py-16 lg:py-32">
       <div className="absolute inset-0 operan-grid-bg opacity-20" />
       <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-[#6377FF]/5 blur-3xl" />
 
@@ -55,12 +55,9 @@ export default function OperanAutomationFlow() {
               <span className="text-xs font-medium text-[#94A3B8]">Live Workflow</span>
             </div>
             <h2 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              One booking.{' '}
-              <span className="operan-accent-gradient">Every operation.</span>
+              One booking{' '}
+              <span className="operan-accent-gradient">starts everything.</span>
             </h2>
-            <p className="mt-4 text-lg text-[#94A3B8]">
-              From payment collection to customer communication, OPERAN coordinates every step automatically.
-            </p>
           </div>
         </div>
 
@@ -158,11 +155,13 @@ export default function OperanAutomationFlow() {
         </div>
 
         <div className={`mt-12 text-center operan-reveal operan-reveal-delay-2 ${isVisible ? 'is-visible' : ''}`}>
-          <p className="text-lg font-medium text-white">
-            &ldquo;I don&apos;t have to do any manual work anymore.&rdquo;
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-[#94A3B8]">
+            Once a booking enters OPERAN, the operation moves with it. Availability is updated.
+            Payments are tracked. Customer information stays connected. Documents are collected.
+            Messages are triggered. Your team knows what happens next.
           </p>
-          <p className="mt-2 text-sm text-[#94A3B8]">
-            Every step runs automatically. You just watch it happen.
+          <p className="mt-4 text-lg font-bold text-white">
+            One booking. One connected operation.
           </p>
         </div>
       </div>

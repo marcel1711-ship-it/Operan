@@ -56,7 +56,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I try OPERAN before subscribing?',
-    a: 'Yes. Every plan includes a 14-day free trial with access to all features included in your selected plan. No credit card is required to start. You can configure listings, set up workflows and test the booking process before committing.',
+    a: 'Yes. Every plan includes a 14-day free trial with access to all features included in your selected plan. No credit card is required to start. The fastest way to get going is to see OPERAN in action — we will walk you through your operation and help you configure listings, workflows and the booking process before you commit.',
   },
 ];
 
@@ -88,7 +88,7 @@ export default function OperanFAQ() {
                   Book a demo and we&apos;ll walk you through the platform.
                 </p>
                 <Link
-                  href="/login"
+                  href="mailto:hello@operan.io"
                   className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#6377FF] px-5 py-3 text-sm font-medium text-white transition-all hover:bg-[#5063E8] operan-glow-sm"
                 >
                   Book a Demo
@@ -96,6 +96,9 @@ export default function OperanFAQ() {
                     <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </Link>
+                <p className="mt-3 text-xs text-[#94A3B8]">
+                  or contact us at hello@operan.io
+                </p>
               </div>
             </div>
           </div>
