@@ -4,8 +4,13 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const required = ['firstName', 'companyName', 'email', 'fleetSize', 'bookingManagement'] as const;
-    const missing = required.filter((f) => !body[f]?.toString().trim());
+    const requiredStrings = ['firstName', 'companyName', 'email', 'phone', 'fleetSize', 'multiOwnerFleet'] as const;
+    const missing = requiredStrings.filter((f) => !body[f]?.toString().trim());
+
+    if (!Array.isArray(body.bookingManagement) || body.bookingManagement.length === 0) {
+      missing.push('bookingManagement' as any);
+    }
+
     if (missing.length > 0) {
       return NextResponse.json(
         { error: `Missing required fields: ${missing.join(', ')}` },
@@ -22,9 +27,10 @@ export async function POST(req: NextRequest) {
       firstName: body.firstName?.trim(),
       companyName: body.companyName?.trim(),
       email: body.email?.trim().toLowerCase(),
-      phone: body.phone?.trim() || null,
+      phone: body.phone?.trim(),
       fleetSize: body.fleetSize,
-      bookingManagement: body.bookingManagement,
+      multiOwnerFleet: body.multiOwnerFleet,
+      bookingManagement: body.bookingManagement as string[],
       biggestChallenge: body.biggestChallenge?.trim() || null,
       utmSource: body.utmSource || null,
       utmMedium: body.utmMedium || null,
@@ -37,7 +43,6 @@ export async function POST(req: NextRequest) {
     };
 
     // ── GHL integration point ──
-    // When GoHighLevel is configured, send the payload here.
     // Required env vars:
     //   GHL_API_KEY        – GoHighLevel API key
     //   GHL_LOCATION_ID    – GHL location/sub-account ID
@@ -46,15 +51,9 @@ export async function POST(req: NextRequest) {
     //
     // The integration should:
     //   1. Create/update a Contact (firstName, email, phone, companyName)
-    //   2. Set custom fields (fleetSize, bookingManagement, biggestChallenge)
+    //   2. Set custom fields (fleetSize, multiOwnerFleet, bookingManagement, biggestChallenge)
     //   3. Create an Opportunity in the OPERAN Sales pipeline
     //   4. Tag with attribution (utmSource, source, etc.)
-    //
-    // Example:
-    // const ghlApiKey = process.env.GHL_API_KEY;
-    // if (ghlApiKey) {
-    //   await sendToGHL(payload, ghlApiKey);
-    // }
 
     console.log('[demo-request] Lead received:', payload.email);
 

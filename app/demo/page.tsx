@@ -5,12 +5,11 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { OperanLogoIcon } from '@/components/landing/operan-logo';
 
-// ── Configuration ──
-// Set this env var or replace the fallback with your actual scheduling URL.
 const SCHEDULING_URL = process.env.NEXT_PUBLIC_DEMO_SCHEDULING_URL || '';
 
 const FLEET_OPTIONS = ['1', '2–5', '6–10', '11–30', '30+'] as const;
-const BOOKING_OPTIONS = ['WhatsApp', 'Calendar', 'Booking software', 'Spreadsheet', 'Multiple tools', 'Other'] as const;
+const BOOKING_OPTIONS = ['WhatsApp', 'Instagram / DMs', 'Calendar', 'Booking software', 'Spreadsheet', 'Phone / Text', 'Other'] as const;
+const MULTI_OWNER_OPTIONS = ['Yes', 'No', 'Some of them'] as const;
 
 type FormData = {
   firstName: string;
@@ -18,7 +17,8 @@ type FormData = {
   email: string;
   phone: string;
   fleetSize: string;
-  bookingManagement: string;
+  multiOwnerFleet: string;
+  bookingManagement: string[];
   biggestChallenge: string;
 };
 
@@ -34,14 +34,14 @@ export default function DemoPage() {
     email: '',
     phone: '',
     fleetSize: '',
-    bookingManagement: '',
+    multiOwnerFleet: '',
+    bookingManagement: [],
     biggestChallenge: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [serverError, setServerError] = useState('');
 
-  // UTM / attribution params
   const [attribution, setAttribution] = useState({
     utmSource: '',
     utmMedium: '',
@@ -74,8 +74,10 @@ export default function DemoPage() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       e.email = 'Enter a valid email address';
     }
+    if (!form.phone.trim()) e.phone = 'Phone number is required';
     if (!form.fleetSize) e.fleetSize = 'Select your fleet size';
-    if (!form.bookingManagement) e.bookingManagement = 'Select how you manage bookings';
+    if (!form.multiOwnerFleet) e.multiOwnerFleet = 'Select an option';
+    if (form.bookingManagement.length === 0) e.bookingManagement = 'Select at least one option';
     return e;
   }, [form]);
 
@@ -116,15 +118,31 @@ export default function DemoPage() {
     if (errors[field]) setErrors((e) => ({ ...e, [field]: undefined }));
   };
 
+  const toggleBooking = (opt: string) => {
+    setForm((f) => ({
+      ...f,
+      bookingManagement: f.bookingManagement.includes(opt)
+        ? f.bookingManagement.filter((v) => v !== opt)
+        : [...f.bookingManagement, opt],
+    }));
+    if (errors.bookingManagement) setErrors((e) => ({ ...e, bookingManagement: undefined }));
+  };
+
+  const checklist = [
+    'Your fleet and availability',
+    'Your current booking process',
+    'Your customer communication',
+    'Your operational workflows',
+  ];
+
   return (
     <main className="min-h-screen bg-[#0F172A]">
-      {/* Backgrounds */}
       <div className="fixed inset-0 operan-grid-bg opacity-30 pointer-events-none" />
       <div className="fixed inset-0 operan-radial-fade pointer-events-none" />
 
-      {/* Minimal header */}
+      {/* Header */}
       <header className="relative z-10 border-b border-white/[0.06] bg-[#0F172A]/80 backdrop-blur-xl">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5 sm:px-6 sm:py-4 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
             <OperanLogoIcon size={32} />
             <span className="text-lg font-bold tracking-tight text-white">OPERAN</span>
@@ -138,38 +156,32 @@ export default function DemoPage() {
         </nav>
       </header>
 
-      {/* Page content */}
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-20">
-        <div className={`grid items-start gap-12 lg:grid-cols-2 lg:gap-20 ${mounted ? 'animate-operan-fade-up' : 'opacity-0'}`}>
+      {/* Content */}
+      <div className="relative z-10 mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-20">
+        <div className={`grid items-start gap-8 lg:grid-cols-2 lg:gap-20 ${mounted ? 'animate-operan-fade-up' : 'opacity-0'}`}>
 
           {/* ── LEFT: Positioning ── */}
           <div className="flex flex-col lg:sticky lg:top-28">
-            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5">
+            <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5">
               <span className="flex h-2 w-2 rounded-full bg-[#6377FF] animate-operan-pulse-glow" />
               <span className="text-xs font-medium uppercase tracking-wide text-[#94A3B8]">
                 {isFoundingOperator ? 'Founding Operator Walkthrough' : 'Personalized OPERAN Walkthrough'}
               </span>
             </div>
 
-            <h1 className="text-balance text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl">
+            <h1 className="text-balance text-3xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-4xl lg:text-5xl">
               See OPERAN with
               <br />
               <span className="operan-accent-gradient">your operation.</span>
             </h1>
 
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-[#94A3B8]">
-              Tell us a little about your charter business and we&apos;ll show you how OPERAN
-              can fit the way you already manage bookings, availability and day-to-day operations.
+            <p className="mt-4 max-w-md text-base leading-relaxed text-[#94A3B8] lg:mt-6 lg:text-lg">
+              Tell us a little about your charter business and we&apos;ll tailor the walkthrough to the way you already work.
             </p>
 
-            {/* Checklist */}
-            <div className="mt-8 space-y-3">
-              {[
-                'Your fleet and availability',
-                'Your current booking process',
-                'Your customer communication',
-                'Your operational workflows',
-              ].map((item) => (
+            {/* Checklist — hidden on mobile, shown on desktop */}
+            <div className="mt-8 hidden space-y-3 lg:block">
+              {checklist.map((item) => (
                 <div key={item} className="flex items-center gap-3">
                   <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6377FF]/15">
                     <svg className="h-3 w-3 text-[#7C8CFF]" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -181,8 +193,8 @@ export default function DemoPage() {
               ))}
             </div>
 
-            {/* Trust line */}
-            <div className="mt-10 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
+            {/* Trust line — hidden on mobile */}
+            <div className="mt-10 hidden rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 lg:block">
               <p className="text-sm leading-relaxed text-[#94A3B8]">
                 No generic sales presentation.
                 <br />
@@ -193,21 +205,21 @@ export default function DemoPage() {
 
           {/* ── RIGHT: Form card ── */}
           <div className="relative">
-            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#6377FF]/8 to-transparent blur-2xl pointer-events-none" />
+            <div className="absolute -inset-4 hidden rounded-3xl bg-gradient-to-br from-[#6377FF]/8 to-transparent blur-2xl pointer-events-none lg:block" />
 
-            <div className="relative rounded-2xl border border-white/[0.08] bg-[#111827] p-6 shadow-2xl sm:p-8">
+            <div className="relative rounded-2xl border border-white/[0.08] bg-[#111827] p-5 shadow-2xl sm:p-6 lg:p-8">
               {status === 'success' ? (
                 <SuccessState firstName={form.firstName} />
               ) : (
                 <>
-                  <div className="mb-6">
-                    <h2 className="text-xl font-bold text-white">Tell us about your operation</h2>
-                    <p className="mt-1.5 text-sm text-[#94A3B8]">
+                  <div className="mb-5 lg:mb-6">
+                    <h2 className="text-lg font-bold text-white lg:text-xl">Tell us about your operation</h2>
+                    <p className="mt-1 text-sm text-[#94A3B8]">
                       A few details help us make the walkthrough relevant to your business.
                     </p>
                   </div>
 
-                  <form onSubmit={handleSubmit} noValidate className="space-y-5">
+                  <form onSubmit={handleSubmit} noValidate className="space-y-4 lg:space-y-5">
                     {/* First name */}
                     <Field label="First name" required error={errors.firstName}>
                       <input
@@ -231,7 +243,7 @@ export default function DemoPage() {
                     </Field>
 
                     {/* Email */}
-                    <Field label="Business email" required error={errors.email}>
+                    <Field label="Email" required error={errors.email}>
                       <input
                         type="email"
                         value={form.email}
@@ -241,20 +253,20 @@ export default function DemoPage() {
                       />
                     </Field>
 
-                    {/* Phone */}
-                    <Field label="Phone / WhatsApp">
+                    {/* Phone — now required */}
+                    <Field label="Phone / WhatsApp" required error={errors.phone}>
                       <input
                         type="tel"
                         value={form.phone}
                         onChange={(e) => setField('phone', e.target.value)}
-                        className={inputClass()}
+                        className={inputClass(errors.phone)}
                         autoComplete="tel"
                       />
                     </Field>
 
-                    {/* Fleet size — pills */}
+                    {/* Fleet size — responsive grid */}
                     <Field label="How many boats do you manage?" required error={errors.fleetSize}>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
                         {FLEET_OPTIONS.map((opt) => (
                           <button
                             key={opt}
@@ -268,15 +280,32 @@ export default function DemoPage() {
                       </div>
                     </Field>
 
-                    {/* Booking management — pills */}
+                    {/* Multi-owner */}
+                    <Field label="Do you manage boats for different owners?" required error={errors.multiOwnerFleet}>
+                      <div className="grid grid-cols-3 gap-2">
+                        {MULTI_OWNER_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setField('multiOwnerFleet', opt)}
+                            className={pillClass(form.multiOwnerFleet === opt)}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
+
+                    {/* Booking management — multi-select */}
                     <Field label="How do you currently manage bookings?" required error={errors.bookingManagement}>
-                      <div className="flex flex-wrap gap-2">
+                      <p className="mb-2 text-xs text-[#64748B]">Select all that apply.</p>
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                         {BOOKING_OPTIONS.map((opt) => (
                           <button
                             key={opt}
                             type="button"
-                            onClick={() => setField('bookingManagement', opt)}
-                            className={pillClass(form.bookingManagement === opt)}
+                            onClick={() => toggleBooking(opt)}
+                            className={pillClass(form.bookingManagement.includes(opt))}
                           >
                             {opt}
                           </button>
@@ -285,12 +314,12 @@ export default function DemoPage() {
                     </Field>
 
                     {/* Biggest challenge */}
-                    <Field label="What's the biggest challenge in your operation?">
+                    <Field label="What's the biggest challenge in your operation?" optional>
                       <textarea
                         value={form.biggestChallenge}
                         onChange={(e) => setField('biggestChallenge', e.target.value)}
                         rows={3}
-                        placeholder="Availability, follow-ups, payments, coordinating captains..."
+                        placeholder="Availability, manual follow-ups, payments, waivers, coordinating owners/captains..."
                         className={inputClass()}
                       />
                     </Field>
@@ -330,6 +359,23 @@ export default function DemoPage() {
                 </>
               )}
             </div>
+
+            {/* Checklist — shown BELOW form on mobile only */}
+            <div className="mt-6 space-y-2.5 lg:hidden">
+              {checklist.map((item) => (
+                <div key={item} className="flex items-center gap-2.5">
+                  <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#6377FF]/15">
+                    <svg className="h-2.5 w-2.5 text-[#7C8CFF]" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M2 6l3 3 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <span className="text-xs text-[#94A3B8]">{item}</span>
+                </div>
+              ))}
+              <p className="pt-1 text-xs leading-relaxed text-[#64748B]">
+                No generic sales presentation. We&apos;ll focus on how your business actually operates.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -337,11 +383,9 @@ export default function DemoPage() {
   );
 }
 
-// ── Success state ──
-
 function SuccessState({ firstName }: { firstName: string }) {
   return (
-    <div className="flex flex-col items-center py-6 text-center" style={{ animation: 'operan-fade-up 0.5s ease-out both' }}>
+    <div className="flex flex-col items-center py-4 text-center sm:py-6" style={{ animation: 'operan-fade-up 0.5s ease-out both' }}>
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#22C55E]/15">
         <svg className="h-7 w-7 text-[#22C55E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M4 12l5 5 11-11" strokeLinecap="round" strokeLinejoin="round" />
@@ -389,16 +433,16 @@ function SuccessState({ firstName }: { firstName: string }) {
   );
 }
 
-// ── Shared UI helpers ──
-
 function Field({
   label,
   required,
+  optional,
   error,
   children,
 }: {
   label: string;
   required?: boolean;
+  optional?: boolean;
   error?: string;
   children: React.ReactNode;
 }) {
@@ -407,6 +451,7 @@ function Field({
       <label className="mb-1.5 block text-sm font-medium text-[#CBD5E1]">
         {label}
         {required && <span className="ml-0.5 text-[#6377FF]">*</span>}
+        {optional && <span className="ml-1.5 text-xs font-normal text-[#64748B]">Optional</span>}
       </label>
       {children}
       {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
@@ -417,7 +462,7 @@ function Field({
 function inputClass(error?: string) {
   return [
     'w-full rounded-xl border bg-[#0F172A] px-4 py-3 text-sm text-white placeholder-[#64748B]',
-    'transition-all outline-none',
+    'transition-all outline-none min-h-[44px]',
     'focus:border-[#6377FF] focus:ring-1 focus:ring-[#6377FF]/30',
     error ? 'border-red-500/40' : 'border-white/[0.08]',
   ].join(' ');
@@ -425,7 +470,7 @@ function inputClass(error?: string) {
 
 function pillClass(active: boolean) {
   return [
-    'rounded-lg border px-3.5 py-2 text-sm font-medium transition-all',
+    'rounded-lg border px-3.5 py-2.5 text-sm font-medium transition-all min-h-[44px]',
     active
       ? 'border-[#6377FF]/40 bg-[#6377FF]/15 text-[#7C8CFF]'
       : 'border-white/[0.08] bg-white/[0.02] text-[#94A3B8] hover:border-white/[0.15] hover:text-white',
