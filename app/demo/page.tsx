@@ -1,5 +1,11 @@
 'use client';
 
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -135,6 +141,9 @@ export default function DemoPage() {
       }
 
       setStatus('success');
+      if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+        window.fbq('track', 'Lead');
+      }
     } catch (err) {
       setStatus('error');
       setServerError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
