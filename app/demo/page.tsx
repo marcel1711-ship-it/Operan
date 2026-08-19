@@ -7,6 +7,29 @@ import { OperanLogoIcon } from '@/components/landing/operan-logo';
 
 const SCHEDULING_URL = process.env.NEXT_PUBLIC_DEMO_SCHEDULING_URL || '';
 
+const COUNTRY_CODES = [
+  { code: '+1', flag: '\u{1F1FA}\u{1F1F8}', label: 'US' },
+  { code: '+1', flag: '\u{1F1F5}\u{1F1F7}', label: 'PR' },
+  { code: '+1', flag: '\u{1F1FB}\u{1F1EE}', label: 'VI' },
+  { code: '+52', flag: '\u{1F1F2}\u{1F1FD}', label: 'MX' },
+  { code: '+53', flag: '\u{1F1E8}\u{1F1FA}', label: 'CU' },
+  { code: '+57', flag: '\u{1F1E8}\u{1F1F4}', label: 'CO' },
+  { code: '+58', flag: '\u{1F1FB}\u{1F1EA}', label: 'VE' },
+  { code: '+34', flag: '\u{1F1EA}\u{1F1F8}', label: 'ES' },
+  { code: '+44', flag: '\u{1F1EC}\u{1F1E7}', label: 'GB' },
+  { code: '+61', flag: '\u{1F1E6}\u{1F1FA}', label: 'AU' },
+  { code: '+33', flag: '\u{1F1EB}\u{1F1F7}', label: 'FR' },
+  { code: '+39', flag: '\u{1F1EE}\u{1F1F9}', label: 'IT' },
+  { code: '+30', flag: '\u{1F1EC}\u{1F1F7}', label: 'GR' },
+  { code: '+385', flag: '\u{1F1ED}\u{1F1F7}', label: 'HR' },
+  { code: '+90', flag: '\u{1F1F9}\u{1F1F7}', label: 'TR' },
+  { code: '+971', flag: '\u{1F1E6}\u{1F1EA}', label: 'AE' },
+  { code: '+66', flag: '\u{1F1F9}\u{1F1ED}', label: 'TH' },
+  { code: '+55', flag: '\u{1F1E7}\u{1F1F7}', label: 'BR' },
+  { code: '+506', flag: '\u{1F1E8}\u{1F1F7}', label: 'CR' },
+  { code: '+507', flag: '\u{1F1F5}\u{1F1E6}', label: 'PA' },
+] as const;
+
 const FLEET_OPTIONS = ['1', '2–5', '6–10', '11–30', '30+'] as const;
 const BOOKING_OPTIONS = ['WhatsApp', 'Instagram / DMs', 'Calendar', 'Booking software', 'Spreadsheet', 'Phone / Text', 'Other'] as const;
 const MULTI_OWNER_OPTIONS = ['Yes', 'No', 'Some of them'] as const;
@@ -27,6 +50,9 @@ type FormErrors = Partial<Record<keyof FormData, string>>;
 export default function DemoPage() {
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
+
+  const [phoneCode, setPhoneCode] = useState('+1');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   const [form, setForm] = useState<FormData>({
     firstName: '',
@@ -67,19 +93,19 @@ export default function DemoPage() {
 
   const validate = useCallback((): FormErrors => {
     const e: FormErrors = {};
-    if (!form.firstName.trim()) e.firstName = 'First name is required';
+    if (!form.firstName.trim()) e.firstName = 'Name is required';
     if (!form.companyName.trim()) e.companyName = 'Company name is required';
     if (!form.email.trim()) {
       e.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       e.email = 'Enter a valid email address';
     }
-    if (!form.phone.trim()) e.phone = 'Phone number is required';
+    if (!phoneNumber.trim()) e.phone = 'Phone number is required';
     if (!form.fleetSize) e.fleetSize = 'Select your fleet size';
     if (!form.multiOwnerFleet) e.multiOwnerFleet = 'Select an option';
     if (form.bookingManagement.length === 0) e.bookingManagement = 'Select at least one option';
     return e;
-  }, [form]);
+  }, [form, phoneNumber]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,11 +117,13 @@ export default function DemoPage() {
     setServerError('');
 
     try {
+      const fullPhone = `${phoneCode}${phoneNumber.replace(/^0+/, '')}`;
       const res = await fetch('/api/demo-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
+          phone: fullPhone,
           ...attribution,
           pageUrl: window.location.href,
         }),
@@ -220,14 +248,14 @@ export default function DemoPage() {
                   </div>
 
                   <form onSubmit={handleSubmit} noValidate className="space-y-4 lg:space-y-5">
-                    {/* First name */}
-                    <Field label="First name" required error={errors.firstName}>
+                    {/* Name */}
+                    <Field label="Name" required error={errors.firstName}>
                       <input
                         type="text"
                         value={form.firstName}
                         onChange={(e) => setField('firstName', e.target.value)}
                         className={inputClass(errors.firstName)}
-                        autoComplete="given-name"
+                        autoComplete="name"
                       />
                     </Field>
 
@@ -253,15 +281,44 @@ export default function DemoPage() {
                       />
                     </Field>
 
-                    {/* Phone — now required */}
+                    {/* Phone — with country code selector */}
                     <Field label="Phone / WhatsApp" required error={errors.phone}>
-                      <input
-                        type="tel"
-                        value={form.phone}
-                        onChange={(e) => setField('phone', e.target.value)}
-                        className={inputClass(errors.phone)}
-                        autoComplete="tel"
-                      />
+                      <div className="flex gap-2">
+                        <div className="relative shrink-0">
+                          <select
+                            value={`${phoneCode}|${COUNTRY_CODES.find(c => c.code === phoneCode)?.label || 'US'}`}
+                            onChange={(e) => setPhoneCode(e.target.value.split('|')[0])}
+                            className={[
+                              'h-full min-h-[44px] w-[90px] appearance-none rounded-xl border bg-[#0F172A] pl-3 pr-7 text-sm text-white',
+                              'transition-all outline-none cursor-pointer',
+                              'focus:border-[#6377FF] focus:ring-1 focus:ring-[#6377FF]/30',
+                              errors.phone ? 'border-red-500/40' : 'border-white/[0.08]',
+                            ].join(' ')}
+                          >
+                            {COUNTRY_CODES.map((c) => (
+                              <option key={`${c.code}-${c.label}`} value={`${c.code}|${c.label}`}>
+                                {c.flag} {c.code}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                            <svg className="h-3.5 w-3.5 text-[#64748B]" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                        </div>
+                        <input
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => {
+                            setPhoneNumber(e.target.value);
+                            if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+                          }}
+                          placeholder="Phone number"
+                          className={inputClass(errors.phone)}
+                          autoComplete="tel-national"
+                        />
+                      </div>
                     </Field>
 
                     {/* Fleet size — responsive grid */}
