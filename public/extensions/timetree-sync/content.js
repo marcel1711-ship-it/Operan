@@ -1,6 +1,26 @@
 const SUPABASE_URL = 'https://zxflexiywouechzvapbi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4ZmxleGl5d291ZWNoenZhcGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTg0NzIsImV4cCI6MjEwMTE5NDQ3Mn0.S_3qRYtN_xK4sRVZUcEUdCgIlcZQ-8Zq3t9NVJUwVU0';
 const SYNC_INTERVAL_MS = 5 * 60 * 1000;
+const TARGET_TIMEZONE = 'America/New_York';
+
+function toTargetTimezoneISO(year, month, day, hours, minutes) {
+  const pad = (n) => String(n).padStart(2, '0');
+  const naive = `${year}-${pad(month + 1)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00`;
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: TARGET_TIMEZONE,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+    timeZoneName: 'shortOffset'
+  });
+  const refDate = new Date(`${naive}Z`);
+  const parts = formatter.formatToParts(refDate);
+  const tzOffset = parts.find(p => p.type === 'timeZoneName')?.value || '-04:00';
+  const offsetMatch = tzOffset.match(/GMT([+-]\d{1,2})/);
+  const offsetHours = offsetMatch ? parseInt(offsetMatch[1]) : -4;
+  const offsetStr = `${offsetHours >= 0 ? '+' : '-'}${pad(Math.abs(offsetHours))}:00`;
+  return `${naive}${offsetStr}`;
+}
 
 let syncTimer = null;
 let lastSyncTime = null;
@@ -69,11 +89,16 @@ function parseDetailPanel() {
       if (endAP === 'PM' && endH !== 12) endH += 12;
       if (endAP === 'AM' && endH === 12) endH = 0;
 
-      const startDate = new Date(year, month, day, startH, startM);
-      let endDate = new Date(year, month, day, endH, endM);
-      if (endDate <= startDate) endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+      const startISO = toTargetTimezoneISO(year, month, day, startH, startM);
+      const startDate = new Date(startISO);
+      let endISO = toTargetTimezoneISO(year, month, day, endH, endM);
+      let endDate = new Date(endISO);
+      if (endDate <= startDate) {
+        endISO = toTargetTimezoneISO(year, month, day + 1, endH, endM);
+        endDate = new Date(endISO);
+      }
 
-      return { startDate, endDate, month, day, year };
+      return { startDate, endDate, startISO, endISO, month, day, year };
     }
   }
   return null;
@@ -121,17 +146,17 @@ async function extractEventsWithDetails() {
     const detail = parseDetailPanel();
 
     if (detail) {
-      const { startDate, endDate } = detail;
+      const { startDate, endDate, startISO, endISO } = detail;
       const externalId = `tt_${startDate.getFullYear()}${String(startDate.getMonth() + 1).padStart(2, '0')}${String(startDate.getDate()).padStart(2, '0')}_${String(startDate.getHours()).padStart(2, '0')}${String(startDate.getMinutes()).padStart(2, '0')}_${title.replace(/\s+/g, '_').substring(0, 30)}`;
 
       const durationH = Math.round((endDate - startDate) / (1000 * 60 * 60) * 10) / 10;
-      console.log(`[OPERAN Sync]   ${i + 1}/${eventButtons.length} "${title}" → ${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString()} - ${endDate.toLocaleTimeString()} (${durationH}h)`);
+      console.log(`[OPERAN Sync]   ${i + 1}/${eventButtons.length} "${title}" → ${startISO} - ${endISO} (${durationH}h)`);
 
       events.push({
         title,
         external_id: externalId,
-        start_at: startDate.toISOString(),
-        end_at: endDate.toISOString()
+        start_at: startISO,
+        end_at: endISO
       });
     } else {
       console.log(`[OPERAN Sync]   ${i + 1}/${eventButtons.length} "${title}" → could not read details, using 4h default`);

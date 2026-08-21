@@ -202,7 +202,7 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
                     >
                       <span className="shrink-0">{isTT ? '📅' : '🚢'}</span>
                       <span className="truncate">
-                        {r.client_name}{isTT ? '' : ` · ${getReservationVessel(r) || 'N/A'}`}
+                        {r.client_name}{` · ${getReservationVessel(r) || 'N/A'}`}
                       </span>
                     </div>
                   );
@@ -232,9 +232,10 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
                 <span className="text-[9px] font-semibold uppercase tracking-wider text-purple-400">External</span>
               </div>
               <p className="text-xs font-semibold text-foreground">{tooltip.r.client_name}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {formatTime(tooltip.r.start_at)} – {formatTime(tooltip.r.end_at)}
-              </p>
+              <div className="space-y-0.5 text-[10px] text-muted-foreground">
+                <p>{formatTime(tooltip.r.start_at)} – {formatTime(tooltip.r.end_at)}</p>
+                {getReservationVessel(tooltip.r) && <p>Vessel: <span className="text-foreground">{getReservationVessel(tooltip.r)}</span></p>}
+              </div>
             </div>
           ) : (
             <div className="space-y-1.5">
