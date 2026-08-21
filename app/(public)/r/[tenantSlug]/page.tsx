@@ -164,7 +164,7 @@ function TenantLandingPageInner() {
           {listings.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 rounded-xl border py-12" style={{ borderColor: `${embedAccent}20`, backgroundColor: embedCardBg }}>
               <Ship className="h-8 w-8" style={{ color: `${embedAccent}60` }} />
-              <p className="text-sm" style={{ color: embedMuted || '#6b9090' }}>No experiences available right now.</p>
+              <p className="text-sm" style={{ color: embedMuted || '#6b9090' }}>No charters available right now.</p>
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -263,13 +263,13 @@ function TenantLandingPageInner() {
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground">Available Experiences</h2>
+          <h2 className="text-2xl font-bold text-foreground">Available Charters</h2>
           {!loading && !error && <p className="mt-1 text-sm text-muted-foreground">{listings.length} {listings.length === 1 ? 'option' : 'options'} available</p>}
         </div>
         {listings.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card py-20 shadow-sm">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary"><Ship className="h-8 w-8 text-muted-foreground" /></div>
-            <div className="text-center"><h3 className="text-sm font-semibold text-foreground">No experiences available right now</h3><p className="mt-1 text-sm text-muted-foreground">Check back soon.</p></div>
+            <div className="text-center"><h3 className="text-sm font-semibold text-foreground">No charters available right now</h3><p className="mt-1 text-sm text-muted-foreground">Check back soon.</p></div>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
