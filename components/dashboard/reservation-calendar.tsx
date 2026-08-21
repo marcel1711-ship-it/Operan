@@ -16,7 +16,7 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-const DISPLAY_TZ = 'America/New_York';
+const DEFAULT_TZ = 'America/New_York';
 
 function getDatePartsInTZ(d: Date, tz: string) {
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -32,9 +32,9 @@ function getDatePartsInTZ(d: Date, tz: string) {
   };
 }
 
-function isSameDay(a: Date, b: Date) {
-  const pa = getDatePartsInTZ(a, DISPLAY_TZ);
-  const pb = getDatePartsInTZ(b, DISPLAY_TZ);
+function isSameDay(a: Date, b: Date, tz: string = DEFAULT_TZ) {
+  const pa = getDatePartsInTZ(a, tz);
+  const pb = getDatePartsInTZ(b, tz);
   return pa.year === pb.year && pa.month === pb.month && pa.day === pb.day;
 }
 
@@ -44,14 +44,14 @@ type TooltipState = {
   y: number;
 } | null;
 
-function formatTime(iso: string | null, tz?: string): string {
+function formatTime(iso: string | null, tz: string = DEFAULT_TZ): string {
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
-    timeZone: tz || 'America/New_York',
+    timeZone: tz,
   });
 }
 
@@ -122,7 +122,7 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
     const d = new Date(year, month, day);
     return reservations.filter((r) => {
       const rd = getReservationStartDate(r);
-      return rd ? isSameDay(rd, d) : false;
+      return rd ? isSameDay(rd, d, r.timezone || DEFAULT_TZ) : false;
     });
   }
 
@@ -252,7 +252,7 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
               </div>
               <p className="text-xs font-semibold text-foreground">{tooltip.r.client_name}</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>{formatTime(tooltip.r.start_at)} – {formatTime(tooltip.r.end_at)}</p>
+                <p>{formatTime(tooltip.r.start_at, tooltip.r.timezone || DEFAULT_TZ)} – {formatTime(tooltip.r.end_at, tooltip.r.timezone || DEFAULT_TZ)}</p>
                 {getReservationVessel(tooltip.r) && <p>Vessel: <span className="text-foreground">{getReservationVessel(tooltip.r)}</span></p>}
               </div>
             </div>
@@ -265,7 +265,7 @@ export function ReservationCalendar({ reservations }: ReservationCalendarProps) 
                 </span>
               </div>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>{formatTime(tooltip.r.start_at)} – {formatTime(tooltip.r.end_at)}</p>
+                <p>{formatTime(tooltip.r.start_at, tooltip.r.timezone || DEFAULT_TZ)} – {formatTime(tooltip.r.end_at, tooltip.r.timezone || DEFAULT_TZ)}</p>
                 {getReservationVessel(tooltip.r) && <p>Vessel: <span className="text-foreground">{getReservationVessel(tooltip.r)}</span></p>}
                 {tooltip.r.guest_count && <p>Guests: <span className="text-foreground">{tooltip.r.guest_count}</span></p>}
                 {tooltip.r.total_amount > 0 && <p>Total: <span className="text-foreground">${tooltip.r.total_amount.toLocaleString()}</span></p>}
