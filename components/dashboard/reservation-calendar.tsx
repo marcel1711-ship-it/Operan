@@ -16,12 +16,26 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+const DISPLAY_TZ = 'America/New_York';
+
+function getDatePartsInTZ(d: Date, tz: string) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(d);
+  return {
+    year: parseInt(parts.find((p) => p.type === 'year')!.value),
+    month: parseInt(parts.find((p) => p.type === 'month')!.value),
+    day: parseInt(parts.find((p) => p.type === 'day')!.value),
+  };
+}
+
 function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+  const pa = getDatePartsInTZ(a, DISPLAY_TZ);
+  const pb = getDatePartsInTZ(b, DISPLAY_TZ);
+  return pa.year === pb.year && pa.month === pb.month && pa.day === pb.day;
 }
 
 type TooltipState = {
@@ -30,10 +44,15 @@ type TooltipState = {
   y: number;
 } | null;
 
-function formatTime(iso: string | null): string {
+function formatTime(iso: string | null, tz?: string): string {
   if (!iso) return '—';
   const d = new Date(iso);
-  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  return d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: tz || 'America/New_York',
+  });
 }
 
 function statusLabel(s: string | undefined): { text: string; color: string } {
