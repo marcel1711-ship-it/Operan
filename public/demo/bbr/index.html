@@ -62,42 +62,11 @@ img{max-width:100%;display:block}
 .trust-item{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:#64748B}
 .trust-item svg{width:20px;height:20px;color:#2DD4D7;flex-shrink:0}
 
-/* FLEET */
-.fleet{padding:80px 24px;max-width:1140px;margin:0 auto}
+/* BOOKING EMBED */
 .section-header{text-align:center;margin-bottom:48px}
 .section-eyebrow{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#2DD4D7;margin-bottom:10px}
 .section-header h2{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,40px);font-weight:800;line-height:1.15;color:#0F172A;text-wrap:balance}
 .section-header p{color:#64748B;font-size:16px;margin-top:10px;max-width:520px;margin-left:auto;margin-right:auto}
-.fleet-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-.boat-card{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E2E8F0;transition:all .3s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.boat-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.1);border-color:#CBD5E1}
-.boat-card-img{position:relative;aspect-ratio:16/10;overflow:hidden}
-.boat-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-.boat-card:hover .boat-card-img img{transform:scale(1.05)}
-.boat-badge{position:absolute;top:14px;left:14px;padding:4px 12px;border-radius:6px;background:rgba(15,23,42,.75);backdrop-filter:blur(8px);color:#fff;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.boat-card-body{padding:22px}
-.boat-card-body h3{font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:#0F172A;margin-bottom:4px}
-.boat-card-body .subtitle{font-size:14px;color:#64748B;margin-bottom:14px}
-.boat-specs{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
-.spec{display:flex;align-items:center;gap:5px;font-size:13px;color:#475569}
-.spec svg{width:16px;height:16px;color:#94A3B8}
-.boat-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid #F1F5F9}
-.boat-price{font-family:'Outfit',sans-serif}
-.boat-price .from{font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px}
-.boat-price .amount{font-size:22px;font-weight:800;color:#0F172A}
-.boat-card-footer .btn{padding:10px 22px;font-size:13px}
-
-/* EXPERIENCE */
-.experience{padding:80px 24px;background:#fff}
-.experience-inner{max-width:1140px;margin:0 auto}
-.exp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
-.exp-card{padding:28px;border-radius:14px;background:#F8FAFC;border:1px solid #E2E8F0;transition:all .3s}
-.exp-card:hover{border-color:#2DD4D7;background:#F0FDFA}
-.exp-icon{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,rgba(45,212,215,.1),rgba(20,184,166,.1));display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
-.exp-card h3{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:#0F172A;margin-bottom:6px}
-.exp-card p{font-size:14px;color:#64748B;line-height:1.55}
-
-/* BOOKING EMBED */
 .booking-section{padding:80px 24px;background:linear-gradient(180deg,#F8FAFC,#EFF6FF)}
 .booking-inner{max-width:1140px;margin:0 auto}
 .embed-frame{border-radius:20px;overflow:hidden;border:1px solid #CBD5E1;background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.08)}
@@ -126,8 +95,6 @@ img{max-width:100%;display:block}
 
 @media(max-width:768px){
   .nav-links{display:none}
-  .fleet-grid{grid-template-columns:1fr}
-  .exp-grid{grid-template-columns:1fr}
   .trust-inner{gap:24px}
   .hero-content{padding:130px 20px 40px}
   .demo-banner-inner{flex-direction:column;gap:6px}
@@ -152,9 +119,8 @@ img{max-width:100%;display:block}
       <div class="nav-name">OPERAN Demo</div>
     </div>
     <div class="nav-links">
-      <a href="#fleet">Fleet</a>
-      <a href="#experience">Experience</a>
       <a href="#booking">Book Now</a>
+      <a href="https://www.operan.io" target="_blank">About OPERAN</a>
       <a href="https://www.operan.io/r/bbr-demo" class="btn btn-primary">View All Boats</a>
     </div>
   </div>
@@ -175,7 +141,7 @@ img{max-width:100%;display:block}
     <p>From fishing adventures to luxury yacht experiences. Captain, fuel, and amenities included in every charter. Just show up and enjoy.</p>
     <div class="hero-btns">
       <a href="#booking" class="btn btn-primary">Book Your Charter</a>
-      <a href="#fleet" class="btn btn-outline-dark" style="border-color:rgba(255,255,255,.3);color:#fff">Explore Fleet</a>
+      <a href="https://www.operan.io/r/bbr-demo" class="btn btn-outline-dark" style="border-color:rgba(255,255,255,.3);color:#fff">View Full Catalog</a>
     </div>
     <div class="customize-note">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -205,140 +171,6 @@ img{max-width:100%;display:block}
     </div>
   </div>
 </div>
-
-<!-- FLEET -->
-<section class="fleet" id="fleet">
-  <div class="section-header">
-    <div class="section-eyebrow">Sample Fleet</div>
-    <h2>Choose your perfect vessel</h2>
-    <p>Each operator manages their own fleet in OPERAN. This is a demo with sample boats.</p>
-  </div>
-  <div class="fleet-grid">
-    <!-- Prestige -->
-    <div class="boat-card">
-      <div class="boat-card-img">
-        <img src="https://zxflexiywouechzvapbi.supabase.co/storage/v1/object/public/listing-photos/bbr/3c4dc47e-8375-4d2f-b943-7c4e7bf58129/1786195152616-vga2l8.jpg" alt="Prestige Yacht">
-        <div class="boat-badge">Yacht</div>
-      </div>
-      <div class="boat-card-body">
-        <h3>Prestige</h3>
-        <div class="subtitle">65 ft French Luxury Yacht &mdash; Flybridge & 3 Cabins</div>
-        <div class="boat-specs">
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 12 guests</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg> 65 ft</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Miami, FL</div>
-        </div>
-        <div class="boat-card-footer">
-          <div class="boat-price"><div class="from">From</div><div class="amount">$1,350</div></div>
-          <a href="https://www.operan.io/booking/bbr-demo/prestige-demo" class="btn btn-primary">Book Now</a>
-        </div>
-      </div>
-    </div>
-    <!-- Sedan -->
-    <div class="boat-card">
-      <div class="boat-card-img">
-        <img src="https://zxflexiywouechzvapbi.supabase.co/storage/v1/object/public/listing-photos/bbr/45c2f137-faa6-411d-b511-ea76c4a8a0fd/1786315649360-f1m05m.jpg" alt="Sedan Bridge">
-        <div class="boat-badge">Sedan Bridge</div>
-      </div>
-      <div class="boat-card-body">
-        <h3>Sedan</h3>
-        <div class="subtitle">42 ft Sedan Bridge &mdash; Two-Deck Yacht Experience</div>
-        <div class="boat-specs">
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 12 guests</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg> 42 ft</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Miami, FL</div>
-        </div>
-        <div class="boat-card-footer">
-          <div class="boat-price"><div class="from">From</div><div class="amount">$1,100</div></div>
-          <a href="https://www.operan.io/booking/bbr-demo/sedan-demo" class="btn btn-primary">Book Now</a>
-        </div>
-      </div>
-    </div>
-    <!-- Moonlight -->
-    <div class="boat-card">
-      <div class="boat-card-img">
-        <img src="https://zxflexiywouechzvapbi.supabase.co/storage/v1/object/public/listing-photos/bbr/7fad8fcc-a2f3-4750-993a-90d63641a59b/1786144910661-h0b0pb.png" alt="Moonlight Sea Ray">
-        <div class="boat-badge">Cruiser</div>
-      </div>
-      <div class="boat-card-body">
-        <h3>Moonlight</h3>
-        <div class="subtitle">34 ft Sea Ray Sundancer &mdash; Miami's Favorite Day Cruiser</div>
-        <div class="boat-specs">
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 12 guests</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg> 34 ft</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Miami, FL</div>
-        </div>
-        <div class="boat-card-footer">
-          <div class="boat-price"><div class="from">From</div><div class="amount">$900</div></div>
-          <a href="https://www.operan.io/booking/bbr-demo/moonlight-demo" class="btn btn-primary">Book Now</a>
-        </div>
-      </div>
-    </div>
-    <!-- Boston Whaler -->
-    <div class="boat-card">
-      <div class="boat-card-img">
-        <img src="https://zxflexiywouechzvapbi.supabase.co/storage/v1/object/public/listing-photos/bbr/c1cc1eb3-9f26-4c8a-aa0a-20e822dd7295/1787314694226-nwqjjw.jpeg" alt="Boston Whaler 260 Outrage">
-        <div class="boat-badge">Center Console</div>
-      </div>
-      <div class="boat-card-body">
-        <h3>Boston Whaler 260 Outrage</h3>
-        <div class="subtitle">26 ft Center Console &mdash; Unsinkable Offshore Performer</div>
-        <div class="boat-specs">
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> 10 guests</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg> 26 ft</div>
-          <div class="spec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Miami, FL</div>
-        </div>
-        <div class="boat-card-footer">
-          <div class="boat-price"><div class="from">From</div><div class="amount">$600</div></div>
-          <a href="https://www.operan.io/booking/bbr-demo/boston-whaler-260-outrage-demo" class="btn btn-primary">Book Now</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- EXPERIENCE -->
-<section class="experience" id="experience">
-  <div class="experience-inner">
-    <div class="section-header">
-      <div class="section-eyebrow">The Experience</div>
-      <h2>Everything included, nothing to worry about</h2>
-      <p>Operators define their own inclusions and amenities per listing</p>
-    </div>
-    <div class="exp-grid">
-      <div class="exp-card">
-        <div class="exp-icon">&#9875;</div>
-        <h3>Licensed Captain</h3>
-        <p>Every charter includes an experienced, USCG-licensed captain who knows the local waters inside and out.</p>
-      </div>
-      <div class="exp-card">
-        <div class="exp-icon">&#9981;</div>
-        <h3>Fuel Included</h3>
-        <p>No hidden costs. Fuel is included in every booking so guests can cruise without watching the gauge.</p>
-      </div>
-      <div class="exp-card">
-        <div class="exp-icon">&#127926;</div>
-        <h3>Premium Sound</h3>
-        <p>Bluetooth speakers on every vessel. Connect your phone and set the soundtrack for your day.</p>
-      </div>
-      <div class="exp-card">
-        <div class="exp-icon">&#127946;</div>
-        <h3>Water Toys</h3>
-        <p>Floating mats, swim ladders, and snorkel gear available. Everything needed to enjoy the water.</p>
-      </div>
-      <div class="exp-card">
-        <div class="exp-icon">&#127466;</div>
-        <h3>Cooler & Ice</h3>
-        <p>Guests bring their favorite drinks and snacks. The operator provides cooler, ice, and bottled water.</p>
-      </div>
-      <div class="exp-card">
-        <div class="exp-icon">&#128247;</div>
-        <h3>Photo Ops</h3>
-        <p>Skyline views, sandbars, and crystal-clear waters. Every trip is an Instagram-worthy experience.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- BOOKING EMBED -->
 <section class="booking-section" id="booking">
@@ -374,8 +206,6 @@ img{max-width:100%;display:block}
       <span>OPERAN Demo</span>
     </div>
     <div class="footer-links">
-      <a href="#fleet">Fleet</a>
-      <a href="#experience">Experience</a>
       <a href="#booking">Book</a>
       <a href="https://www.operan.io" target="_blank">OPERAN.io</a>
     </div>
