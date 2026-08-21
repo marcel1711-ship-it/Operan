@@ -1,25 +1,20 @@
 const SUPABASE_URL = 'https://zxflexiywouechzvapbi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4ZmxleGl5d291ZWNoenZhcGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2MTg0NzIsImV4cCI6MjEwMTE5NDQ3Mn0.S_3qRYtN_xK4sRVZUcEUdCgIlcZQ-8Zq3t9NVJUwVU0';
 const SYNC_INTERVAL_MS = 5 * 60 * 1000;
-const TARGET_TIMEZONE = 'America/New_York';
+const CHARTER_TIMEZONE = 'America/New_York';
 
-function toTargetTimezoneISO(year, month, day, hours, minutes) {
+function toCharterTimezoneISO(year, month, day, hours, minutes) {
   const pad = (n) => String(n).padStart(2, '0');
   const naive = `${year}-${pad(month + 1)}-${pad(day)}T${pad(hours)}:${pad(minutes)}:00`;
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: TARGET_TIMEZONE,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-    hour12: false,
-    timeZoneName: 'shortOffset'
-  });
-  const refDate = new Date(`${naive}Z`);
-  const parts = formatter.formatToParts(refDate);
-  const tzOffset = parts.find(p => p.type === 'timeZoneName')?.value || '-04:00';
-  const offsetMatch = tzOffset.match(/GMT([+-]\d{1,2})/);
-  const offsetHours = offsetMatch ? parseInt(offsetMatch[1]) : -4;
-  const offsetStr = `${offsetHours >= 0 ? '+' : '-'}${pad(Math.abs(offsetHours))}:00`;
-  return `${naive}${offsetStr}`;
+  const d = new Date(naive + 'Z');
+  const inTZ = new Date(d.toLocaleString('en-US', { timeZone: CHARTER_TIMEZONE }));
+  const offsetMs = d.getTime() - inTZ.getTime();
+  const totalMin = Math.round(offsetMs / 60000);
+  const sign = totalMin >= 0 ? '+' : '-';
+  const absMin = Math.abs(totalMin);
+  const offH = Math.floor(absMin / 60);
+  const offM = absMin % 60;
+  return `${naive}${sign}${pad(offH)}:${pad(offM)}`;
 }
 
 let syncTimer = null;
@@ -89,12 +84,12 @@ function parseDetailPanel() {
       if (endAP === 'PM' && endH !== 12) endH += 12;
       if (endAP === 'AM' && endH === 12) endH = 0;
 
-      const startISO = toTargetTimezoneISO(year, month, day, startH, startM);
+      const startISO = toCharterTimezoneISO(year, month, day, startH, startM);
       const startDate = new Date(startISO);
-      let endISO = toTargetTimezoneISO(year, month, day, endH, endM);
+      let endISO = toCharterTimezoneISO(year, month, day, endH, endM);
       let endDate = new Date(endISO);
       if (endDate <= startDate) {
-        endISO = toTargetTimezoneISO(year, month, day + 1, endH, endM);
+        endISO = toCharterTimezoneISO(year, month, day + 1, endH, endM);
         endDate = new Date(endISO);
       }
 
